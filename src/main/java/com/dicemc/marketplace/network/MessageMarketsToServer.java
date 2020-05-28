@@ -18,6 +18,7 @@ import com.dicemc.marketplace.core.Marketplace;
 import com.dicemc.marketplace.gui.ContainerSell;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
+import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
@@ -209,7 +210,17 @@ public class MessageMarketsToServer implements IMessage{
 				String response = "";
 				switch (message.market) {
 				case 0: {
-					response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+					if (cap.getOwner().equals(Reference.NIL)) {response = "Local sales only permitted in guild territory"; break;}
+					else {
+						List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
+						for (int i = 0; i < glist.size(); i++) {
+							if (cap.getOwner().equals(glist.get(i).guildID)) {
+								response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+								break;
+							}
+						}
+					}
 					break;
 				}
 				case 1: {
