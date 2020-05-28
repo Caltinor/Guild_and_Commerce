@@ -1,0 +1,230 @@
+package com.dicemc.marketplace.core;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import com.dicemc.marketplace.Main;
+import com.dicemc.marketplace.util.Reference;
+import com.dicemc.marketplace.util.capabilities.ChunkCapability;
+import com.dicemc.marketplace.util.capabilities.ChunkProvider;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.util.Constants;
+
+public class Guild {
+	public String guildName;
+	public final UUID guildID;
+	public boolean openToJoin;
+	public double guildTax;
+	public List<ChunkPos> coreLand = new ArrayList<ChunkPos>();
+	public List<ChunkPos> outpostLand = new ArrayList<ChunkPos>();
+	public Map<Integer, String> permLevels = new HashMap<Integer, String>();
+	public Map<String, Integer> permissions = new HashMap<String, Integer>();
+	public Map<UUID, Integer> members = new HashMap<UUID, Integer>();
+	
+	//this constructor is necessary for readFromNBT to properly load the data.
+	public Guild(UUID id) {
+		guildID = id;
+		guildName = "Unnamed Guild"+guildID.toString();
+		permLevels.put(0, "Leader");
+		permLevels.put(1, "Dignitary");
+		permLevels.put(2, "Trustee");
+		permLevels.put(3, "Member");
+		openToJoin = false;
+		guildTax = 0;
+		permissions.put("setname", 3);
+		permissions.put("setopen", 3);
+		permissions.put("settax", 3);
+		permissions.put("setperms", 3);
+		permissions.put("setinvite", 3);
+		permissions.put("setkick", 3);
+		permissions.put("setclaim", 3);
+		permissions.put("setsell", 3);
+		permissions.put("setwithdraw", 3);
+		permissions.put("setpromotedemote", 3);
+	}
+	public Guild(String name) {
+		guildName = name;
+		guildID = UUID.randomUUID();
+		permLevels.put(0, "Leader");
+		permLevels.put(1, "Dignitary");
+		permLevels.put(2, "Trustee");
+		permLevels.put(3, "Member");
+		openToJoin = false;
+		guildTax = 0;
+		permissions.put("setname", 3);
+		permissions.put("setopen", 3);
+		permissions.put("settax", 3);
+		permissions.put("setperms", 3);
+		permissions.put("setinvite", 3);
+		permissions.put("setkick", 3);
+		permissions.put("setclaim", 3);
+		permissions.put("setsell", 3);
+		permissions.put("setwithdraw", 3);
+		permissions.put("setpromotedemote", 3);
+	}
+	public Guild(NBTTagCompound nbt) {
+		guildID = nbt.getUniqueId("guildID");
+		guildName = nbt.getString("guildname");
+		guildTax = nbt.getDouble("tax");
+		openToJoin = nbt.getBoolean("open");
+		permLevels.put(0, nbt.getString("perm0"));
+		permLevels.put(1, nbt.getString("perm1"));
+		permLevels.put(2, nbt.getString("perm2"));
+		permLevels.put(3, nbt.getString("perm3"));
+		permissions.put("setname", nbt.getInteger("perm4"));
+		permissions.put("setopen", nbt.getInteger("perm5"));
+		permissions.put("settax", nbt.getInteger("perm6"));
+		permissions.put("setperms", nbt.getInteger("perm7"));
+		permissions.put("setinvite", nbt.getInteger("perm8"));
+		permissions.put("setkick", nbt.getInteger("perm9"));
+		permissions.put("setclaim", nbt.getInteger("perm10"));
+		permissions.put("setsell", nbt.getInteger("perm11"));
+		permissions.put("setwithdraw", nbt.getInteger("perm12"));
+		permissions.put("setpromotedemote", nbt.getInteger("perm13"));
+		NBTTagList lnbt = new NBTTagList();
+		lnbt = nbt.getTagList("members", Constants.NBT.TAG_COMPOUND);
+		for (int x= 0; x < lnbt.tagCount(); x++) {
+			members.put(lnbt.getCompoundTagAt(x).getUniqueId("UUID"), lnbt.getCompoundTagAt(x).getInteger("permLevel"));
+		}
+		lnbt = nbt.getTagList("coreland", Constants.NBT.TAG_COMPOUND);
+		for (int x= 0; x < lnbt.tagCount(); x++) {
+			ChunkPos l = chunkFromLong(lnbt.getCompoundTagAt(x).getLong("chunk"));
+			coreLand.add(l); 
+		}
+		lnbt = nbt.getTagList("outpostland", Constants.NBT.TAG_COMPOUND);
+		for (int x= 0; x < lnbt.tagCount(); x++) {
+			ChunkPos l = chunkFromLong(lnbt.getCompoundTagAt(x).getLong("outland"));
+			outpostLand.add(l);
+		}
+	}
+	
+	public boolean addMember(UUID player, int permLevel) {
+		members.put(player, permLevel);
+		return true;
+	}
+	
+	public boolean removeMember(UUID player) {
+		if (members.remove(player) != null) {
+			members.remove(player);
+			return true;
+		}
+		return false;
+	}
+	public void removeLand(ChunkPos ck) {
+		for (int i = 0; i < coreLand.size(); i++) {
+			if (coreLand.get(i).equals(ck)) coreLand.remove(i); }
+		for (int i = 0; i < outpostLand.size(); i++) {
+			if (outpostLand.get(i).equals(ck)) outpostLand.remove(i);}
+	}
+	public int countPermLevels(int level) {
+		int count = 0;
+		for (UUID m : members.keySet()) {if (members.get(m) == level) count++; }
+		return count;
+	}
+	public double taxableWorth(World world) {
+		int mbr = 0;
+		double totalCount = coreLand.size() + outpostLand.size();
+		for (Map.Entry<UUID, Integer> entry : members.entrySet()) {if (entry.getValue() != -1) mbr++;}
+		double worth = 0;
+		for (ChunkPos c : outpostLand) {
+			ChunkCapability cap = world.getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+			worth += cap.getPrice();
+		}
+		for (ChunkPos c : coreLand) {
+			ChunkCapability cap = world.getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+			worth += cap.getPrice();
+		}
+		int coreCount = (coreLand.size()-(mbr*Main.ModConfig.CHUNKS_PER_MEMBER));
+		double taxable =  coreCount > 0 ? coreCount + outpostLand.size() : outpostLand.size();		
+		double proportion = totalCount != 0 ? (taxable/totalCount) : 0;
+		worth = worth * proportion;		
+		return worth;
+	}
+	public double guildWorth(World world) {
+		double worth = 0;
+		for (ChunkPos c : outpostLand) {
+			ChunkCapability cap = world.getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+			if (!cap.getForSale()) worth += cap.getPrice();
+		}
+		for (ChunkPos c : coreLand) {
+			ChunkCapability cap = world.getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+			if (!cap.getForSale()) worth += cap.getPrice();
+		}
+		return worth;
+	}
+	
+	public void promoteMember(UUID member) { if (members.get(member) > 0) members.put(member, members.get(member)-1);}
+	
+	public void demoteMember(UUID member) { if (members.get(member) < 3) members.put(member, members.get(member)+1);}
+	
+	public List<String> listMembers(int permLevel, MinecraftServer server) {
+		List<String> list = new ArrayList<String>();
+		for (Map.Entry<UUID, Integer> entry : members.entrySet()) {
+			if (entry.getValue() == permLevel) {
+				list.add(server.getPlayerProfileCache().getProfileByUUID(entry.getKey()).getName());
+			}
+		}
+		return list;
+	}
+	
+	public NBTTagCompound toNBT() {
+			NBTTagCompound nbt = new NBTTagCompound();
+			nbt.setUniqueId("guildID", guildID);
+			nbt.setString("guildname", guildName);
+			nbt.setBoolean("open", openToJoin);
+			nbt.setDouble("tax", guildTax);
+			nbt.setString("perm0", permLevels.getOrDefault(0, "Leader"));
+			nbt.setString("perm1", permLevels.getOrDefault(1, "Dignitary"));
+			nbt.setString("perm2", permLevels.getOrDefault(2, "Trustee"));
+			nbt.setString("perm3", permLevels.getOrDefault(3, "Member"));
+			nbt.setInteger("perm4", permissions.getOrDefault("setname", 3));
+			nbt.setInteger("perm5", permissions.getOrDefault("setopen", 3));
+			nbt.setInteger("perm6", permissions.getOrDefault("settax", 3));
+			nbt.setInteger("perm7", permissions.getOrDefault("setperms", 3));
+			nbt.setInteger("perm8", permissions.getOrDefault("setinvite", 3));
+			nbt.setInteger("perm9", permissions.getOrDefault("setkick", 3));
+			nbt.setInteger("perm10", permissions.getOrDefault("setclaim", 3));
+			nbt.setInteger("perm11", permissions.getOrDefault("setsell", 3));
+			nbt.setInteger("perm12", permissions.getOrDefault("setwithdraw", 3));
+			nbt.setInteger("perm13", permissions.getOrDefault("setpromotedemote", 3));
+			NBTTagList lnbt = new NBTTagList();
+			for (Map.Entry<UUID, Integer> entry : members.entrySet()) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setUniqueId("UUID", entry.getKey());
+				snbt.setInteger("permLevel", entry.getValue());
+				lnbt.appendTag(snbt);
+			}
+			nbt.setTag("members", lnbt);
+			lnbt = new NBTTagList();
+			for (ChunkPos c : coreLand) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setLong("chunk", c.asLong(c.x, c.z));
+				lnbt.appendTag(snbt);
+			}
+			nbt.setTag("coreland", lnbt);
+			lnbt = new NBTTagList();
+			for (ChunkPos c : outpostLand) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setLong("outland", c.asLong(c.x, c.z));
+				lnbt.appendTag(snbt);
+			}
+			nbt.setTag("outpostland", lnbt);
+
+		return nbt;
+	}
+	
+	public static ChunkPos chunkFromLong(long longIn) {
+		int x = (int)longIn;
+		int z = (int)(longIn >> 32);
+		return new ChunkPos(x, z);
+	}
+}

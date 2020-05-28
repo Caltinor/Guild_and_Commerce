@@ -1,0 +1,5 @@
+{
+  "recipes": {
+    "moneybag": "com.dicemc.marketplace.item.MoneybagCombineRecipeFactory"
+  }
+}
