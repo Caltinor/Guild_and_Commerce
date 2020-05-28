@@ -33,7 +33,7 @@ public class Guild {
 	//this constructor is necessary for readFromNBT to properly load the data.
 	public Guild(UUID id) {
 		guildID = id;
-		guildName = "Unnamed Guild"+guildID.toString();
+		guildName = "Unnamed Guild" + guildID.toString();
 		permLevels.put(0, "Leader");
 		permLevels.put(1, "Dignitary");
 		permLevels.put(2, "Trustee");
