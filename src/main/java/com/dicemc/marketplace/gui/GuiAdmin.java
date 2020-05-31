@@ -11,6 +11,16 @@ public class GuiAdmin extends GuiScreen{
 	private AdminGuiType activeMenu = AdminGuiType.NONE;
 	private GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
 	
+	public static void syncAccounts() {}
+	
+	public static void syncGuildData() {}
+	
+	public static void syncGuildLand() {}
+	
+	public static void syncGuldMembers() {}
+	
+	public static void syncMarkets() {}
+	
 	public GuiAdmin() {}
 	
 	public void initGui() {
