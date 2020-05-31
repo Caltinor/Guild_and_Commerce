@@ -309,8 +309,7 @@ public class CoreUtils {
 
 	//returns true if the keycode is a number key, 
 	public static boolean validNumberKey(int keyCode) {
-		return ((keyCode >= 2 && keyCode <= 11) || keyCode == 14 || keyCode == 203 || keyCode == 205 || keyCode == 211 
-				|| keyCode == 71 || keyCode == 72 || keyCode == 73 || keyCode == 75 || keyCode == 76 || keyCode == 77
+		return ((keyCode >= 2 && keyCode <= 12) || keyCode == 14 || keyCode == 203 || keyCode == 205 || keyCode == 211 || keyCode >= 71 && keyCode <= 77 
 				|| keyCode == 79 || keyCode == 80 || keyCode == 81 || keyCode == 82 || keyCode == 52 || keyCode == 83);		
 	}
 }
