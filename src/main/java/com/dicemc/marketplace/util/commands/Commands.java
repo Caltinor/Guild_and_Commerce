@@ -76,9 +76,8 @@ public class Commands extends CommandBase{
 			return;
 		}
 		switch(args[0]) {
-		case "test": {
-			server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).openGui(Reference.MOD_ID, 1, server.getEntityWorld(), 0, 0, 0);
-			System.out.println("post openGui method");
+		case "gui": {
+			Main.proxy.openAdminGui();
 			break;
 		}
 		//base arguments <market/account/guild>

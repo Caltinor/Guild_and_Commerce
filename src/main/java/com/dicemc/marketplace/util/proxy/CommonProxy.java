@@ -38,6 +38,8 @@ public class CommonProxy {
 	
 	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP) {}
 	
+	public void openAdminGui() {}
+	
 	public void registerNetworkPackets() {
 		Main.NET = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MOD_ID);
 		PacketHandler.initHandler(); 

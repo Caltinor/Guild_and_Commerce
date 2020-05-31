@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
+import com.dicemc.marketplace.gui.GuiAdmin;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiGuildCreate;
 import com.dicemc.marketplace.gui.GuiGuildManager;
@@ -51,6 +52,10 @@ public class ClientProxy extends CommonProxy {
 	
 	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP) {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiGuildCreate(invitedGuilds, balP));
+	}
+	
+	public void openAdminGui() {
+		Minecraft.getMinecraft().displayGuiScreen(new GuiAdmin());
 	}
 	
 	public void registerNetworkPackets() {super.registerNetworkPackets();}
