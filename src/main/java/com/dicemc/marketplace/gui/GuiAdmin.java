@@ -31,13 +31,19 @@ public class GuiAdmin extends GuiScreen{
 	//Account Menu Objects;
 	private GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd;
 	private GuiTextField balanceBox;
-	private GuiListAccount guiListAccounts;
+	private static GuiListAccount guiListAccounts;
 	private boolean isPlayerList = true;
+	//guild select menu objects;
+	private GuiButton selectGuild;
+	private static GuiListNameList guildList;
 	//Gui Data variables
-	public static Map<Account, String> accountList;
+	private static Map<Account, String> accountList;
+	private static Map<UUID, String> nameList;
 	
 	
-	public static void syncAccounts(Map<Account, String> accountList) {GuiAdmin.accountList = accountList;}
+	public static void syncAccounts(Map<Account, String> accountList) {GuiAdmin.accountList = accountList; guiListAccounts.refreshList();}
+	
+	public static void syncGuildList(Map<UUID, String> nameList) {GuiAdmin.nameList = nameList; guildList.refreshList();}
 	
 	public static void syncGuildData() {}
 	
@@ -49,6 +55,7 @@ public class GuiAdmin extends GuiScreen{
 	
 	public GuiAdmin() {
 		accountList = new HashMap<Account, String>();
+		nameList = new HashMap<UUID, String>();
 	}
 	
 	public void initGui() {
@@ -77,6 +84,12 @@ public class GuiAdmin extends GuiScreen{
 		balanceBox.setVisible(false);
 		accountSet.visible = false;
 		accountAdd.visible = false;
+		//Guild Select menu specific objects
+		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, "Select Guild");
+		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 10);
+		this.buttonList.add(selectGuild);
+		selectGuild.visible = false;
+		guildList.visible = false;
 		//Guild Main menu specific objects
 		
 		//guild Land menu specific objects
@@ -89,6 +102,7 @@ public class GuiAdmin extends GuiScreen{
 	public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         if (guiListAccounts.visible) {guiListAccounts.handleMouseInput();}
+        if (guildList.visible) {guildList.handleMouseInput();}
     }
 	
 	private void updateVisibility() {
@@ -105,6 +119,9 @@ public class GuiAdmin extends GuiScreen{
 		accountAdd.visible = activeMenu == AdminGuiType.ACCOUNT ? true :false;
 		toggleAccountPlayer.enabled = isPlayerList ? false : true;
 		toggleAccountGuild.enabled = isPlayerList ? true : false;
+		//guild select objects
+		selectGuild.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
+		guildList.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
 	}
 	
 	protected void actionPerformed(GuiButton button) throws IOException {
@@ -137,11 +154,13 @@ public class GuiAdmin extends GuiScreen{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		if (guiListAccounts.visible) {guiListAccounts.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (balanceBox.getVisible()) {balanceBox.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (guildList.visible) {guildList.mouseClicked(mouseX, mouseY, mouseButton);}
 	}
 	
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		super.mouseReleased(mouseX, mouseY, state);
 		if (guiListAccounts.visible) {guiListAccounts.mouseReleased(mouseX, mouseY, state);}
+		if (guildList.visible) {guildList.mouseReleased(mouseX, mouseY, state);}
     }
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -165,6 +184,8 @@ public class GuiAdmin extends GuiScreen{
     		break;
     	}
     	case GUILD_SELECT: {
+    		this.drawString(this.fontRenderer, TextFormatting.GREEN+"GUILD LIST", selectGuild.x, 15, 16777215);
+    		guildList.drawScreen(mouseX, mouseY, partialTicks);
     		break;
     	}
     	case GUILD_MAIN: {
@@ -250,6 +271,80 @@ public class GuiAdmin extends GuiScreen{
 
 		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
 	        this.client.fontRenderer.drawString(name +" $"+ df.format(balance), x+3, y , 16777215);
+		}
+
+		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+	        this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;
+		}
+
+		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {}
+
+	}
+
+	public class GuiListNameList extends GuiListExtendedMember{
+	    private final GuiAdmin parentGui;
+	    public Map<UUID, String> nameList;
+	    private final List<GuiListNameListEntry> entries = Lists.<GuiListNameListEntry>newArrayList();
+	    /** Index to the currently selected world */
+	    private int selectedIdx = -1;
+		
+		public GuiListNameList(GuiAdmin parentGui, Minecraft mcIn, Map<UUID, String> nameList, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+			this.parentGui = parentGui;
+			this.nameList = nameList;
+			this.refreshList();
+		}
+		
+	    public void refreshList()
+	    {
+	    	entries.clear();
+	        nameList = parentGui.nameList;
+
+	        for (Map.Entry<UUID, String> entry : nameList.entrySet()){
+	            this.entries.add(new GuiListNameListEntry(this, entry.getKey(), entry.getValue()));
+	        }
+	    }
+	    
+	    public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
+	    }
+	    
+	    @Nullable
+	    public GuiListNameListEntry getSelectedMember()
+	    {
+	        return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;
+	    }
+
+		@Override
+		public GuiListNameListEntry getListEntry(int index) {
+			return entries.get(index);
+		}
+
+		@Override
+		protected int getSize() {
+			return entries.size();
+		}
+
+	}
+	
+	public class GuiListNameListEntry implements GuiListExtendedMember.IGuiNewListEntry{
+		private final UUID entityID;
+		private final String name; 
+		private Minecraft client = Minecraft.getMinecraft();
+	    private final GuiListNameList containingListSel;
+		
+		public GuiListNameListEntry (GuiListNameList listSelectionIn, UUID entityID, String name) {
+			containingListSel = listSelectionIn;
+			this.entityID = entityID;
+			this.name = name;
+		}
+		
+		public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+	        this.client.fontRenderer.drawString(name, x+3, y , 16777215);
 		}
 
 		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
