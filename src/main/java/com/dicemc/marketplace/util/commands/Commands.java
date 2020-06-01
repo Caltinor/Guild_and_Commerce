@@ -184,12 +184,10 @@ public class Commands extends CommandBase{
 					break;
 				}
 				case "add": {
-					message("Unimplemented.", sender);
 					plyr = (EntityPlayerMP) sender;
 					item = plyr.inventory.getCurrentItem();
-					item.setCount(Integer.valueOf(args[3]));
-					plyr.inventory.decrStackSize(plyr.inventory.currentItem, item.getCount());
-					message(item.getDisplayName()+" vendSize="+String.valueOf(item.getCount()), sender);
+					MarketSaver.get(server.getEntityWorld()).getAuction().addToList(true, item, Reference.NIL, Double.valueOf(args[3]), false);
+					message(item.getDisplayName()+" has been put to Server Auction.", sender);
 					break;
 				}
 				case "remove": {

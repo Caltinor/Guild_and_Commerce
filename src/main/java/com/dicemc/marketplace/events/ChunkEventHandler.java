@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.gui.ContainerSell;
@@ -133,6 +134,7 @@ public class ChunkEventHandler {
 		if (event.getPlayer().isCreative()) return;
 		if (event.getPlayer().dimension != 0) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
 		if (!ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			event.setCanceled(true);
 			event.getPlayer().sendStatusMessage(new TextComponentString("You are not permitted to break blocks here."), true);

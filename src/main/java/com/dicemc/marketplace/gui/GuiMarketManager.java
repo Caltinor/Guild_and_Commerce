@@ -365,7 +365,7 @@ public class GuiMarketManager extends GuiScreen{
 	public class GuiListMarketEntry implements GuiListExtendedMember.IGuiNewListEntry{
 	    private final GuiListMarket containingListSel;
 	    private Minecraft client = Minecraft.getMinecraft();
-	    private MarketListItem posting;
+	    MarketListItem posting;
 	    private String line1, line2, line3, line4, line5;
 	    private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 	    private int slotY;
@@ -450,6 +450,7 @@ public class GuiMarketManager extends GuiScreen{
 		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {		
 		}
 	}
+	
 	public static class MarketListItem {
 		UUID key;
 		MarketItem item;		

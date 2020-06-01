@@ -28,6 +28,7 @@ import net.minecraftforge.common.config.Config.Name;
 import net.minecraftforge.common.config.Config.RangeDouble;
 import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
+import net.minecraftforge.common.config.Config.RequiresWorldRestart;
 import net.minecraftforge.common.config.Config.Type;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -85,6 +86,7 @@ public class Main {
 	
 	@Config(modid = Reference.MOD_ID, name = Reference.MOD_ID + "_Config", type = Type.INSTANCE, category = "general")
 	public static class ModConfig {
+		//TODO: include boolean for unowned land protection
 		@Name("CHUNKS_PER_MEMBER")
 		@RangeInt(min = 0)
 		@Comment({"The number of untaxed chunks per member of a guild.", "setting this to zero would make all land taxed."})
@@ -125,5 +127,9 @@ public class Main {
 		@Name("MARKET_AUCTION_TAX_SELL")
 		@RangeDouble(min = 0.0)
 		public static double MARKET_AUCTION_TAX_SELL = 0.3;
+		@Name("UNOWNED_PROTECTED")
+		@RequiresWorldRestart
+		@Comment({"Is Unowned land protected.", "Default: TRUE", "setting false will allow modification of land without temp claims"})
+		public static boolean UNOWNED_PROTECTED = true;
 	}
 }
