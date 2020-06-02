@@ -221,24 +221,24 @@ public class GuiChunkManager extends GuiScreen{
 			mc.getMinecraft().displayGuiScreen(new GuiInventory(mc.player));
 		}
 		if (button.id == 11) { //Temp Claim Button
-			if (button.displayString == "Temp Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
-			else if (button.displayString == "Extend Time")	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
+			if (button.displayString == "Temp Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, ""));
+			else if (button.displayString == "Extend Time")	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, ""));
 		}
 		if (button.id == 12) { //Guild Claim Button
-			if (button.displayString == "Guild Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
+			if (button.displayString == "Guild Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, ""));
 			else {
 				double sellP = -1D;
 				try {sellP = Math.abs(Double.valueOf(sellprice.getText()));} catch (NumberFormatException e) {}
-				if (sellP != -1) Main.NET.sendToServer( new MessageChunkToServer(CkPktType.SELL, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), sellprice.getText()));				
+				if (sellP != -1) Main.NET.sendToServer( new MessageChunkToServer(CkPktType.SELL, fromIndex().x, fromIndex().z, sellprice.getText()));				
 			}
 			
 		}
 		if (button.id == 13) { //Outpost Claim Button
-			if (button.displayString == "New Outpost") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
-			else if (button.displayString == "Abandon Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
+			if (button.displayString == "New Outpost") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, ""));
+			else if (button.displayString == "Abandon Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, ""));
 		}
 		if (button.id == 14) { //Public Toggle Button
-			Main.NET.sendToServer(new MessageChunkToServer(CkPktType.PUBLIC, fromIndex().x, fromIndex().z, mc.player.getUniqueID(), ""));
+			Main.NET.sendToServer(new MessageChunkToServer(CkPktType.PUBLIC, fromIndex().x, fromIndex().z, ""));
 		}
 		if (button.id == 15) { //Overlay toggle
 			overlayOwners = overlayOwners ? false : true;

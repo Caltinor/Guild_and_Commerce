@@ -32,16 +32,15 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class MessageChunkToServer implements IMessage{
 	public int cX, cZ;
 	public CkPktType type;
-	public UUID id;
 	public String name;
 	
 	public MessageChunkToServer () {}
 	
-	public MessageChunkToServer(CkPktType type, int chunkX, int chunkZ, UUID id, String name) {
+	public MessageChunkToServer(CkPktType type, int chunkX, int chunkZ, String name) {
+		//TODO remove UUID id from the packet.  it is not used.
 		this.type = type;
 		cX = chunkX;
 		cZ = chunkZ;
-		this.id = id;
 		this.name = name;
 	}
 	
@@ -51,7 +50,6 @@ public class MessageChunkToServer implements IMessage{
 		cX = pbuf.readInt();
 		cZ = pbuf.readInt();
 		this.type = CkPktType.values()[pbuf.readVarInt()];
-		this.id = pbuf.readUniqueId();
 		this.name = pbuf.readString(32);
 	}
 
@@ -61,7 +59,6 @@ public class MessageChunkToServer implements IMessage{
 		pbuf.writeInt(cX);
 		pbuf.writeInt(cZ);
 		pbuf.writeVarInt(type.ordinal());
-		pbuf.writeUniqueId(id);
 		pbuf.writeString(name);
 	}
 	
@@ -76,27 +73,27 @@ public class MessageChunkToServer implements IMessage{
 			String response = "";
 			switch(message.type) {
 			case TEMPCLAIM: {
-				response = CoreUtils.tempClaim(message.id, message.cX, message.cZ);
+				response = CoreUtils.tempClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
 				break;
 			}
 			case EXTEND: {
-				response = CoreUtils.renewClaim(message.id, message.cX, message.cZ);
+				response = CoreUtils.renewClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
 				break;
 			}
 			case CLAIM: {
-				response = CoreUtils.guildClaim(message.id, message.cX, message.cZ);
+				response = CoreUtils.guildClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
 				break;
 			}
 			case OUTPOST: {
-				response = CoreUtils.guildOutopost(message.id, message.cX, message.cZ);
+				response = CoreUtils.guildOutopost(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
 				break;
 			}
 			case SELL: {
-				response = CoreUtils.sellClaim(message.id, message.cX, message.cZ, message.name);
+				response = CoreUtils.sellClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ, message.name);
 				break;
 			}
 			case ABANDON: {
-				response = CoreUtils.abandonClaim(message.id, message.cX, message.cZ);
+				response = CoreUtils.abandonClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
 				break;
 			}
 			case PUBLIC: {
