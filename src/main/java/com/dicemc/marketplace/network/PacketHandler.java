@@ -10,6 +10,8 @@ import com.dicemc.marketplace.network.MessagePermsToGui.PacketPermsToGui;
 import com.dicemc.marketplace.network.MessagePermsToServer.PacketPermsToServer;
 import com.dicemc.marketplace.network.MessageAccountInfoToServer.PacketAccountInfoToServer;
 import com.dicemc.marketplace.network.MessageAccountToGui.PacketAccountToGui;
+import com.dicemc.marketplace.network.MessageAdminToGui.PacketAdminToGui;
+import com.dicemc.marketplace.network.MessageAdminToServer.PacketAdminToServer;
 import com.dicemc.marketplace.network.MessageChunkToGui.PacketChunkToGui;
 import com.dicemc.marketplace.network.MessageChunkToServer.PacketChunkToServer;
 import com.dicemc.marketplace.network.MessageCreateInfoToGui.PacketCreateInfoToGui;
@@ -35,6 +37,7 @@ public class PacketHandler {
 		Main.NET.registerMessage(PacketCreateInfoToServer.class, MessageCreateInfoToServer.class, nextID(), Side.SERVER);
 		Main.NET.registerMessage(PacketPermsToServer.class, MessagePermsToServer.class, nextID(), Side.SERVER);		
 		Main.NET.registerMessage(PacketMarketsToServer.class, MessageMarketsToServer.class, nextID(), Side.SERVER);
+		Main.NET.registerMessage(PacketAdminToServer.class, MessageAdminToServer.class, nextID(), Side.SERVER);
 		//Client Packets		
 		Main.NET.registerMessage(PacketAccountToGui.class, MessageAccountToGui.class, nextID(), Side.CLIENT);
 		Main.NET.registerMessage(PacketMemberInfoToGui.class, MessageMemberInfoToGui.class, nextID(), Side.CLIENT);		
@@ -43,5 +46,6 @@ public class PacketHandler {
 		Main.NET.registerMessage(PacketPermsToGui.class, MessagePermsToGui.class, nextID(), Side.CLIENT);		
 		Main.NET.registerMessage(PacketMarketsToGui.class, MessageMarketsToGui.class, nextID(), Side.CLIENT);		
 		Main.NET.registerMessage(PacketGuildToGui.class, MessageGuildToGui.class, nextID(), Side.CLIENT);
+		Main.NET.registerMessage(PacketAdminToGui.class, MessageAdminToGui.class, nextID(), Side.CLIENT);
 	}
 }

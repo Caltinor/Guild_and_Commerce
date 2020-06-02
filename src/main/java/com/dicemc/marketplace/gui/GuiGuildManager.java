@@ -160,12 +160,12 @@ public class GuiGuildManager extends GuiScreen{
 		}
 		if (button.id == 13) { //Deposit Button
 			double amount = -1D;
-			try {Math.abs(amount = Double.valueOf(this.guildFundExchangeTextField.getText()));} catch (NumberFormatException e) {}
+			try {amount = Math.abs(Double.valueOf(this.guildFundExchangeTextField.getText()));} catch (NumberFormatException e) {}
 			if (amount != -1) Main.NET.sendToServer(new MessageAccountInfoToServer(acctGuild, Minecraft.getMinecraft().player.getUniqueID(), amount, true));
 		}
 		if (button.id == 14) {
 			double amount = -1D;
-			try {Math.abs(amount = Double.valueOf(this.guildFundExchangeTextField.getText()));} catch (NumberFormatException e) {}
+			try {amount = Math.abs(Double.valueOf(this.guildFundExchangeTextField.getText()));} catch (NumberFormatException e) {}
 			if (amount != -1) Main.NET.sendToServer(new MessageAccountInfoToServer(acctGuild, Minecraft.getMinecraft().player.getUniqueID(), amount, false));
 		}
 	}

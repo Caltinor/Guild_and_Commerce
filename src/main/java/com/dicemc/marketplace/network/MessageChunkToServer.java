@@ -37,7 +37,6 @@ public class MessageChunkToServer implements IMessage{
 	public MessageChunkToServer () {}
 	
 	public MessageChunkToServer(CkPktType type, int chunkX, int chunkZ, String name) {
-		//TODO remove UUID id from the packet.  it is not used.
 		this.type = type;
 		cX = chunkX;
 		cZ = chunkZ;

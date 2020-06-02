@@ -82,7 +82,6 @@ public class Commands extends CommandBase{
 		}
 		//base arguments <market/account/guild>
 		case "market": {
-			//TODO create paging on lists to accomodate large lists for server managers.
 			Map<UUID, MarketItem> vendlist;
 			switch(args[1]) {
 			//base arguments <local/global/auction>

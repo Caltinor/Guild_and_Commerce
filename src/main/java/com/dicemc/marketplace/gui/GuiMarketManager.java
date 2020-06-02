@@ -78,7 +78,7 @@ public class GuiMarketManager extends GuiScreen{
 		header = (GuiMarketManager.listType == 3) ? "My Transactions"+ TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]" :"Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
 	}
 	
-	private static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn) {
+	public static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn) {
 		List<MarketListItem> outputList = new ArrayList<MarketListItem>();
 		switch (listType) {
 		case 0: {

@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
@@ -21,7 +22,9 @@ import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarket;
 import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarketEntry;
 import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.dicemc.marketplace.item.ModItems;
+import com.dicemc.marketplace.network.MessageAdminToServer;
 import com.dicemc.marketplace.util.AdminGuiType;
+import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
 import com.google.common.collect.Lists;
 
@@ -40,23 +43,25 @@ import net.minecraft.util.text.TextFormatting;
 
 public class GuiAdmin extends GuiScreen{
 	//Gui Structural variables
-	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	private AdminGuiType activeMenu = AdminGuiType.NONE;
-	private GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
+	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private static AdminGuiType activeMenu = AdminGuiType.NONE;
+	private static GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
 	//Account Menu Objects;
-	private GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd;
-	private GuiTextField balanceBox;
+	private static GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd, accountRemove;
+	private static GuiTextField balanceBox;
 	private static GuiListAccount guiListAccounts;
-	private boolean isPlayerList = true;
+	private static boolean isPlayerList = true;
 	//guild select menu objects;
-	private GuiButton selectGuild;
+	private static GuiButton selectGuild;
 	private static GuiListNameList guildList;
 	//market menu objects
-	private GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
-	private GuiButton saleAdd, editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
-	private GuiTextField priceBox, stockBox;
+	private static GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
+	private static GuiButton editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
+	private static GuiTextField priceBox, stockBox;
 	private static GuiListAdminMarket marketList;
-	private int selectedMarket = 0;
+	private static boolean isVendorGive = true;
+	private static boolean isInfinite = false;
+	private static int selectedMarket = 0;
 	//Gui Data variables
 	public static int slotIdx = -1;
 	private static Map<Account, String> accountList;
@@ -75,12 +80,13 @@ public class GuiAdmin extends GuiScreen{
 	
 	public static void syncGuldMembers() {}
 	
-	public static void syncMarkets(List<MarketListItem> vendList) {GuiAdmin.vendList = vendList; marketList.refreshList();}
+	public static void syncMarkets(List<MarketListItem> list) {GuiAdmin.vendList = list; marketList.listType = selectedMarket; marketList.refreshList();}
 	
 	public static void syncMarketDetail(String vendorName, String locName, String bidderName) {
 		GuiAdmin.vendorName = vendorName;
 		GuiAdmin.locName = locName;
 		GuiAdmin.bidderName = bidderName;
+		GuiAdmin.updateVisibility();
 	}
 	
 	public GuiAdmin() {
@@ -105,16 +111,19 @@ public class GuiAdmin extends GuiScreen{
 		balanceBox = new GuiTextField(12, this.fontRenderer, guiListAccounts.x + guiListAccounts.width + 3, this.height/2, guiListAccounts.width - 6, 20);
 		accountSet = new GuiButton(13, balanceBox.x, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, "Set");
 		accountAdd = new GuiButton(14, accountSet.x+ accountSet.width +3, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, "Add");
+		accountRemove = new GuiButton(15, this.width - (this.width/5) - 38, this.height - 30, 120, 20, "Remove Account");
 		this.buttonList.add(toggleAccountPlayer);
 		this.buttonList.add(toggleAccountGuild);
 		this.buttonList.add(accountSet);
 		this.buttonList.add(accountAdd);
+		this.buttonList.add(accountRemove);
 		guiListAccounts.visible = false;
 		toggleAccountPlayer.visible = false;
 		toggleAccountGuild.visible = false;
 		balanceBox.setVisible(false);
 		accountSet.visible = false;
 		accountAdd.visible = false;
+		accountRemove.visible = false;
 		//Guild Select menu specific objects
 		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, "Select Guild");
 		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 10);
@@ -129,11 +138,10 @@ public class GuiAdmin extends GuiScreen{
 		
 		//markets menu specific objects
 		marketList = new GuiListAdminMarket(this, vendList, Reference.NIL, 0, mc, 83, 40, (this.width-80)/2, this.height-45, 25);
-		toggleLocal = new GuiButton(60, 83, 5, 60, 20, "Local");
+		toggleLocal = new GuiButton(60, 83, 5, 70, 20, "Local");
 		toggleGlobal = new GuiButton(61, toggleLocal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Global");
 		toggleAuction = new GuiButton(62, toggleGlobal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Auction");
 		toggleServer = new GuiButton(63, toggleAuction.x + toggleLocal.width, 5, toggleLocal.width, 20, "Server");
-		saleAdd = new GuiButton(64, toggleServer.x + toggleLocal.width + 5, 5, 75, 20, "Add Posting");
 		editSave = new GuiButton(65, marketList.x + marketList.width + 3, this.height - 30, 75, 20, "Save Changes");
 		saleRemove = new GuiButton(66, editSave.x + editSave.width + 2, editSave.y, editSave.width, 20, "Remove");
 		saleExpire = new GuiButton(67, saleRemove.x, saleRemove.y - 21, editSave.width, 20, "Expire");
@@ -145,7 +153,6 @@ public class GuiAdmin extends GuiScreen{
 		this.buttonList.add(toggleGlobal);
 		this.buttonList.add(toggleAuction);
 		this.buttonList.add(toggleServer);
-		this.buttonList.add(saleAdd);
 		this.buttonList.add(editSave);
 		this.buttonList.add(toggleVendorGive);
 		this.buttonList.add(toggleInfinite);
@@ -156,7 +163,6 @@ public class GuiAdmin extends GuiScreen{
 		toggleGlobal.visible = false;
 		toggleAuction.visible = false;
 		toggleServer.visible = false;
-		saleAdd.visible = false;
 		editSave.visible = false;
 		toggleVendorGive.visible = false;
 		toggleInfinite.visible = false;
@@ -171,9 +177,10 @@ public class GuiAdmin extends GuiScreen{
         super.handleMouseInput();
         if (guiListAccounts.visible) {guiListAccounts.handleMouseInput();}
         if (guildList.visible) {guildList.handleMouseInput();}
+        if (marketList.visible) {marketList.handleMouseInput();}
     }
 	
-	private void updateVisibility() {
+	private static void updateVisibility() {
 		//Main menu buttons
 		toggleAccount.enabled = activeMenu == AdminGuiType.ACCOUNT ? false : true;
 		toggleGuild.enabled = activeMenu == AdminGuiType.GUILD_SELECT ? false : true;
@@ -185,6 +192,7 @@ public class GuiAdmin extends GuiScreen{
 		balanceBox.setVisible(activeMenu == AdminGuiType.ACCOUNT);
 		accountSet.visible = activeMenu == AdminGuiType.ACCOUNT ? true :false;
 		accountAdd.visible = activeMenu == AdminGuiType.ACCOUNT ? true :false;
+		accountRemove.visible = activeMenu == AdminGuiType.ACCOUNT ? true: false;
 		toggleAccountPlayer.enabled = isPlayerList ? false : true;
 		toggleAccountGuild.enabled = isPlayerList ? true : false;
 		//guild select objects
@@ -199,12 +207,13 @@ public class GuiAdmin extends GuiScreen{
 		toggleGlobal.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleAuction.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleServer.visible = activeMenu == AdminGuiType.MARKET ? true : false;
-		saleAdd.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		editSave.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleVendorGive.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket != 2) ? true : false;
-		toggleVendorGive.displayString = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.vendorGiveItem ? "Infinite" : "Remaining") : "G") ;
+		isVendorGive = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.vendorGiveItem ? true : false) : false);
+		toggleVendorGive.displayString = isVendorGive ? "Giving" : "Requesting";
 		toggleInfinite.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket != 2) ? true : false;
-		toggleInfinite.displayString = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.infinite ? "Infinite" : "Remaining") : "I");
+		isInfinite = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.infinite ? true : false) : false);
+		toggleInfinite.displayString = isInfinite ? "Infinite" : "Remaining";
 		saleExpire.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket == 2) ? true : false;
 		saleRemove.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleLocal.enabled = selectedMarket == 0 ? false : true;
@@ -214,53 +223,112 @@ public class GuiAdmin extends GuiScreen{
 		priceBox.setVisible(activeMenu == AdminGuiType.MARKET);
 		priceBox.setText(marketList.selectedIdx >= 0 ? df.format(marketList.getSelectedMember().posting.item.price) : "0");
 		stockBox.setVisible(activeMenu == AdminGuiType.MARKET && selectedMarket != 2);
-		stockBox.setText(marketList.selectedIdx >= 0 ? df.format(marketList.getSelectedMember().posting.item.vendStock) : "0");
+		stockBox.setEnabled(marketList.selectedIdx >= 0 ? !marketList.getSelectedMember().posting.item.infinite : false);
+		stockBox.setText(marketList.selectedIdx >= 0 ? String.valueOf(marketList.getSelectedMember().posting.item.vendStock) : "0");
 		//market sell objects
 	}
 	
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button == exitButton) mc.player.closeScreen();
+		//Main menu buttons
 		if (button == toggleAccount) {
 			activeMenu = AdminGuiType.ACCOUNT;
+			isPlayerList = true;
+			Main.NET.sendToServer(new MessageAdminToServer(false));
 			updateVisibility();
 		}
 		if (button == toggleGuild) {
 			activeMenu = AdminGuiType.GUILD_SELECT;
+			Main.NET.sendToServer(new MessageAdminToServer(0));
 			updateVisibility();
 		}
 		if (button == toggleMarket) {
 			activeMenu = AdminGuiType.MARKET;
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.LOCAL));
 			updateVisibility();
 		}
+		//Account Menu Buttons
 		if (button == toggleAccountPlayer) {
 			isPlayerList = true;
 			updateVisibility();
-			//sent packet to sync lists
+			Main.NET.sendToServer(new MessageAdminToServer(false));
 		}
 		if (button == toggleAccountGuild) {
 			isPlayerList = false;
 			updateVisibility();
-			//sent packet to sync lists
+			Main.NET.sendToServer(new MessageAdminToServer(true));
 		}
+		if (button == accountSet && guiListAccounts.selectedIdx >= 0) {
+			double amount = 0D;
+			try {amount = Double.valueOf(balanceBox.getText());} catch (NumberFormatException e) {}
+			Main.NET.sendToServer(new MessageAdminToServer(!isPlayerList, guiListAccounts.getSelectedMember().owner, amount));
+		}
+		if (button == accountAdd  && guiListAccounts.selectedIdx >= 0) {
+			double amount = guiListAccounts.getSelectedMember().balance;
+			try {amount += Double.valueOf(balanceBox.getText());} catch (NumberFormatException e) {}
+			Main.NET.sendToServer(new MessageAdminToServer(!isPlayerList, guiListAccounts.getSelectedMember().owner, amount));
+		}
+		if (button == accountRemove  && guiListAccounts.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(!isPlayerList, guiListAccounts.getSelectedMember().owner));
+			guiListAccounts.selectedIdx = -1;
+			guiListAccounts.selectedElement = -1;
+		}
+		//Market menu buttons
 		if (button == toggleLocal) {
 			selectedMarket = 0;
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;
 			updateVisibility();
-			//send packet to populate market list
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.LOCAL));		
 		}
 		if (button == toggleGlobal) {
 			selectedMarket = 1;
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;
 			updateVisibility();
-			//send packet to populate market list
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.GLOBAL));
 		}
 		if (button == toggleAuction) {
 			selectedMarket = 2;
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;
 			updateVisibility();
-			//send packet to populate market list
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.AUCTION));
 		}
 		if (button == toggleServer) {
 			selectedMarket = 3;
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;
 			updateVisibility();
-			//send packet to populate market list
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.SERVER));
+		}
+		if (button == toggleVendorGive) {
+			isVendorGive = isVendorGive ? false: true;
+			toggleVendorGive.displayString = isVendorGive ? "Giving" : "Requesting";
+		}
+		if (button == toggleInfinite) {
+			isInfinite = isInfinite ? false : true;
+			toggleInfinite.displayString = isInfinite ? "Infinite" : "Remaining";
+			stockBox.setEnabled(isInfinite ? false : true);
+		}
+		if (button == editSave && marketList.selectedIdx >= 0) {			
+			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			double amount = -1D;
+			try {Math.abs(amount = Double.valueOf(priceBox.getText()));} catch (NumberFormatException e) {}
+			int stock = 0;
+			try {Math.abs(stock = Integer.valueOf(stockBox.getText()));} catch (NumberFormatException e) {}
+			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key, amount, isVendorGive, stock, isInfinite, marketList.getSelectedMember().posting.item.bidEnd));
+		}
+		if (button == saleExpire && marketList.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.AUCTION, marketList.getSelectedMember().posting.key, true));
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;			
+		}
+		if (button == saleRemove && marketList.selectedIdx >= 0) {
+			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key, false));
+			marketList.selectedIdx = -1;
+			marketList.selectedElement = -1;
 		}
 	}
 	
@@ -268,18 +336,28 @@ public class GuiAdmin extends GuiScreen{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		if (guiListAccounts.visible) {guiListAccounts.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (balanceBox.getVisible()) {balanceBox.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (priceBox.getVisible()) {priceBox.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (stockBox.getVisible()) {stockBox.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (guildList.visible) {guildList.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (marketList.visible) {marketList.mouseClicked(mouseX, mouseY, mouseButton);}
 	}
 	
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		super.mouseReleased(mouseX, mouseY, state);
 		if (guiListAccounts.visible) {guiListAccounts.mouseReleased(mouseX, mouseY, state);}
 		if (guildList.visible) {guildList.mouseReleased(mouseX, mouseY, state);}
+		if (marketList.visible) {marketList.mouseReleased(mouseX, mouseY, state);}
+		if (marketList.selectedIdx >= 0 && mouseX > marketList.x && mouseX < marketList.x+marketList.width-6 && mouseY > marketList.y && mouseY < marketList.height+marketList.y) {
+			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key));
+		}
     }
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		super.keyTyped(typedChar, keyCode);
 		if (balanceBox.getVisible() && CoreUtils.validNumberKey(keyCode)) balanceBox.textboxKeyTyped(typedChar, keyCode);
+		if (priceBox.getVisible() && CoreUtils.validNumberKey(keyCode)) priceBox.textboxKeyTyped(typedChar, keyCode);
+		if (stockBox.getVisible() && CoreUtils.validNumberKey(keyCode)) stockBox.textboxKeyTyped(typedChar, keyCode);
     }
     
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -317,7 +395,7 @@ public class GuiAdmin extends GuiScreen{
     		int baseY = marketList.y;
     		this.drawString(this.fontRenderer, "Vendor: "+vendorName, baseX, baseY, 16777215);
     		this.drawString(this.fontRenderer, TextFormatting.GOLD+"Price", baseX, baseY+11, 16777215);
-    		if (selectedMarket != 2) this.drawString(this.fontRenderer, TextFormatting.LIGHT_PURPLE+"Stock Remaining", baseX, baseY + 44, 16777215);
+    		if (selectedMarket != 2) this.drawString(this.fontRenderer, TextFormatting.LIGHT_PURPLE+"Supply Remaining", baseX, baseY + 44, 16777215);
     		String line1 = selectedMarket == 2 ? "Highest Bidder: " : "Locality:";
     		String line2 = selectedMarket == 2 ? bidderName : locName;
     		long end = marketList.selectedIdx >= 0 ? marketList.getSelectedMember().posting.item.bidEnd : 0;
@@ -414,7 +492,7 @@ public class GuiAdmin extends GuiScreen{
 		public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
 
 		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
-	        this.client.fontRenderer.drawString(name +" $"+ df.format(balance), x+3, y , 16777215);
+	        this.client.fontRenderer.drawString(name +TextFormatting.GOLD+" $"+ df.format(balance), x+3, y , 16777215);
 		}
 
 		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
@@ -522,6 +600,7 @@ public class GuiAdmin extends GuiScreen{
 	    public void refreshList()
 	    {
 	    	entries.clear();
+	    	vendList = GuiAdmin.vendList;
 	        for (MarketListItem entry : vendList) {
 	            this.entries.add(new GuiListAdminMarketEntry(this, entry, locality));
 	        }
@@ -563,15 +642,14 @@ public class GuiAdmin extends GuiScreen{
 			this.containingListSel = listIn;
 			this.posting = posting;
 			if (containingListSel.listType != 2) {
-				line1 = TextFormatting.GOLD+"$"+df.format(posting.item.price);
-				line1 += (posting.item.vendorGiveItem) ? TextFormatting.GREEN+" (Vendor Giving)": TextFormatting.BLUE+" (Vendor Requesting)";
-				line2 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "INFINITE" : "Stock="+String.valueOf(posting.item.vendStock));	
+				line1 = TextFormatting.GOLD+"$"+df.format(posting.item.price);				
+				line2 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "INFINITE" : "Supply="+String.valueOf(posting.item.vendStock));	
+				line2 += (posting.item.vendorGiveItem) ? TextFormatting.GREEN+" (Giving)": TextFormatting.BLUE+" (Requesting)";
 			}
 			if (containingListSel.listType == 2) {
-				line1 = "Current Bid:   "+TextFormatting.GOLD+"$" + df.format(posting.item.price);
-				line1 += (posting.item.highestBidder.equals(Reference.NIL)) ? TextFormatting.WHITE+" [No Bids]" : TextFormatting.RED+" [Active Auction]";
-				line2 = TextFormatting.WHITE+"Auction Ends: ";
-				line2 += (posting.item.bidEnd < 3600000) ? TextFormatting.RED+"" : (posting.item.bidEnd < 86400000) ? TextFormatting.YELLOW+"" : TextFormatting.GREEN+"";
+				line1 = TextFormatting.GOLD+"$" + df.format(posting.item.price);
+				line1 += (posting.item.highestBidder.equals(Reference.NIL)) ? TextFormatting.WHITE+" [No Bids]" : TextFormatting.RED+" [Active]";
+				line2 = (posting.item.bidEnd < 3600000) ? TextFormatting.RED+"" : (posting.item.bidEnd < 86400000) ? TextFormatting.YELLOW+"" : TextFormatting.GREEN+"";
 				line2 += String.valueOf(new Timestamp(posting.item.bidEnd));
 			}
 		}
@@ -586,7 +664,7 @@ public class GuiAdmin extends GuiScreen{
 	        if (font == null) font = fontRenderer;
 	        itemRender.renderItemAndEffectIntoGUI(posting.item.item, x+3, y);
 	        itemRender.renderItemOverlayIntoGUI(font, posting.item.item, x+3, y, null);
-	        if (mouseX > x+3 && mouseX < x+23 && mouseY > y && mouseY < y+20) {GuiMarketManager.slotIdx = slotIndex; slotY = y;}
+	        if (mouseX > x+3 && mouseX < x+23 && mouseY > y && mouseY < y+20) {GuiAdmin.slotIdx = slotIndex; slotY = y;}
 	        RenderHelper.disableStandardItemLighting();	        
 		}
 
@@ -595,13 +673,8 @@ public class GuiAdmin extends GuiScreen{
 	        this.containingListSel.showSelectionBox = true;
 	        return false;
 		}
-
-		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {		
+		
+		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {
 		}
-	}
-	public static class MarketListItem {
-		UUID key;
-		MarketItem item;		
-		public MarketListItem(UUID key, MarketItem item) {this.key = key; this.item = item;}
 	}
 }
