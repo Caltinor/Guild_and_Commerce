@@ -70,7 +70,7 @@ public class Marketplace {
 
 	//admin-level addition of items to the list.  no account interactions.
 	public void addToList (boolean giveItem, ItemStack item, UUID player, double price, boolean infinite) { 		
-		vendList.put(unrepeatedUUID(vendList), new MarketItem(giveItem, item.copy(), player, price, 1, Reference.NIL, Reference.NIL, infinite, System.currentTimeMillis()+259200000));
+		vendList.put(unrepeatedUUID(vendList), new MarketItem(giveItem, item.copy(), player, price, 1, Reference.NIL, Reference.NIL, infinite, System.currentTimeMillis()+Main.ModConfig.AUCTION_OPEN_DURATION));
 		manager.markDirty();
 	}
 	//admin-level removal of items from the list. no account interactions.
@@ -203,7 +203,7 @@ public class Marketplace {
 			if (sellerGiveItem) { //this condition means the seller is giving an item such that they receive price in return
 				if (acctPlayers.accountList.get(acctIndex).balance >= cost) {
 					acctPlayers.accountList.get(acctIndex).balance -= cost;
-					vendList.put(unrepeatedUUID(vendList), new MarketItem(sellerGiveItem, item.copy(), seller, price, 1, cap.getOwner(), Reference.NIL, false, System.currentTimeMillis()+259200000));
+					vendList.put(unrepeatedUUID(vendList), new MarketItem(sellerGiveItem, item.copy(), seller, price, 1, cap.getOwner(), Reference.NIL, false, System.currentTimeMillis()+Main.ModConfig.AUCTION_OPEN_DURATION));
 					player.openContainer.inventorySlots.get(0).putStack(ItemStack.EMPTY);
 					manager.markDirty();
 					return "Placed " + item.getDisplayName() + " on "+marketName+" for $" + String.valueOf(price) + ". A fee of $"+ String.valueOf(cost) + " was applied.";

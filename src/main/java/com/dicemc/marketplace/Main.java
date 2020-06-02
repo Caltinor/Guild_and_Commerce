@@ -86,7 +86,6 @@ public class Main {
 	
 	@Config(modid = Reference.MOD_ID, name = Reference.MOD_ID + "_Config", type = Type.INSTANCE, category = "general")
 	public static class ModConfig {
-		//TODO: include boolean for unowned land protection
 		@Name("CHUNKS_PER_MEMBER")
 		@RangeInt(min = 0)
 		@Comment({"The number of untaxed chunks per member of a guild.", "setting this to zero would make all land taxed."})
@@ -131,5 +130,9 @@ public class Main {
 		@RequiresWorldRestart
 		@Comment({"Is Unowned land protected.", "Default: TRUE", "setting false will allow modification of land without temp claims"})
 		public static boolean UNOWNED_PROTECTED = true;
+		@Name("AUCTION_OPEN_DURATION")
+		@RequiresWorldRestart
+		@Comment({"Determines how long an auction should stay up", "default: 259200000", "one day = 86400000"})
+		public static int AUCTION_OPEN_DURATION = 259200000;
 	}
 }
