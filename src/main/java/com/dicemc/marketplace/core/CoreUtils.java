@@ -69,8 +69,7 @@ public class CoreUtils {
 		boolean restricted = false;
 		for (int i = 0; i < glist.size(); i++) {
 			if (glist.get(i).members.containsKey(owner)) {
-				if (glist.get(i).members.get(owner) >= 0) gindex = i;
-				break;
+				if (glist.get(i).members.get(owner) >= 0) {gindex = i; break;}				
 			}
 		}
 		if (gindex >= 0 ) {
