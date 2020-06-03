@@ -191,37 +191,19 @@ public class MessageAdminToServer implements IMessage {
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
 				AcctGroup.setBalance(message.id, message.amount);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
-				MinecraftServer server = ctx.getServerHandler().player.getServer();
-				Map<Account, String> map = new HashMap<Account, String>();
-				for (int i = 0; i < AcctGroup.accountList.size(); i++) {
-					String str = message.bool1 ? (AcctGroup.accountList.get(i).owner.equals(Reference.NIL) ? "Server Account":GuildSaver.get(server.getEntityWorld()).guildNamefromUUID(AcctGroup.accountList.get(i).owner)) : playerNameFromUUID(AcctGroup.accountList.get(i).owner, server);
-					map.put(AcctGroup.accountList.get(i), str);
-				}
-				Main.NET.sendTo(new MessageAdminToGui(map), ctx.getServerHandler().player);
+				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 1: { //account list request
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
-				MinecraftServer server = ctx.getServerHandler().player.getServer();
-				Map<Account, String> map = new HashMap<Account, String>();
-				for (int i = 0; i < AcctGroup.accountList.size(); i++) {
-					String str = message.bool1 ? (AcctGroup.accountList.get(i).owner.equals(Reference.NIL) ? "Server Account":GuildSaver.get(server.getEntityWorld()).guildNamefromUUID(AcctGroup.accountList.get(i).owner)) : playerNameFromUUID(AcctGroup.accountList.get(i).owner, server);
-					map.put(AcctGroup.accountList.get(i), str);
-				}
-				Main.NET.sendTo(new MessageAdminToGui(map), ctx.getServerHandler().player);
+				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 2: { //account remove
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
 				AcctGroup.removeAccount(message.id);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld());
-				MinecraftServer server = ctx.getServerHandler().player.getServer();
-				Map<Account, String> map = new HashMap<Account, String>();
-				for (int i = 0; i < AcctGroup.accountList.size(); i++) {
-					String str = message.bool1 ? (AcctGroup.accountList.get(i).owner.equals(Reference.NIL) ? "Server Account":GuildSaver.get(server.getEntityWorld()).guildNamefromUUID(AcctGroup.accountList.get(i).owner)) : playerNameFromUUID(AcctGroup.accountList.get(i).owner, server);
-					map.put(AcctGroup.accountList.get(i), str);
-				}
-				Main.NET.sendTo(new MessageAdminToGui(map), ctx.getServerHandler().player);
+				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 3: { //guild list request
@@ -234,27 +216,13 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 4: { //market
-				Marketplace market = null;
-				switch (message.marketPacketType) {				
-				case LOCAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal(); break; }
-				case GLOBAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal(); break;}
-				case AUCTION: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction(); break;}
-				case SERVER: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer(); break;}
-				default:
-				}
+				Marketplace market = marketFromType(message.marketPacketType, ctx);				
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
 				break;
 			}
 			case 5: { //market item details
-				Marketplace market = null;
+				Marketplace market = marketFromType(message.marketPacketType, ctx);
 				MinecraftServer server = ctx.getServerHandler().player.getServer();
-				switch (message.marketPacketType) {				
-				case LOCAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal(); break; }
-				case GLOBAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal(); break;}
-				case AUCTION: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction(); break;}
-				case SERVER: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer(); break;}
-				default:
-				}
 				String str1 = market.vendList.get(message.id).vendor.equals(Reference.NIL) ? "Server" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id).vendor).getName();
 				String str2 = market.vendList.get(message.id).locality.equals(Reference.NIL)? "" : GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildNamefromUUID(market.vendList.get(message.id).locality);
 				String str3 = market.vendList.get(message.id).highestBidder.equals(Reference.NIL) ? "" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id).highestBidder).getName();
@@ -262,14 +230,7 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 6: {
-				Marketplace market = null;
-				switch (message.marketPacketType) {				
-				case LOCAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal(); break; }
-				case GLOBAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal(); break;}
-				case AUCTION: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction(); break;}
-				case SERVER: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer(); break;}
-				default:
-				}
+				Marketplace market = marketFromType(message.marketPacketType, ctx);
 				MarketItem item = market.vendList.get(message.id);
 				item.price = message.amount;
 				item.vendorGiveItem = message.bool1;
@@ -281,14 +242,7 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 7: {
-				Marketplace market = null;
-				switch (message.marketPacketType) {				
-				case LOCAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal(); break; }
-				case GLOBAL: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal(); break;}
-				case AUCTION: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction(); break;}
-				case SERVER: {market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer(); break;}
-				default:
-				}
+				Marketplace market = marketFromType(message.marketPacketType, ctx);
 				market.vendList.remove(message.id);
 				MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
@@ -310,6 +264,26 @@ public class MessageAdminToServer implements IMessage {
 			if (pid.equals(Reference.NIL)) return "Server Account";
 			str = server.getPlayerProfileCache().getProfileByUUID(pid) == null ? "" : server.getPlayerProfileCache().getProfileByUUID(pid).getName();
 			return str;
+		}
+		
+		private void sendAccountListToGui(MessageAdminToServer message, MessageContext ctx, AccountGroup AcctGroup) {
+			MinecraftServer server = ctx.getServerHandler().player.getServer();
+			Map<Account, String> map = new HashMap<Account, String>();
+			for (int i = 0; i < AcctGroup.accountList.size(); i++) {
+				String str = message.bool1 ? (AcctGroup.accountList.get(i).owner.equals(Reference.NIL) ? "Server Account":GuildSaver.get(server.getEntityWorld()).guildNamefromUUID(AcctGroup.accountList.get(i).owner)) : playerNameFromUUID(AcctGroup.accountList.get(i).owner, server);
+				map.put(AcctGroup.accountList.get(i), str);
+			}
+			Main.NET.sendTo(new MessageAdminToGui(map), ctx.getServerHandler().player);
+		}
+		
+		private Marketplace marketFromType(MktPktType type, MessageContext ctx) {
+			switch (type) {				
+			case LOCAL: {return MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal();}
+			case GLOBAL: {return MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal();}
+			case AUCTION: {return MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction();}
+			case SERVER: {return MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer();}
+			default: return null;
+			}
 		}
 	}
 
