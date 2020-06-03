@@ -308,13 +308,12 @@ public class GuiChunkManager extends GuiScreen{
         double ivl = ((d-2)/80); //the draw dimensions for a single block on screen.
         for (double yy = 0; yy < 80; yy++) {
         	for (double xx = 0; xx < 80; xx++) {
-        		this.drawRect(1,1,1,1,1);
                 Color color = new Color(mapColors.get((int) ((yy*80)+xx))); 
-        		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-                bufferbuilder.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)+ivl	, 0.0D).tex(1.0D, 1.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
-                bufferbuilder.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)		, 0.0D).tex(1.0D, 1.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
-                bufferbuilder.pos((x+1)+(xx*ivl)	, (y+1)+(yy*ivl)		, 0.0D).tex(1.0D, 1.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();        
-                bufferbuilder.pos((x+1)+(xx*ivl)	, (y+1)+(yy*ivl)+ivl	, 0.0D).tex(1.0D, 1.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
+        		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+                bufferbuilder.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)+ivl	, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
+                bufferbuilder.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)		, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
+                bufferbuilder.pos((x+1)+(xx*ivl)	, (y+1)+(yy*ivl)		, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();        
+                bufferbuilder.pos((x+1)+(xx*ivl)	, (y+1)+(yy*ivl)+ivl	, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
                 tessellator.draw();
         	}
         }
