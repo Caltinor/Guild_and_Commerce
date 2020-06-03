@@ -103,6 +103,10 @@ public class Main {
 		@RangeDouble(min = 0.0)
 		@RequiresMcRestart
 		public static double GUILD_CREATE_COST = 2500;
+		@Name("OUTPOST_CREATE_COST")
+		@RangeDouble(min = 0.0)
+		@RequiresMcRestart
+		public static double OUTPOST_CREATE_COST = 2000;
 		@Name("TEMPCLAIM_DURATION")
 		@RangeInt(min = 20)
 		@RequiresMcRestart

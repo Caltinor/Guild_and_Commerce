@@ -174,7 +174,7 @@ public class CoreUtils {
 							GuildSaver.get(world).GUILDS.get(sellerIndex).removeLand(ck.getPos());
 							landShiftChecker(sellerIndex);
 						}
-						AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* (cap.getPrice()+2000)));
+						AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* (cap.getPrice()+Main.ModConfig.OUTPOST_CREATE_COST)));
 						cap.setOwner(owningGuild);
 						cap.setOutpost(true);
 						GuildSaver.get(world).GUILDS.get(gindex).outpostLand.add(ck.getPos());
