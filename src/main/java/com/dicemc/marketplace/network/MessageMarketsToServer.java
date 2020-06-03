@@ -210,6 +210,7 @@ public class MessageMarketsToServer implements IMessage{
 				String response = "";
 				switch (message.market) {
 				case 0: {
+					if (message.index.equals(Reference.NIL)) {MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().addToList(message.giveItem, message.item, Reference.NIL, message.price, false); break;}
 					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 					if (cap.getOwner().equals(Reference.NIL)) {response = "Local sales only permitted in guild territory"; break;}
 					else {
@@ -224,22 +225,23 @@ public class MessageMarketsToServer implements IMessage{
 					break;
 				}
 				case 1: {
-					response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().addToList(message.giveItem, message.item, Reference.NIL, message.price, false);
+					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					break;
 				}
 				case 2: {
-					response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().addToList(message.giveItem, message.item, Reference.NIL, message.price, false);
+					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					break;
+				}
+				case 3: {
+					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer().addToList(message.giveItem, message.item, Reference.NIL, message.price, true);
+					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					break;
 				}
 				default:
 				}
-				UUID locality = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null).getOwner();
-				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-				ctx.getServerHandler().player.openContainer.detectAndSendChanges();
-				ctx.getServerHandler().player.closeContainer();
-				ctx.getServerHandler().player.closeScreen();
-				Main.NET.sendTo(new MessageMarketsToGui(true, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, response), ctx.getServerHandler().player);				
+				ctx.getServerHandler().player.openContainer.detectAndSendChanges();				
 				break;
 			}
 			case COLLECT: {

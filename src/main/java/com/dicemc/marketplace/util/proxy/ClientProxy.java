@@ -16,6 +16,7 @@ import com.dicemc.marketplace.gui.GuiGuildPerms;
 import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.network.PacketHandler;
+import com.dicemc.marketplace.util.AdminGuiType;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import net.minecraft.client.Minecraft;
@@ -56,6 +57,8 @@ public class ClientProxy extends CommonProxy {
 	
 	public void openAdminGui() {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiAdmin());
+		GuiAdmin.activeMenu = AdminGuiType.MARKET;
+		GuiAdmin.updateVisibility();
 	}
 	
 	public void registerNetworkPackets() {super.registerNetworkPackets();}

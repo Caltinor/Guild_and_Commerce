@@ -48,7 +48,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class GuiMarketSell extends GuiContainer{
 	private int xOffset = this.width/4;
 	private final List<ItemStack> itemList;
-	public GuiButton mktLocal, mktGlobal, mktAuction, requestToggle, postButton, exitButton;
+	public GuiButton mktLocal, mktGlobal, mktAuction, requestToggle, postButton, exitButton, mktServer;
 	public GuiButton stockAdd, stockSub, stock32, stock64;
 	public GuiTextField priceInput;
 	public GuiListItem itemGuiList;
@@ -56,11 +56,13 @@ public class GuiMarketSell extends GuiContainer{
 	private boolean widthTooNarrow;
 	private boolean isItemFromList = false;
 	private EntityPlayer player;
+	private final boolean adminMode;
 
-	public GuiMarketSell(EntityPlayer player, List<ItemStack> itemList) {
+	public GuiMarketSell(EntityPlayer player, List<ItemStack> itemList, boolean adminMode) {
 		super(new ContainerSell(player));
 		this.itemList = itemList;
 		this.player = player;
+		this.adminMode = adminMode;
 	}
 	
 	public void initGui()
@@ -71,7 +73,8 @@ public class GuiMarketSell extends GuiContainer{
         //buttons rendered above the inventory box
         mktGlobal = new GuiButton(11, this.width/2 - 20, this.guiTop -25, 40, 20, "Global");
         mktLocal = new GuiButton(10, mktGlobal.x - 43, this.guiTop -25, 40, 20, "Local");
-        mktAuction = new GuiButton(12, mktGlobal.x + mktGlobal.width + 3, this.guiTop -25, 40, 20, "Auction");   
+        mktAuction = new GuiButton(12, mktGlobal.x + mktGlobal.width + 3, this.guiTop -25, 40, 20, "Auction");
+        mktServer = new GuiButton(21, mktAuction.x+mktAuction.width+3, this.guiTop - 25, 40, 20, "Server");
         exitButton = new GuiButton(20, this.width/2 - 30, this.height - 30, 60, 20, "Exit");
         //other objects
         stockAdd = new GuiButton(14, this.guiLeft+ 21 - 100, this.guiTop+ 50, 15, 20, "+");
@@ -91,7 +94,9 @@ public class GuiMarketSell extends GuiContainer{
         this.buttonList.add(stock64);
         this.buttonList.add(postButton);
         this.buttonList.add(exitButton);
+        this.buttonList.add(mktServer);
         //launch disables
+        mktServer.visible = adminMode ? true : false;
         isRequest = false;
         stockAdd.visible = false;
         stockSub.visible = false;
@@ -106,16 +111,25 @@ public class GuiMarketSell extends GuiContainer{
 			mktLocal.enabled = false;
 			mktGlobal.enabled = true;
 			mktAuction.enabled = true;
+			mktServer.enabled = true;
 		}
 		if (button == mktGlobal) {
 			mktLocal.enabled = true;
 			mktGlobal.enabled = false;
 			mktAuction.enabled = true;
+			mktServer.enabled = true;
 		}
 		if (button == mktAuction && !isRequest) {
 			mktLocal.enabled = true;
 			mktGlobal.enabled = true;
 			mktAuction.enabled = false;
+			mktServer.enabled = true;
+		}
+		if (button == mktServer) {
+			mktLocal.enabled = true;
+			mktGlobal.enabled = true;
+			mktAuction.enabled = true;
+			mktServer.enabled = false;
 		}
 		if (button == requestToggle && this.inventorySlots.getSlot(0).inventory.isEmpty() && mktAuction.enabled) {
 			isRequest = isRequest ? false : true;
@@ -167,14 +181,16 @@ public class GuiMarketSell extends GuiContainer{
 			if (mktLocal.enabled == false) { marketType = 0;}
 			else if (mktGlobal.enabled == false) { marketType = 1;}
 			else if (mktAuction.enabled == false) { marketType = 2;}
+			else if (mktServer.enabled == false) {marketType = 3;}
 			ItemStack itemOut = this.inventorySlots.getSlot(0).getStack();
 			this.inventorySlots.detectAndSendChanges();
 			double sellP = -1D;
 			try {sellP = Math.abs(Double.valueOf(priceInput.getText()));} catch (NumberFormatException e) {}
-			if (sellP != -1) Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SELL, marketType, isItemFromList ? Reference.NIL : mc.player.getUniqueID(), itemOut, sellP, isRequest? false : true));
+			UUID vendor = adminMode ? Reference.NIL : mc.player.getUniqueID();
+			if (sellP != -1) Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SELL, marketType, vendor, itemOut, sellP, isRequest? false : true));
 		}
 		if (button == exitButton) {
-			Main.NET.sendToServer(new MessageGuiRequest(4));}
+			Main.NET.sendToServer(new MessageGuiRequest(adminMode ? 5: 4));}
 	}
 	
 	public void updateScreen() {super.updateScreen();}

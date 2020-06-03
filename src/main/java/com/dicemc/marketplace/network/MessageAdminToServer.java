@@ -64,7 +64,7 @@ public class MessageAdminToServer implements IMessage {
 	}
 	
 	public MessageAdminToServer(MktPktType type) { //constructor for market list requests
-		messageIndex = 4;
+		messageIndex = type == MktPktType.SALE_GUI_LAUNCH ? 9 : 4;
 		marketPacketType = type;
 	}
 	
@@ -89,6 +89,11 @@ public class MessageAdminToServer implements IMessage {
 		messageIndex = isExpire ? 8 : 7;
 		marketPacketType = type;
 		id = marketItemID;
+	}
+	
+	public MessageAdminToServer(UUID guildID) {
+		messageIndex = 10;
+		id = guildID;
 	}
 	
 	
@@ -129,6 +134,10 @@ public class MessageAdminToServer implements IMessage {
 			vendStock = pbuf.readInt();
 			infinite = pbuf.readBoolean();
 			bidEnd = pbuf.readLong();
+			break;
+		}
+		case 10: {
+			id = pbuf.readUniqueId();
 			break;
 		}
 		default:
@@ -172,6 +181,10 @@ public class MessageAdminToServer implements IMessage {
 			pbuf.writeInt(vendStock);
 			pbuf.writeBoolean(infinite);
 			pbuf.writeLong(bidEnd);
+			break;
+		}
+		case 10: {
+			pbuf.writeUniqueId(id);
 			break;
 		}
 		default:
@@ -253,6 +266,17 @@ public class MessageAdminToServer implements IMessage {
 				market.vendList.get(message.id).bidEnd = System.currentTimeMillis();
 				MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
+				break;
+			}
+			case 9: {
+				ctx.getServerHandler().player.openGui(Reference.MOD_ID, 0, ctx.getServerHandler().player.world, 1, 0, 0);
+				break;
+			}
+			case 10: {
+				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
+				Main.NET.sendTo(new MessageAdminToGui(guild.guildName, guild.openToJoin, guild.guildTax, guild.permLevels.getOrDefault(0, "0-loadFail"),
+						guild.permLevels.getOrDefault(1, "1-loadFail"),guild.permLevels.getOrDefault(2, "2-loadFail"),guild.permLevels.getOrDefault(3, "3-loadFail"), guild.permissions), ctx.getServerHandler().player);
 				break;
 			}
 			default:

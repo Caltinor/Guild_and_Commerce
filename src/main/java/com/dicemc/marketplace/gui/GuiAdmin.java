@@ -44,7 +44,7 @@ import net.minecraft.util.text.TextFormatting;
 public class GuiAdmin extends GuiScreen{
 	//Gui Structural variables
 	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	private static AdminGuiType activeMenu = AdminGuiType.NONE;
+	public static AdminGuiType activeMenu = AdminGuiType.NONE;
 	private static GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
 	//Account Menu Objects;
 	private static GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd, accountRemove;
@@ -54,9 +54,15 @@ public class GuiAdmin extends GuiScreen{
 	//guild select menu objects;
 	private static GuiButton selectGuild;
 	private static GuiListNameList guildList;
+	//guild main menu objects
+	private static GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
+	private static GuiTextField nameBox, taxBox, perm0, perm1, perm2, perm3;
+	private static GuiListAdminPerms listGuildPerms;
+	//guild member menu objects
+	private static GuiListAdminGuildMembers listGuildMembers;
 	//market menu objects
 	private static GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
-	private static GuiButton editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
+	private static GuiButton addSale, editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
 	private static GuiTextField priceBox, stockBox;
 	private static GuiListAdminMarket marketList;
 	private static boolean isVendorGive = true;
@@ -64,9 +70,11 @@ public class GuiAdmin extends GuiScreen{
 	private static int selectedMarket = 0;
 	//Gui Data variables
 	public static int slotIdx = -1;
-	private static Map<Account, String> accountList;
-	private static Map<UUID, String> nameList;
-	private static List<MarketListItem> vendList;
+	public static Guild guiGuild = new Guild(Reference.NIL);
+	public static Map<UUID, String> mbrNames = new HashMap<UUID, String>();
+	private static Map<Account, String> accountList = new HashMap<Account, String>();
+	private static Map<UUID, String> nameList = new HashMap<UUID, String>();
+	private static List<MarketListItem> vendList = new ArrayList<MarketListItem>();
 	private static String vendorName, locName, bidderName;
 	
 	
@@ -74,11 +82,27 @@ public class GuiAdmin extends GuiScreen{
 	
 	public static void syncGuildList(Map<UUID, String> nameList) {GuiAdmin.nameList = nameList; guildList.refreshList();}
 	
-	public static void syncGuildData() {}
+	public static void syncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+		guiGuild.guildName = name;
+		guiGuild.openToJoin = open;
+		guiGuild.guildTax = tax;
+		guiGuild.permLevels.put(0, perm0);
+		guiGuild.permLevels.put(1, perm1);
+		guiGuild.permLevels.put(2, perm2);
+		guiGuild.permLevels.put(3, perm3);
+		guiGuild.permissions = guildPerms;
+		updateVisibility();
+		listGuildPerms.refreshList();
+	}
 	
 	public static void syncGuildLand() {}
 	
-	public static void syncGuldMembers() {}
+	public static void syncGuldMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
+		guiGuild.members = members;
+		GuiAdmin.mbrNames = mbrNames;
+		listGuildMembers.refreshList();
+		updateVisibility();
+	}
 	
 	public static void syncMarkets(List<MarketListItem> list) {GuiAdmin.vendList = list; marketList.listType = selectedMarket; marketList.refreshList();}
 	
@@ -89,11 +113,7 @@ public class GuiAdmin extends GuiScreen{
 		GuiAdmin.updateVisibility();
 	}
 	
-	public GuiAdmin() {
-		accountList = new HashMap<Account, String>();
-		nameList = new HashMap<UUID, String>();
-		vendList = new ArrayList<MarketListItem>();
-	}
+	public GuiAdmin() {}
 	
 	public void initGui() {
 		toggleAccount = new GuiButton(1, 3, 3, 75, 20, "Accounts");
@@ -126,22 +146,61 @@ public class GuiAdmin extends GuiScreen{
 		accountRemove.visible = false;
 		//Guild Select menu specific objects
 		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, "Select Guild");
-		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 10);
+		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 12);
 		this.buttonList.add(selectGuild);
 		selectGuild.visible = false;
 		guildList.visible = false;
 		//Guild Main menu specific objects
-		
+		nameBox = new GuiTextField(37, this.fontRenderer, 85, 20, 150, 20);
+		setOpen = new GuiButton(30, nameBox.x+ nameBox.width + 3, 20, 75, 20, "");
+		taxBox = new GuiTextField(38, this.fontRenderer, setOpen.x, setOpen.y+ setOpen.height + 15, 40, 20);
+		set0 = new GuiButton(31, setOpen.x, taxBox.y + taxBox.height + 5, 20, 20, "0");
+		set1 = new GuiButton(32, setOpen.x+20, set0.y, 20, 20, "1");
+		set2 = new GuiButton(33, setOpen.x+40, set0.y, 20, 20, "2");
+		set3 = new GuiButton(34, setOpen.x+60, set0.y, 20, 20, "3");
+		openLand = new GuiButton(35, this.width - 80, 5, 75, 20, "Land Menu");
+		openMembers = new GuiButton(36,openLand.x, 30, 75, 20, "Member Menu");
+		this.buttonList.add(setOpen);
+		this.buttonList.add(set0);
+		this.buttonList.add(set1);
+		this.buttonList.add(set2);
+		this.buttonList.add(set3);
+		this.buttonList.add(openLand);
+		this.buttonList.add(openMembers);			
+		perm0 = new GuiTextField(301, this.fontRenderer, nameBox.x, 70, this.width/4, 20);
+		perm1 = new GuiTextField(302, this.fontRenderer, nameBox.x, perm0.y + perm0.height + 5, perm0.width, 20);
+		perm2 = new GuiTextField(303, this.fontRenderer, nameBox.x, perm1.y + perm1.height + 5, perm1.width, 20);
+		perm3 = new GuiTextField(304, this.fontRenderer, nameBox.x, perm2.y + perm2.height + 5, perm2.width, 20);
+		saveGuild = new GuiButton(37, perm3.x, perm3.y+perm3.height+5, perm3.width, 20, "Save Changes");
+		this.buttonList.add(saveGuild);
+		listGuildPerms = new GuiListAdminPerms(this, mc, perm3.x+perm3.width+5, set0.y+set0.height+3, this.width - (perm3.x+perm3.width+8), this.height-(set0.y+set0.height+3)- 3, 12);
+		setOpen.visible = false;
+		set0.visible = false;
+		set1.visible = false;
+		set2.visible = false;
+		set3.visible = false;
+		openLand.visible = false;
+		openMembers.visible = false;
+		nameBox.setVisible(false);
+		taxBox.setVisible(false);
+		perm0.setVisible(false);
+		perm1.setVisible(false);
+		perm2.setVisible(false);
+		perm3.setVisible(false);
+		saveGuild.visible = false;
+		listGuildPerms.visible = false;
 		//guild Land menu specific objects
 		
 		//guild members menu specific objects
-		
+		//listGuildMembers = new GuiListAdminGuildMembers(this, mc, 0, 0, 0, 0, 10);
+		//listGuildMembers.visible = false;
 		//markets menu specific objects
 		marketList = new GuiListAdminMarket(this, vendList, Reference.NIL, 0, mc, 83, 40, (this.width-80)/2, this.height-45, 25);
-		toggleLocal = new GuiButton(60, 83, 5, 70, 20, "Local");
+		toggleLocal = new GuiButton(60, 83, 5, 50, 20, "Local");
 		toggleGlobal = new GuiButton(61, toggleLocal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Global");
 		toggleAuction = new GuiButton(62, toggleGlobal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Auction");
 		toggleServer = new GuiButton(63, toggleAuction.x + toggleLocal.width, 5, toggleLocal.width, 20, "Server");
+		addSale = new GuiButton(64, toggleServer.x + toggleServer.width + 5, 5, 75, 20, "Add Posting");
 		editSave = new GuiButton(65, marketList.x + marketList.width + 3, this.height - 30, 75, 20, "Save Changes");
 		saleRemove = new GuiButton(66, editSave.x + editSave.width + 2, editSave.y, editSave.width, 20, "Remove");
 		saleExpire = new GuiButton(67, saleRemove.x, saleRemove.y - 21, editSave.width, 20, "Expire");
@@ -153,6 +212,7 @@ public class GuiAdmin extends GuiScreen{
 		this.buttonList.add(toggleGlobal);
 		this.buttonList.add(toggleAuction);
 		this.buttonList.add(toggleServer);
+		this.buttonList.add(addSale);
 		this.buttonList.add(editSave);
 		this.buttonList.add(toggleVendorGive);
 		this.buttonList.add(toggleInfinite);
@@ -163,6 +223,7 @@ public class GuiAdmin extends GuiScreen{
 		toggleGlobal.visible = false;
 		toggleAuction.visible = false;
 		toggleServer.visible = false;
+		addSale.visible = false;
 		editSave.visible = false;
 		toggleVendorGive.visible = false;
 		toggleInfinite.visible = false;
@@ -178,9 +239,11 @@ public class GuiAdmin extends GuiScreen{
         if (guiListAccounts.visible) {guiListAccounts.handleMouseInput();}
         if (guildList.visible) {guildList.handleMouseInput();}
         if (marketList.visible) {marketList.handleMouseInput();}
+        if (listGuildPerms.visible) {listGuildPerms.handleMouseInput();}
+        //if (listGuildMembers.visible) {listGuildMembers.handleMouseInput();}
     }
 	
-	private static void updateVisibility() {
+	public static void updateVisibility() {
 		//Main menu buttons
 		toggleAccount.enabled = activeMenu == AdminGuiType.ACCOUNT ? false : true;
 		toggleGuild.enabled = activeMenu == AdminGuiType.GUILD_SELECT ? false : true;
@@ -199,14 +262,43 @@ public class GuiAdmin extends GuiScreen{
 		selectGuild.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
 		guildList.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
 		//guild main objects
+		setOpen.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
+		set0.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		set1.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		set2.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		set3.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		openLand.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		openMembers.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		nameBox.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		nameBox.setText(guiGuild.guildName);
+		nameBox.setCursorPositionZero();
+		taxBox.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		taxBox.setText(df.format(guiGuild.guildTax*100));
+		perm0.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		perm0.setText(guiGuild.permLevels.getOrDefault(0, "Leader"));
+		perm0.setCursorPositionZero();
+		perm1.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		perm1.setText(guiGuild.permLevels.getOrDefault(1, "Dignitary"));
+		perm1.setCursorPositionZero();
+		perm2.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		perm2.setText(guiGuild.permLevels.getOrDefault(2, "Trustee"));
+		perm2.setCursorPositionZero();
+		perm3.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
+		perm3.setText(guiGuild.permLevels.getOrDefault(3, "Member"));
+		perm3.setCursorPositionZero();
+		saveGuild.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		listGuildPerms.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		//guild land objects
 		//guild member objects
+		//listGuildMembers.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		//market objects
 		marketList.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleLocal.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleGlobal.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleAuction.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleServer.visible = activeMenu == AdminGuiType.MARKET ? true : false;
+		addSale.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		editSave.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleVendorGive.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket != 2) ? true : false;
 		isVendorGive = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.vendorGiveItem ? true : false) : false);
@@ -250,11 +342,15 @@ public class GuiAdmin extends GuiScreen{
 		//Account Menu Buttons
 		if (button == toggleAccountPlayer) {
 			isPlayerList = true;
+			guiListAccounts.selectedIdx = -1;
+			guiListAccounts.selectedElement = -1;
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(false));
 		}
 		if (button == toggleAccountGuild) {
 			isPlayerList = false;
+			guiListAccounts.selectedIdx = -1;
+			guiListAccounts.selectedElement = -1;
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(true));
 		}
@@ -302,6 +398,9 @@ public class GuiAdmin extends GuiScreen{
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.SERVER));
 		}
+		if (button == addSale) {
+			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.SALE_GUI_LAUNCH));
+		}
 		if (button == toggleVendorGive) {
 			isVendorGive = isVendorGive ? false: true;
 			toggleVendorGive.displayString = isVendorGive ? "Giving" : "Requesting";
@@ -330,6 +429,12 @@ public class GuiAdmin extends GuiScreen{
 			marketList.selectedIdx = -1;
 			marketList.selectedElement = -1;
 		}
+		//guild menu actions
+		if (button == selectGuild && guildList.selectedIdx >= 0) {
+			activeMenu = AdminGuiType.GUILD_MAIN;
+			updateVisibility();
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID));
+		}
 	}
 	
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
@@ -340,6 +445,14 @@ public class GuiAdmin extends GuiScreen{
 		if (stockBox.getVisible()) {stockBox.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (guildList.visible) {guildList.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (marketList.visible) {marketList.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (nameBox.getVisible()) {nameBox.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (taxBox.getVisible()) {taxBox.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (perm0.getVisible()) {perm0.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (perm1.getVisible()) {perm1.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (perm2.getVisible()) {perm2.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (perm3.getVisible()) {perm3.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (listGuildPerms.visible) {listGuildPerms.mouseClicked(mouseX, mouseY, mouseButton);}
+		//if (listGuildMembers.visible) {listGuildMembers.mouseClicked(mouseX, mouseY, mouseButton);}
 	}
 	
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
@@ -351,6 +464,7 @@ public class GuiAdmin extends GuiScreen{
 			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
 			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key));
 		}
+		if (listGuildPerms.visible) {listGuildPerms.mouseReleased(mouseX, mouseY, state);}
     }
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -358,6 +472,12 @@ public class GuiAdmin extends GuiScreen{
 		if (balanceBox.getVisible() && CoreUtils.validNumberKey(keyCode)) balanceBox.textboxKeyTyped(typedChar, keyCode);
 		if (priceBox.getVisible() && CoreUtils.validNumberKey(keyCode)) priceBox.textboxKeyTyped(typedChar, keyCode);
 		if (stockBox.getVisible() && CoreUtils.validNumberKey(keyCode)) stockBox.textboxKeyTyped(typedChar, keyCode);
+		if (nameBox.getVisible()) nameBox.textboxKeyTyped(typedChar, keyCode);
+		if (taxBox.getVisible() && CoreUtils.validNumberKey(keyCode)) taxBox.textboxKeyTyped(typedChar, keyCode);
+		if (perm0.getVisible()) perm0.textboxKeyTyped(typedChar, keyCode);
+		if (perm1.getVisible()) perm1.textboxKeyTyped(typedChar, keyCode);
+		if (perm2.getVisible()) perm2.textboxKeyTyped(typedChar, keyCode);
+		if (perm3.getVisible()) perm3.textboxKeyTyped(typedChar, keyCode);
     }
     
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -381,6 +501,16 @@ public class GuiAdmin extends GuiScreen{
     		break;
     	}
     	case GUILD_MAIN: {
+    		this.drawString(this.fontRenderer, "Guild Name", nameBox.x, nameBox.y-10, 16777215);
+    		this.drawString(this.fontRenderer, "Tax Rate", taxBox.x, taxBox.y-10, 16777215);
+    		this.drawString(this.fontRenderer, "Rank Names", perm0.x, perm0.y-10, 16777215);
+    		nameBox.drawTextBox();
+    		taxBox.drawTextBox();
+    		perm0.drawTextBox();
+    		perm1.drawTextBox();
+    		perm2.drawTextBox();
+    		perm3.drawTextBox();
+    		listGuildPerms.drawScreen(mouseX, mouseY, partialTicks);
     		break;
     	}
     	case GUILD_LAND: {
@@ -676,5 +806,221 @@ public class GuiAdmin extends GuiScreen{
 		
 		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {
 		}
+	}
+
+	public class GuiListAdminGuildMembers extends GuiListExtendedMember{
+	    private final GuiAdmin guildManager;
+	    public Guild guild;
+	    public Map<UUID, String> mbrNames;
+	    private final List<GuiListAdminGuildMembersEntry> entries = Lists.<GuiListAdminGuildMembersEntry>newArrayList();
+	    /** Index to the currently selected world */
+	    private int selectedIdx = -1;
+		
+		public GuiListAdminGuildMembers(GuiAdmin guiGM, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+			this.guildManager = guiGM;
+			this.guild = guildManager.guiGuild;
+			this.mbrNames = guildManager.mbrNames;
+			this.refreshList();
+		}
+		
+	    public void refreshList()
+	    {
+	    	this.guild = guildManager.guiGuild;
+	    	this.mbrNames = guildManager.mbrNames;
+	    	entries.clear();
+	        Map<UUID, Integer> members = guild.members;
+
+	        for (Map.Entry<UUID, Integer> entry : members.entrySet()){
+	            this.entries.add(new GuiListAdminGuildMembersEntry(this, entry.getKey(), entry.getValue(), guild.permLevels, mbrNames));
+	        }
+	    }
+	    
+	    public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
+	    }
+	    
+	    @Nullable
+	    public GuiListAdminGuildMembersEntry getSelectedMember()
+	    {
+	        return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;
+	    }
+
+		@Override
+		public GuiListAdminGuildMembersEntry getListEntry(int index) {
+			return entries.get(index);
+		}
+
+		@Override
+		protected int getSize() {
+			return entries.size();
+		}
+
+	}
+	
+	public class GuiListAdminGuildMembersEntry implements GuiListExtendedMember.IGuiNewListEntry{
+		public final UUID player;
+		private final String name; 
+		public int permLvl;
+		private Map<Integer, String> perms;
+		private  Map<UUID, String> mbrNames;
+		private Minecraft client = Minecraft.getMinecraft();
+	    private final GuiListAdminGuildMembers containingListSel;
+		
+		public GuiListAdminGuildMembersEntry (GuiListAdminGuildMembers listSelectionIn, UUID player, int permLvl, Map<Integer, String> permLvls, Map<UUID, String> mbrNames) {
+			containingListSel = listSelectionIn;
+			this.mbrNames = mbrNames;
+			this.player = player;
+			this.permLvl = permLvl;
+			this.perms = permLvls;		
+			this.name = mbrNames.get(player);
+		}
+		
+		public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+			String rankFormat = "";
+	        switch(permLvl) {
+	        case 0: {
+	        	rankFormat = TextFormatting.DARK_GREEN + perms.getOrDefault(0, "Leader");
+	        	break;
+	        }
+	        case 1: {
+	        	rankFormat = TextFormatting.DARK_PURPLE + perms.getOrDefault(1, "Dignitary");
+	        	break;
+	        }
+	        case 2: {
+	        	rankFormat = TextFormatting.BLUE + perms.getOrDefault(2, "Trustee");
+	        	break;
+	        }
+	        case 3: {
+	        	rankFormat = perms.getOrDefault(3, "Member");
+	        	break;
+	        }
+	        case -1: {
+	        	rankFormat = TextFormatting.DARK_RED + "Invited";
+	        	break;
+	        }
+	        default:
+	        break;
+	        }
+	        
+	        this.client.fontRenderer.drawString(name+" :"+rankFormat, x+3, y , 16777215);
+		}
+
+		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+	        this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;
+		}
+
+		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {		
+		}
+
+	}
+
+	public class GuiListAdminPerms extends GuiListExtendedMember{
+	    private final GuiAdmin guildManager;
+	    public Map<String, Integer> perms;
+	    public Map<Integer, String> permRanks;
+	    public final String permIndex[] = new String[10];
+	    private final List<GuiListAdminPermsEntry> entries = Lists.<GuiListAdminPermsEntry>newArrayList();
+	    /** Index to the currently selected world */
+	    private int selectedIdx = -1;
+		
+		public GuiListAdminPerms(GuiAdmin guiGM, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+			this.guildManager = guiGM;
+			this.perms = guildManager.guiGuild.permissions;
+			this.permRanks = guildManager.guiGuild.permLevels;
+			permIndex[0] = "setname";
+			permIndex[1] = "setopen";
+			permIndex[2] = "settax";
+			permIndex[3] = "setperms";
+			permIndex[4] = "setinvite";
+			permIndex[5] = "setkick";
+			permIndex[6] = "setclaim";
+			permIndex[7] = "setsell";
+			permIndex[8] = "setwithdraw";
+			permIndex[9] = "setpromotedemote";
+			this.refreshList();
+		}
+		
+	    public void refreshList()
+	    {
+	    	this.perms = guildManager.guiGuild.permissions;
+			this.permRanks = guildManager.guiGuild.permLevels;
+	    	this.entries.clear();
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[0], TextFormatting.YELLOW+"Change Guild Name  ", colorize(perms.get(permIndex[0]))+permRanks.get(perms.get(permIndex[0]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[1], TextFormatting.YELLOW+"Change Open-To-Join", colorize(perms.get(permIndex[1]))+permRanks.get(perms.get(permIndex[1]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[2], TextFormatting.YELLOW+"Change Guild Tax   ", colorize(perms.get(permIndex[2]))+permRanks.get(perms.get(permIndex[2]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[3], TextFormatting.YELLOW+"Change Permissions ", colorize(perms.get(permIndex[3]))+permRanks.get(perms.get(permIndex[3]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[4], TextFormatting.YELLOW+"Change Invite Level", colorize(perms.get(permIndex[4]))+permRanks.get(perms.get(permIndex[4]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[5], TextFormatting.YELLOW+"Change Kick Level  ", colorize(perms.get(permIndex[5]))+permRanks.get(perms.get(permIndex[5]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[6], TextFormatting.YELLOW+"Change Claim Level ", colorize(perms.get(permIndex[6]))+permRanks.get(perms.get(permIndex[6]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[7], TextFormatting.YELLOW+"Change Sell Level  ", colorize(perms.get(permIndex[7]))+permRanks.get(perms.get(permIndex[7]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[8], TextFormatting.YELLOW+"Change Withdraw Lvl", colorize(perms.get(permIndex[8]))+permRanks.get(perms.get(permIndex[8]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[9], TextFormatting.YELLOW+"Change Member Ranks", colorize(perms.get(permIndex[9]))+permRanks.get(perms.get(permIndex[9]))));
+	    }
+	    
+	    private String colorize(int rank) {
+	    	switch (rank) {
+	    	case 0: {return TextFormatting.DARK_GREEN+"";}
+	    	case 1: {return TextFormatting.DARK_PURPLE+"";}
+	    	case 2: {return TextFormatting.BLUE+"";}
+	    	case 3: {return TextFormatting.WHITE+"";}
+	    	default: return "";}
+	    }
+	    
+	    public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
+	    }
+	    
+	    @Nullable
+	    public GuiListAdminPermsEntry getSelectedMember()
+	    {
+	        return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;
+	    }
+
+		@Override
+		public GuiListAdminPermsEntry getListEntry(int index) {
+			return entries.get(index);
+		}
+
+		@Override
+		protected int getSize() {
+			return entries.size();
+		}
+
+	}
+	
+	public class GuiListAdminPermsEntry implements GuiListExtendedMember.IGuiNewListEntry{
+		private final String permIndex, permString, rankString; 
+		private Minecraft client = Minecraft.getMinecraft();
+		private final GuiListAdminPerms containingListSel;
+		
+		public GuiListAdminPermsEntry (GuiListAdminPerms listIn, String permIndex, String permString, String rankString) {
+			containingListSel = listIn;
+			this.permIndex = permIndex;
+			this.permString = permString;
+			this.rankString = rankString;
+		}
+		
+		public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+	        this.client.fontRenderer.drawString(permString, x+3, y , 16777215);
+	        this.client.fontRenderer.drawString(rankString, x+120, y, 16777215);
+		}
+
+		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+	        this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;
+		}
+
+		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {		
+		}
+
 	}
 }

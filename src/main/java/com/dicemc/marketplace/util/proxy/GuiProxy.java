@@ -45,7 +45,7 @@ public class GuiProxy implements IGuiHandler{
 			        return o1.getDisplayName().compareTo(o2.getDisplayName());
 			    }
 			});
-			return new GuiMarketSell(player, itemList);
+			return new GuiMarketSell(player, itemList, x == 0 ? false : true);
 		}
 		return null;
 	}

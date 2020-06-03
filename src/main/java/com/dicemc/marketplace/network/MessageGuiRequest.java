@@ -190,11 +190,17 @@ public class MessageGuiRequest implements IMessage{
 				break;
 			}
 			case 4: {
+				ctx.getServerHandler().player.openContainer.detectAndSendChanges();
+				ctx.getServerHandler().player.closeContainer();
+				ctx.getServerHandler().player.closeScreen();
 				UUID locality = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null).getOwner();
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal();
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(false, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
+			}
+			case 5: {
+				Main.proxy.openAdminGui();
 			}
 			default:
 			}

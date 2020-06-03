@@ -29,16 +29,33 @@ public class MessageAdminToGui implements IMessage{
 	public Map<UUID, MarketItem> vendList = new HashMap<UUID, MarketItem>();
 	public Map<Account, String> accountList = new HashMap<Account, String> ();
 	public Map<UUID, String> guildList = new HashMap<UUID, String>();
+	public Map<String, Integer> guildPerms = new HashMap<String, Integer>();
 	public MktPktType marketPacketType = MktPktType.NONE;
-	public String str1 = ""; //uses: vendorName
-	public String str2 = ""; //uses: locName
-	public String str3 = ""; //uses: bidderName
+	public String str1 = ""; //uses: vendorName	guildname
+	public String str2 = ""; //uses: locName	perm0
+	public String str3 = ""; //uses: bidderName perm1
+	public String str4 = ""; //uses:			perm2
+	public String str5 = ""; //uses:			perm3
+	public boolean bool1 = true;
+	public double dbl1 = 0D;
 
 	public MessageAdminToGui() {}
 	
 	public MessageAdminToGui(Map<Account, String> accountList) {
 		messageIndex = 1;
 		this.accountList = accountList;
+	}
+	
+	public MessageAdminToGui(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+		messageIndex = 2;
+		str1 = name;
+		str2 = perm0;
+		str3 = perm1;
+		str4 = perm2;
+		str5 = perm3;
+		bool1 = open;
+		dbl1 = tax;
+		this.guildPerms = guildPerms;
 	}
 	
 	public MessageAdminToGui(Map<UUID, String> guildNames, boolean dummy) {
@@ -59,6 +76,8 @@ public class MessageAdminToGui implements IMessage{
 		str3 = bidderName;
 	}
 	
+	
+	
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
@@ -75,6 +94,24 @@ public class MessageAdminToGui implements IMessage{
 			}
 			accountList = map;	
 			} catch (IOException e) {}
+			break;
+		}
+		case 2: {
+			str1 = ByteBufUtils.readUTF8String(buf);
+			str2 = ByteBufUtils.readUTF8String(buf);
+			str3 = ByteBufUtils.readUTF8String(buf);
+			str4 = ByteBufUtils.readUTF8String(buf);
+			str5 = ByteBufUtils.readUTF8String(buf);
+			bool1 = pbuf.readBoolean();
+			dbl1 = pbuf.readDouble();
+			try {
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			NBTTagCompound srcNBT = pbuf.readCompoundTag();
+			NBTTagList list = srcNBT.getTagList("permlist", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				map.put(list.getCompoundTagAt(i).getString("name"), list.getCompoundTagAt(i).getInteger("value"));
+			}
+			guildPerms = map; } catch (IOException e) {}
 			break;
 		}
 		case 3: {
@@ -121,6 +158,26 @@ public class MessageAdminToGui implements IMessage{
 				list.appendTag(snbt);
 			}
 			nbt.setTag("accountlist", list);
+			pbuf.writeCompoundTag(nbt);
+			break;
+		}
+		case 2: {
+			ByteBufUtils.writeUTF8String(buf, str1);
+			ByteBufUtils.writeUTF8String(buf, str2);
+			ByteBufUtils.writeUTF8String(buf, str3);
+			ByteBufUtils.writeUTF8String(buf, str4);
+			ByteBufUtils.writeUTF8String(buf, str5);
+			pbuf.writeBoolean(bool1);
+			pbuf.writeDouble(dbl1);
+			NBTTagCompound nbt = new NBTTagCompound();
+			NBTTagList list = new NBTTagList();
+			for (Map.Entry<String, Integer> entry : guildPerms.entrySet()) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setString("name", entry.getKey());
+				snbt.setInteger("value", entry.getValue());
+				list.appendTag(snbt);
+			}
+			nbt.setTag("permlist", list);
 			pbuf.writeCompoundTag(nbt);
 			break;
 		}
@@ -195,8 +252,13 @@ public class MessageAdminToGui implements IMessage{
 				GuiAdmin.syncAccounts(message.accountList);
 				break;
 			}
+			case 2: {
+				GuiAdmin.syncGuildData(message.str1, message.bool1, message.dbl1, message.str2, message.str3, message.str4, message.str5, message.guildPerms);
+				break;
+			}
 			case 3: {
 				GuiAdmin.syncGuildList(message.guildList);
+				break;
 			}
 			case 4: {
 				switch (message.marketPacketType) {
