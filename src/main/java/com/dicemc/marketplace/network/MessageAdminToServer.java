@@ -1,5 +1,6 @@
 package com.dicemc.marketplace.network;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -38,6 +41,12 @@ public class MessageAdminToServer implements IMessage {
 	int vendStock = 0;
 	boolean infinite = true;
 	long bidEnd = 0;
+	String str1 = "";
+	String str2 = "";
+	String str3 = "";
+	String str4 = "";
+	String str5 = "";
+	Map<String, Integer> map1 = new HashMap<String, Integer>();
 
 	public MessageAdminToServer() {}
 	
@@ -96,6 +105,19 @@ public class MessageAdminToServer implements IMessage {
 		id = guildID;
 	}
 	
+	public MessageAdminToServer(UUID guildID, String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+		messageIndex = 11;
+		id = guildID;
+		bool1 = open;
+		amount = tax;
+		str1 = name;
+		str2 = perm0;
+		str3 = perm1;
+		str4 = perm2;
+		str5 = perm3;
+		map1 = guildPerms;
+	}
+	
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -138,6 +160,25 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 10: {
 			id = pbuf.readUniqueId();
+			break;
+		}
+		case 11: {
+			id = pbuf.readUniqueId();
+			bool1 = pbuf.readBoolean();
+			amount = pbuf.readDouble();
+			str1 = ByteBufUtils.readUTF8String(buf);
+			str2 = ByteBufUtils.readUTF8String(buf);
+			str3 = ByteBufUtils.readUTF8String(buf);
+			str4 = ByteBufUtils.readUTF8String(buf);
+			str5 = ByteBufUtils.readUTF8String(buf);
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			try {
+			NBTTagCompound srcNBT = pbuf.readCompoundTag();
+			NBTTagList list = srcNBT.getTagList("permlist", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				map.put(list.getCompoundTagAt(i).getString("key"), list.getCompoundTagAt(i).getInteger("value"));
+			}} catch (IOException e) {}
+			map1 = map;
 			break;
 		}
 		default:
@@ -185,6 +226,27 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 10: {
 			pbuf.writeUniqueId(id);
+			break;
+		}
+		case 11: {
+			pbuf.writeUniqueId(id);
+			pbuf.writeBoolean(bool1);
+			pbuf.writeDouble(amount);
+			ByteBufUtils.writeUTF8String(buf, str1);
+			ByteBufUtils.writeUTF8String(buf, str2);
+			ByteBufUtils.writeUTF8String(buf, str3);
+			ByteBufUtils.writeUTF8String(buf, str4);
+			ByteBufUtils.writeUTF8String(buf, str5);
+			NBTTagCompound nbt = new NBTTagCompound();
+			NBTTagList list = new NBTTagList();
+			for (Map.Entry<String, Integer> entry : map1.entrySet()) {	
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setString("key", entry.getKey());
+				snbt.setInteger("value", entry.getValue());
+				list.appendTag(snbt);
+			}
+			nbt.setTag("permlist", list);
+			pbuf.writeCompoundTag(nbt);
 			break;
 		}
 		default:
@@ -272,11 +334,25 @@ public class MessageAdminToServer implements IMessage {
 				ctx.getServerHandler().player.openGui(Reference.MOD_ID, 0, ctx.getServerHandler().player.world, 1, 0, 0);
 				break;
 			}
-			case 10: {
+			case 10: { //gathers selected guild information and sends it to the gui
 				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
 				Main.NET.sendTo(new MessageAdminToGui(guild.guildName, guild.openToJoin, guild.guildTax, guild.permLevels.getOrDefault(0, "0-loadFail"),
 						guild.permLevels.getOrDefault(1, "1-loadFail"),guild.permLevels.getOrDefault(2, "2-loadFail"),guild.permLevels.getOrDefault(3, "3-loadFail"), guild.permissions), ctx.getServerHandler().player);
+				break;
+			}
+			case 11: { //saves guild information from guild main to the actual guild object
+				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
+				guild.guildName = message.str1;
+				guild.guildTax = message.amount;
+				guild.openToJoin = message.bool1;
+				guild.permLevels.put(0, message.str2);
+				guild.permLevels.put(1, message.str3);
+				guild.permLevels.put(2, message.str4);
+				guild.permLevels.put(3, message.str5);
+				guild.permissions = message.map1;
+				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				break;
 			}
 			default:

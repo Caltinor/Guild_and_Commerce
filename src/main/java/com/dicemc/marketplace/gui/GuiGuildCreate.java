@@ -119,7 +119,7 @@ public class GuiGuildCreate extends GuiScreen {
     }
 	
 	
-	public class GuiListGuildInvite extends GuiListExtendedMember{
+	public class GuiListGuildInvite extends GuiNewListExtended{
 	    private final GuiGuildCreate guiManager;
 	    public Map<UUID, String> invitedGuilds;
 	    private final List<GuiListGuildInviteEntry> entries = Lists.<GuiListGuildInviteEntry>newArrayList();
@@ -167,7 +167,7 @@ public class GuiGuildCreate extends GuiScreen {
 
 	}
 	
-	public class GuiListGuildInviteEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListGuildInviteEntry implements GuiNewListExtended.IGuiNewListEntry{
 		public final UUID guildID;
 		private final String name; 
 		private Minecraft client = Minecraft.getMinecraft();

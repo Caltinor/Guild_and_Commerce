@@ -314,7 +314,7 @@ public class GuiMarketManager extends GuiScreen{
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 	
-	public class GuiListMarket extends GuiListExtendedMember{
+	public class GuiListMarket extends GuiNewListExtended{
 	    private final GuiMarketManager guildManager;
 	    public List<MarketListItem> vendList;
 	    public UUID locality;
@@ -362,7 +362,7 @@ public class GuiMarketManager extends GuiScreen{
 
 	}
 	
-	public class GuiListMarketEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListMarketEntry implements GuiNewListExtended.IGuiNewListEntry{
 	    private final GuiListMarket containingListSel;
 	    private Minecraft client = Minecraft.getMinecraft();
 	    MarketListItem posting;

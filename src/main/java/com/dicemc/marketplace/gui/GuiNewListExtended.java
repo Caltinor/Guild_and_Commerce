@@ -7,9 +7,9 @@ import net.minecraft.client.gui.GuiListExtended;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class GuiListExtendedMember<T extends GuiListExtendedMember.IGuiNewListEntry> extends GuiNewSlot{
+public abstract class GuiNewListExtended<T extends GuiNewListExtended.IGuiNewListEntry> extends GuiNewSlot{
 	 
-	public GuiListExtendedMember(Minecraft mcIn, int x, int y, int width, int height, int slotHeightIn)
+	public GuiNewListExtended(Minecraft mcIn, int x, int y, int width, int height, int slotHeightIn)
     {
         super(mcIn, x, y, width, height, slotHeightIn);
     }

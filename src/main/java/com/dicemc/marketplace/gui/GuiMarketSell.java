@@ -275,7 +275,7 @@ public class GuiMarketSell extends GuiContainer{
         super.onGuiClosed();
     }
 	
-	public class GuiListItem extends GuiListExtendedMember{
+	public class GuiListItem extends GuiNewListExtended{
 	    private final GuiMarketSell guiManager;
 	    public List<ItemStack> itemList;
 	    private final List<GuiListItemEntry> entries = Lists.<GuiListItemEntry>newArrayList();
@@ -320,7 +320,7 @@ public class GuiMarketSell extends GuiContainer{
 
 	}
 	
-	public class GuiListItemEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListItemEntry implements GuiNewListExtended.IGuiNewListEntry{
 	    private final GuiListItem containingListSel;
 	    private Minecraft client = Minecraft.getMinecraft();
 	    private ItemStack item;

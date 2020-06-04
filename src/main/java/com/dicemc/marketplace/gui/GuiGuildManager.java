@@ -12,6 +12,7 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
+import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.network.MessageAccountInfoToServer;
 import com.dicemc.marketplace.network.MessageGuildInfoToServer;
 import com.dicemc.marketplace.util.Reference;
@@ -43,6 +44,7 @@ public class GuiGuildManager extends GuiScreen{
 	private static double worthTax, worthGuild, balP;
 	private static Map<ChunkPos, Double> chunkValues;
 	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private static DecimalFormat taxformat = new DecimalFormat("0.00000");
     protected static String screenTitle = "Guild Info";
     private static GuiTextField guildNameTextField, guildFundExchangeTextField, guildTaxTextField;
     private static GuiTextField perm0TF, perm1TF, perm2TF, perm3TF;
@@ -68,7 +70,8 @@ public class GuiGuildManager extends GuiScreen{
     	GuiGuildManager.guioutpostChunkList.refreshList();
 		newDescrims();
 		GuiGuildManager.guildNameTextField.setText(guild.guildName);
-		GuiGuildManager.guildTaxTextField.setText(String.valueOf(guild.guildTax*100));
+		GuiGuildManager.guildTaxTextField.setText(taxformat.format(guild.guildTax));
+		GuiGuildManager.guildTaxTextField.setCursorPositionZero();
 		GuiGuildManager.perm0TF.setText(guild.permLevels.get(0));
 		GuiGuildManager.perm1TF.setText(guild.permLevels.get(1));
 		GuiGuildManager.perm2TF.setText(guild.permLevels.get(2));
@@ -113,7 +116,8 @@ public class GuiGuildManager extends GuiScreen{
 		this.guildTaxTextField = new GuiTextField(2, this.fontRenderer, (int) (Double.valueOf(this.width) * 0.75), 80, 40, 20);
 		this.guildFundExchangeTextField = new GuiTextField(1, this.fontRenderer, (this.width / 3), 44, this.width/4, 20);
 		this.guildNameTextField.setText(guild.guildName);
-		this.guildTaxTextField.setText(String.valueOf(guild.guildTax*100));
+		this.guildTaxTextField.setText(taxformat.format(guild.guildTax));
+		this.guildTaxTextField.setCursorPositionZero();
 		this.perm0TF = new GuiTextField(2, this.fontRenderer, this.width - (this.width/4 + 8), this.height/2, this.width/4, 20);
 		this.perm1TF = new GuiTextField(2, this.fontRenderer, this.width - (this.width/4 + 8), perm0TF.y + 23, this.width/4, 20);
 		this.perm2TF = new GuiTextField(2, this.fontRenderer, this.width - (this.width/4 + 8), perm1TF.y + 23, this.width/4, 20);
@@ -260,7 +264,7 @@ public class GuiGuildManager extends GuiScreen{
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
-    public class GuiListGuildChunks extends GuiListExtendedChunk{
+    public class GuiListGuildChunks extends GuiNewListExtended{
     	private final GuiGuildManager guildManager;
     	private boolean coreChunk;
     	private List<ChunkPos> pos;
@@ -285,14 +289,19 @@ public class GuiGuildManager extends GuiScreen{
                 this.entries.add(new GuiListGuildChunksEntry(this, ck, coreChunk));
             }
         }
-
+        
+        public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
+	    }
+        @Nullable
+	    public GuiListGuildChunksEntry getSelectedMember(){return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;}
     	@Override
     	public GuiListGuildChunksEntry getListEntry(int index) {return entries.get(index);}
     	@Override
     	protected int getSize() {return entries.size();}
     }
     
-    public class GuiListGuildChunksEntry implements GuiListExtendedChunk.IGuiNewListEntry{
+    public class GuiListGuildChunksEntry implements GuiNewListExtended.IGuiNewListEntry{
     	private Minecraft client = Minecraft.getMinecraft();
     	private final GuiListGuildChunks containingListSel;
     	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
@@ -317,7 +326,10 @@ public class GuiGuildManager extends GuiScreen{
     	}
 
     	@Override
-    	public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {return false;}
+    	public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+    		this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;}
 
     	@Override
     	public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {}

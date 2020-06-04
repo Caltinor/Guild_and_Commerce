@@ -58,6 +58,7 @@ public class ClientProxy extends CommonProxy {
 	public void openAdminGui() {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiAdmin());
 		GuiAdmin.activeMenu = AdminGuiType.MARKET;
+		GuiAdmin.selectedMarket = -1;
 		GuiAdmin.updateVisibility();
 	}
 	

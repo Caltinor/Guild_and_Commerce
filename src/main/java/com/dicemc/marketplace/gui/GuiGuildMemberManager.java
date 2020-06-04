@@ -159,7 +159,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}   
 	
-	public class GuiListGuildMembers extends GuiListExtendedMember{
+	public class GuiListGuildMembers extends GuiNewListExtended{
 	    private final GuiGuildMemberManager guildManager;
 	    public Guild guild;
 	    public Map<UUID, String> mbrNames;
@@ -210,7 +210,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 
 	}
 	
-	public class GuiListGuildMembersEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListGuildMembersEntry implements GuiNewListExtended.IGuiNewListEntry{
 		public final UUID player;
 		private final String name; 
 		public int permLvl;

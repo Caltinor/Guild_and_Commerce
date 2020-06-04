@@ -44,6 +44,7 @@ import net.minecraft.util.text.TextFormatting;
 public class GuiAdmin extends GuiScreen{
 	//Gui Structural variables
 	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private static DecimalFormat taxformat = new DecimalFormat("0.00000");
 	public static AdminGuiType activeMenu = AdminGuiType.NONE;
 	private static GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
 	//Account Menu Objects;
@@ -67,7 +68,7 @@ public class GuiAdmin extends GuiScreen{
 	private static GuiListAdminMarket marketList;
 	private static boolean isVendorGive = true;
 	private static boolean isInfinite = false;
-	private static int selectedMarket = 0;
+	public static int selectedMarket = -1;
 	//Gui Data variables
 	public static int slotIdx = -1;
 	public static Guild guiGuild = new Guild(Reference.NIL);
@@ -153,7 +154,7 @@ public class GuiAdmin extends GuiScreen{
 		//Guild Main menu specific objects
 		nameBox = new GuiTextField(37, this.fontRenderer, 85, 20, 150, 20);
 		setOpen = new GuiButton(30, nameBox.x+ nameBox.width + 3, 20, 75, 20, "");
-		taxBox = new GuiTextField(38, this.fontRenderer, setOpen.x, setOpen.y+ setOpen.height + 15, 40, 20);
+		taxBox = new GuiTextField(38, this.fontRenderer, setOpen.x, setOpen.y+ setOpen.height + 15, 60, 20);
 		set0 = new GuiButton(31, setOpen.x, taxBox.y + taxBox.height + 5, 20, 20, "0");
 		set1 = new GuiButton(32, setOpen.x+20, set0.y, 20, 20, "1");
 		set2 = new GuiButton(33, setOpen.x+40, set0.y, 20, 20, "2");
@@ -274,7 +275,7 @@ public class GuiAdmin extends GuiScreen{
 		nameBox.setText(guiGuild.guildName);
 		nameBox.setCursorPositionZero();
 		taxBox.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
-		taxBox.setText(df.format(guiGuild.guildTax*100));
+		taxBox.setText(taxformat.format(guiGuild.guildTax));
 		perm0.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
 		perm0.setText(guiGuild.permLevels.getOrDefault(0, "Leader"));
 		perm0.setCursorPositionZero();
@@ -435,6 +436,31 @@ public class GuiAdmin extends GuiScreen{
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID));
 		}
+		if (button == setOpen) {
+			guiGuild.openToJoin = guiGuild.openToJoin ? false : true;
+			setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
+		}
+		if (button == set0 && listGuildPerms.selectedIdx >= 0) {
+			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 0);
+			listGuildPerms.refreshList();
+		}
+		if (button == set1 && listGuildPerms.selectedIdx >= 0) {
+			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 1);
+			listGuildPerms.refreshList();
+		}
+		if (button == set2 && listGuildPerms.selectedIdx >= 0) {
+			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 2);
+			listGuildPerms.refreshList();
+		}
+		if (button == set3 && listGuildPerms.selectedIdx >= 0) {
+			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 3);
+			listGuildPerms.refreshList();
+		}
+		if (button == saveGuild) {
+			double amount = 0D;
+			try {amount = Math.abs(Double.valueOf(taxBox.getText()));} catch (NumberFormatException e) {}
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions));
+		}
 	}
 	
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
@@ -558,7 +584,7 @@ public class GuiAdmin extends GuiScreen{
     	super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
-    public class GuiListAccount extends GuiListExtendedMember{
+    public class GuiListAccount extends GuiNewListExtended{
 	    private final GuiAdmin parentGui;
 	    public Map<Account, String> accountList;
 	    private final List<GuiListAccountEntry> entries = Lists.<GuiListAccountEntry>newArrayList();
@@ -604,7 +630,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 	
-	public class GuiListAccountEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListAccountEntry implements GuiNewListExtended.IGuiNewListEntry{
 		private final UUID owner;
 		private final double balance;
 		private final String name; 
@@ -635,7 +661,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListNameList extends GuiListExtendedMember{
+	public class GuiListNameList extends GuiNewListExtended{
 	    private final GuiAdmin parentGui;
 	    public Map<UUID, String> nameList;
 	    private final List<GuiListNameListEntry> entries = Lists.<GuiListNameListEntry>newArrayList();
@@ -681,7 +707,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 	
-	public class GuiListNameListEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListNameListEntry implements GuiNewListExtended.IGuiNewListEntry{
 		private final UUID entityID;
 		private final String name; 
 		private Minecraft client = Minecraft.getMinecraft();
@@ -709,7 +735,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListAdminMarket extends GuiListExtendedMember{
+	public class GuiListAdminMarket extends GuiNewListExtended{
 	    private final GuiAdmin parentGui;
 	    public List<MarketListItem> vendList;
 	    public UUID locality;
@@ -758,7 +784,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 	
-	public class GuiListAdminMarketEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListAdminMarketEntry implements GuiNewListExtended.IGuiNewListEntry{
 	    private final GuiListAdminMarket containingListSel;
 	    private Minecraft client = Minecraft.getMinecraft();
 	    MarketListItem posting;
@@ -808,7 +834,7 @@ public class GuiAdmin extends GuiScreen{
 		}
 	}
 
-	public class GuiListAdminGuildMembers extends GuiListExtendedMember{
+	public class GuiListAdminGuildMembers extends GuiNewListExtended{
 	    private final GuiAdmin guildManager;
 	    public Guild guild;
 	    public Map<UUID, String> mbrNames;
@@ -858,7 +884,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 	
-	public class GuiListAdminGuildMembersEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListAdminGuildMembersEntry implements GuiNewListExtended.IGuiNewListEntry{
 		public final UUID player;
 		private final String name; 
 		public int permLvl;
@@ -919,7 +945,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListAdminPerms extends GuiListExtendedMember{
+	public class GuiListAdminPerms extends GuiNewListExtended{
 	    private final GuiAdmin guildManager;
 	    public Map<String, Integer> perms;
 	    public Map<Integer, String> permRanks;
@@ -994,7 +1020,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 	
-	public class GuiListAdminPermsEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListAdminPermsEntry implements GuiNewListExtended.IGuiNewListEntry{
 		private final String permIndex, permString, rankString; 
 		private Minecraft client = Minecraft.getMinecraft();
 		private final GuiListAdminPerms containingListSel;

@@ -519,7 +519,7 @@ public class GuiChunkManager extends GuiScreen{
 		}
 	}
 
-	public class GuiListChunkMembers extends GuiListExtendedMember{
+	public class GuiListChunkMembers extends GuiNewListExtended{
 	    private final GuiChunkManager chunkManager;
 	    public List<String> mbrNames;
 	    private final List<GuiListChunkMembersEntry> entries = Lists.<GuiListChunkMembersEntry>newArrayList();
@@ -562,7 +562,7 @@ public class GuiChunkManager extends GuiScreen{
 
 	}
 	
-	public class GuiListChunkMembersEntry implements GuiListExtendedMember.IGuiNewListEntry{
+	public class GuiListChunkMembersEntry implements GuiNewListExtended.IGuiNewListEntry{
 		private final String name; 
 		private Minecraft client = Minecraft.getMinecraft();
 	    private final GuiListChunkMembers containingListSel;
