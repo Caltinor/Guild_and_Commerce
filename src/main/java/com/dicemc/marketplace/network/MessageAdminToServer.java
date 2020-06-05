@@ -1,6 +1,7 @@
 package com.dicemc.marketplace.network;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.core.Marketplace;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
+import com.dicemc.marketplace.util.capabilities.ChunkCapability;
+import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
@@ -36,10 +39,13 @@ public class MessageAdminToServer implements IMessage {
 	public int messageIndex = -1;
 	public MktPktType marketPacketType = MktPktType.NONE;
 	public UUID id = Reference.NIL;
-	double amount = 0D;
+	public int i1 = 0;
+	public int i2 = 0;
+	double dbl1 = 0D;
 	boolean bool1 = true;
-	int vendStock = 0;
-	boolean infinite = true;
+	boolean bool2 = true;
+	boolean bool3 = true;
+	int vendStock = 0;	
 	long bidEnd = 0;
 	String str1 = "";
 	String str2 = "";
@@ -54,7 +60,7 @@ public class MessageAdminToServer implements IMessage {
 		messageIndex = 0;
 		bool1 = isGuildAccount;
 		id = owner;
-		amount = balance;
+		dbl1 = balance;
 	}
 	
 	public MessageAdminToServer(boolean isGuildList) { //account load
@@ -87,10 +93,10 @@ public class MessageAdminToServer implements IMessage {
 		messageIndex = 6;
 		marketPacketType = type;
 		id = marketItemID;
-		this.amount = price;
+		this.dbl1 = price;
 		this.bool1 = vendorGiveItem;
 		this.vendStock = vendStock;
-		this.infinite = infinite;
+		this.bool2 = infinite;
 		this.bidEnd = bidEnd;
 	}
 	
@@ -100,16 +106,11 @@ public class MessageAdminToServer implements IMessage {
 		id = marketItemID;
 	}
 	
-	public MessageAdminToServer(UUID guildID) {
-		messageIndex = 10;
-		id = guildID;
-	}
-	
 	public MessageAdminToServer(UUID guildID, String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
 		messageIndex = 11;
 		id = guildID;
 		bool1 = open;
-		amount = tax;
+		dbl1 = tax;
 		str1 = name;
 		str2 = perm0;
 		str3 = perm1;
@@ -118,6 +119,30 @@ public class MessageAdminToServer implements IMessage {
 		map1 = guildPerms;
 	}
 	
+	public MessageAdminToServer(UUID guildID, int subMenu) {
+		switch (subMenu) {
+		case 0: {messageIndex = 10;	break;} //request for guild main info
+		case 1: {messageIndex = 12;	break;} //request for guild land info
+		case 2: {messageIndex = 13;	break;} //request for guild member info
+		default:}
+		id = guildID;
+	}
+	
+	public MessageAdminToServer(int chunkX, int chunkZ) {
+		messageIndex = 14;
+		i1 = chunkX;
+		i2 = chunkZ;
+	}
+
+	public MessageAdminToServer(int chunkX, int chunkZ, double value, boolean isPublic, boolean isForSale, boolean isOutpost) {
+		messageIndex = 15;
+		i1 = chunkX;
+		i2 = chunkZ;
+		dbl1 = value;
+		bool1 = isPublic;
+		bool2 = isForSale;
+		bool3 = isOutpost;
+	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -127,7 +152,7 @@ public class MessageAdminToServer implements IMessage {
 		case 0: {
 			bool1 = pbuf.readBoolean();
 			id = pbuf.readUniqueId();
-			amount = pbuf.readDouble();
+			dbl1 = pbuf.readDouble();
 			break;
 		}
 		case 1: {
@@ -151,21 +176,21 @@ public class MessageAdminToServer implements IMessage {
 		case 6: {
 			marketPacketType = MktPktType.values()[pbuf.readVarInt()];
 			id = pbuf.readUniqueId();
-			amount = pbuf.readDouble();
+			dbl1 = pbuf.readDouble();
 			bool1 = pbuf.readBoolean();
 			vendStock = pbuf.readInt();
-			infinite = pbuf.readBoolean();
+			bool2 = pbuf.readBoolean();
 			bidEnd = pbuf.readLong();
 			break;
 		}
-		case 10: {
+		case 10: case 12: case 13:{
 			id = pbuf.readUniqueId();
 			break;
 		}
 		case 11: {
 			id = pbuf.readUniqueId();
 			bool1 = pbuf.readBoolean();
-			amount = pbuf.readDouble();
+			dbl1 = pbuf.readDouble();
 			str1 = ByteBufUtils.readUTF8String(buf);
 			str2 = ByteBufUtils.readUTF8String(buf);
 			str3 = ByteBufUtils.readUTF8String(buf);
@@ -181,6 +206,20 @@ public class MessageAdminToServer implements IMessage {
 			map1 = map;
 			break;
 		}
+		case 14: {
+			i1 = pbuf.readInt();
+			i2 = pbuf.readInt();
+			break;
+		}
+		case 15: {
+			i1 = pbuf.readInt();
+			i2 = pbuf.readInt();
+			dbl1 = pbuf.readDouble();
+			bool1 = pbuf.readBoolean();
+			bool2 = pbuf.readBoolean();
+			bool3 = pbuf.readBoolean();
+			break;
+		}
 		default:
 		}		
 	}
@@ -193,7 +232,7 @@ public class MessageAdminToServer implements IMessage {
 		case 0: {
 			pbuf.writeBoolean(bool1);
 			pbuf.writeUniqueId(id);
-			pbuf.writeDouble(amount);
+			pbuf.writeDouble(dbl1);
 			break;
 		}
 		case 1: {
@@ -217,21 +256,21 @@ public class MessageAdminToServer implements IMessage {
 		case 6: {
 			pbuf.writeVarInt(marketPacketType.ordinal());
 			pbuf.writeUniqueId(id);
-			pbuf.writeDouble(amount);
+			pbuf.writeDouble(dbl1);
 			pbuf.writeBoolean(bool1);
 			pbuf.writeInt(vendStock);
-			pbuf.writeBoolean(infinite);
+			pbuf.writeBoolean(bool2);
 			pbuf.writeLong(bidEnd);
 			break;
 		}
-		case 10: {
+		case 10: case 12: case 13:{
 			pbuf.writeUniqueId(id);
 			break;
 		}
 		case 11: {
 			pbuf.writeUniqueId(id);
 			pbuf.writeBoolean(bool1);
-			pbuf.writeDouble(amount);
+			pbuf.writeDouble(dbl1);
 			ByteBufUtils.writeUTF8String(buf, str1);
 			ByteBufUtils.writeUTF8String(buf, str2);
 			ByteBufUtils.writeUTF8String(buf, str3);
@@ -249,6 +288,20 @@ public class MessageAdminToServer implements IMessage {
 			pbuf.writeCompoundTag(nbt);
 			break;
 		}
+		case 14: {
+			pbuf.writeInt(i1);
+			pbuf.writeInt(i2);
+			break;
+		}
+		case 15: {
+			pbuf.writeInt(i1);
+			pbuf.writeInt(i2);
+			pbuf.writeDouble(dbl1);
+			pbuf.writeBoolean(bool1);
+			pbuf.writeBoolean(bool2);
+			pbuf.writeBoolean(bool3);
+			break;
+		}
 		default:
 		}		
 	}
@@ -264,7 +317,7 @@ public class MessageAdminToServer implements IMessage {
 			switch (message.messageIndex) {
 			case 0: { //acct change
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
-				AcctGroup.setBalance(message.id, message.amount);
+				AcctGroup.setBalance(message.id, message.dbl1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
@@ -307,10 +360,10 @@ public class MessageAdminToServer implements IMessage {
 			case 6: {
 				Marketplace market = marketFromType(message.marketPacketType, ctx);
 				MarketItem item = market.vendList.get(message.id);
-				item.price = message.amount;
+				item.price = message.dbl1;
 				item.vendorGiveItem = message.bool1;
 				item.vendStock = message.vendStock;
-				item.infinite = message.infinite;
+				item.infinite = message.bool2;
 				item.bidEnd = message.bidEnd;
 				MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
@@ -345,7 +398,7 @@ public class MessageAdminToServer implements IMessage {
 				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
 				guild.guildName = message.str1;
-				guild.guildTax = message.amount;
+				guild.guildTax = message.dbl1;
 				guild.openToJoin = message.bool1;
 				guild.permLevels.put(0, message.str2);
 				guild.permLevels.put(1, message.str3);
@@ -354,6 +407,42 @@ public class MessageAdminToServer implements IMessage {
 				guild.permissions = message.map1;
 				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				break;
+			}
+			case 12: {		
+				Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gindex);
+				List<ChunkPos> posCore = guild.coreLand;
+				List<ChunkPos> posOutpost = guild.outpostLand; 
+				for (ChunkPos c : posCore) {
+					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+					double price = cap.getForSale() ? -1* cap.getPrice() : cap.getPrice();
+					chunkValues.put(c, price);
+				}
+				for (ChunkPos c : posOutpost) {
+					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(c.x, c.z).getCapability(ChunkProvider.CHUNK_CAP, null);
+					double price = cap.getForSale() ? -1* cap.getPrice() : cap.getPrice();
+					chunkValues.put(c, price);
+				}
+				Main.NET.sendTo(new MessageAdminToGui(posCore, posOutpost, chunkValues), ctx.getServerHandler().player);
+				break;
+			}
+			case 13: {
+				
+				break;
+			}
+			case 14: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.i1, message.i2).getCapability(ChunkProvider.CHUNK_CAP, null);
+				Main.NET.sendTo(new MessageAdminToGui(cap.getPrice(), cap.getPublic(), cap.getForSale(), cap.getOutpost()), ctx.getServerHandler().player);
+				break;
+			}
+			case 15: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.i1, message.i2).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.setPrice(message.dbl1);
+				cap.setPublic(message.bool1);
+				cap.setForSale(message.bool2);
+				cap.setOutpost(message.bool3);
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.i1, message.i2).markDirty();
 			}
 			default:
 			}

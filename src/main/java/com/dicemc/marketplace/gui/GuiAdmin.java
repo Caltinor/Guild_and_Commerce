@@ -16,6 +16,8 @@ import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
+import com.dicemc.marketplace.gui.GuiGuildManager.GuiListGuildChunks;
+import com.dicemc.marketplace.gui.GuiGuildManager.GuiListGuildChunksEntry;
 import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
 import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarket;
@@ -39,6 +41,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiAdmin extends GuiScreen{
@@ -59,6 +62,10 @@ public class GuiAdmin extends GuiScreen{
 	private static GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
 	private static GuiTextField nameBox, taxBox, perm0, perm1, perm2, perm3;
 	private static GuiListAdminPerms listGuildPerms;
+	//guild land menu objects
+	private static GuiListAdminGuildChunks guicoreChunkList, guioutpostChunkList;
+	private static GuiButton landPublic, landForSale, landOutpost, landSave;
+	private static GuiTextField landValue;
 	//guild member menu objects
 	private static GuiListAdminGuildMembers listGuildMembers;
 	//market menu objects
@@ -76,7 +83,13 @@ public class GuiAdmin extends GuiScreen{
 	private static Map<Account, String> accountList = new HashMap<Account, String>();
 	private static Map<UUID, String> nameList = new HashMap<UUID, String>();
 	private static List<MarketListItem> vendList = new ArrayList<MarketListItem>();
+	private static List<ChunkPos> pos = new ArrayList<ChunkPos>();
+	private static Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
 	private static String vendorName, locName, bidderName;
+	private static double value = 0D;
+	private static boolean isPublic = false;
+	private static boolean isForSale = false;
+	private static boolean isOutpost = false;
 	
 	
 	public static void syncAccounts(Map<Account, String> accountList) {GuiAdmin.accountList = accountList; guiListAccounts.refreshList();}
@@ -96,7 +109,23 @@ public class GuiAdmin extends GuiScreen{
 		listGuildPerms.refreshList();
 	}
 	
-	public static void syncGuildLand() {}
+	public static void syncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {
+		guicoreChunkList.pos = posCore;
+		guicoreChunkList.chunkValues = chunkValues;
+		guicoreChunkList.refreshList();
+		guioutpostChunkList.pos = posOutpost;
+		guioutpostChunkList.chunkValues = chunkValues;
+		guioutpostChunkList.refreshList();
+		updateVisibility();
+	}
+	
+	public static void syncGuildLandDetail(double value, boolean isPublic, boolean isForSale, boolean isOutpost) {
+		GuiAdmin.value = value;
+		GuiAdmin.isPublic = isPublic;
+		GuiAdmin.isForSale = isForSale;
+		GuiAdmin.isOutpost = isOutpost;
+		updateVisibility();
+	}
 	
 	public static void syncGuldMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
 		guiGuild.members = members;
@@ -191,7 +220,24 @@ public class GuiAdmin extends GuiScreen{
 		saveGuild.visible = false;
 		listGuildPerms.visible = false;
 		//guild Land menu specific objects
-		
+		guicoreChunkList = new GuiListAdminGuildChunks(this, pos, chunkValues, true, mc, 83, 15, 130, (this.height-50)/2, 10);
+		guioutpostChunkList = new GuiListAdminGuildChunks(this, pos, chunkValues, false, mc, 83, guicoreChunkList.y+guicoreChunkList.height+30, 130, guicoreChunkList.height, 10);
+		landValue = new GuiTextField(40, this.fontRenderer, guicoreChunkList.x+guicoreChunkList.width + 30, this.height/4, 100, 20);
+		landPublic = new GuiButton(41, landValue.x, landValue.y+landValue.height+5, 100, 20, "");
+		landForSale = new GuiButton(42, landValue.x, landPublic.y+landPublic.height+5, 100, 20, "");
+		landOutpost = new GuiButton(43, landValue.x, landForSale.y+landForSale.height+5, 100, 20, "");
+		landSave = new GuiButton(44, landOutpost.x+12, landOutpost.y+landOutpost.height+5, 75, 20, "Save Changes");
+		this.buttonList.add(landPublic);
+		this.buttonList.add(landForSale);
+		this.buttonList.add(landOutpost);
+		this.buttonList.add(landSave);
+		guicoreChunkList.visible = false;
+		guioutpostChunkList.visible =false;
+		landValue.setVisible(false);
+		landPublic.visible = false;
+		landForSale.visible = false;
+		landOutpost.visible = false;
+		landSave.visible = false;
 		//guild members menu specific objects
 		//listGuildMembers = new GuiListAdminGuildMembers(this, mc, 0, 0, 0, 0, 10);
 		//listGuildMembers.visible = false;
@@ -241,6 +287,8 @@ public class GuiAdmin extends GuiScreen{
         if (guildList.visible) {guildList.handleMouseInput();}
         if (marketList.visible) {marketList.handleMouseInput();}
         if (listGuildPerms.visible) {listGuildPerms.handleMouseInput();}
+        if (guicoreChunkList.visible) {guicoreChunkList.handleMouseInput();}
+        if (guioutpostChunkList.visible) {guioutpostChunkList.handleMouseInput();}
         //if (listGuildMembers.visible) {listGuildMembers.handleMouseInput();}
     }
 	
@@ -291,6 +339,17 @@ public class GuiAdmin extends GuiScreen{
 		saveGuild.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		listGuildPerms.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		//guild land objects
+		guicoreChunkList.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
+		guioutpostChunkList.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
+		landValue.setVisible(activeMenu == AdminGuiType.GUILD_LAND ? true : false);
+		landValue.setText(df.format(value));
+		landPublic.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
+		landPublic.displayString = isPublic ? "Public Land" : "Private Land";
+		landForSale.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
+		landForSale.displayString = "For Sale: "+ (isForSale ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		landOutpost.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
+		landOutpost.displayString = "Outpost: " + (isOutpost ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		landSave.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
 		//guild member objects
 		//listGuildMembers.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		//market objects
@@ -434,7 +493,7 @@ public class GuiAdmin extends GuiScreen{
 		if (button == selectGuild && guildList.selectedIdx >= 0) {
 			activeMenu = AdminGuiType.GUILD_MAIN;
 			updateVisibility();
-			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 0));
 		}
 		if (button == setOpen) {
 			guiGuild.openToJoin = guiGuild.openToJoin ? false : true;
@@ -461,6 +520,30 @@ public class GuiAdmin extends GuiScreen{
 			try {amount = Math.abs(Double.valueOf(taxBox.getText()));} catch (NumberFormatException e) {}
 			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions));
 		}
+		if (button == openLand) {
+			activeMenu = AdminGuiType.GUILD_LAND;
+			updateVisibility();
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 1));
+		}
+		//guild land actions
+		if (button == landPublic) {
+			isPublic = isPublic ? false : true;
+			landPublic.displayString = isPublic ? "Public Land" : "Private Land";
+		}
+		if (button == landForSale) {
+			isForSale = isForSale ? false : true;
+			landForSale.displayString = "For Sale: "+ (isForSale ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		}
+		if (button == landOutpost) {
+			isOutpost = isOutpost ? false : true;
+			landOutpost.displayString = "Outpost: " + (isOutpost ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		}
+		if (button == landSave) {
+			double amount = 0D;
+			try {amount = Math.abs(Double.valueOf(landValue.getText()));} catch (NumberFormatException e) {}
+			Main.NET.sendToServer(new MessageAdminToServer(guicoreChunkList.getSelectedMember().pos.x, guicoreChunkList.getSelectedMember().pos.z, amount, isPublic, isForSale, isOutpost));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 1));
+		}
 	}
 	
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
@@ -478,6 +561,9 @@ public class GuiAdmin extends GuiScreen{
 		if (perm2.getVisible()) {perm2.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (perm3.getVisible()) {perm3.mouseClicked(mouseX, mouseY, mouseButton);}
 		if (listGuildPerms.visible) {listGuildPerms.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (guicoreChunkList.visible) {guicoreChunkList.mouseClicked(mouseX, mouseY, mouseButton);}
+        if (guioutpostChunkList.visible) {guioutpostChunkList.mouseClicked(mouseX, mouseY, mouseButton);}
+        if (landValue.getVisible()) {landValue.mouseClicked(mouseX, mouseY, mouseButton);}
 		//if (listGuildMembers.visible) {listGuildMembers.mouseClicked(mouseX, mouseY, mouseButton);}
 	}
 	
@@ -491,6 +577,18 @@ public class GuiAdmin extends GuiScreen{
 			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key));
 		}
 		if (listGuildPerms.visible) {listGuildPerms.mouseReleased(mouseX, mouseY, state);}
+		if (guicoreChunkList.visible) {guicoreChunkList.mouseReleased(mouseX, mouseY, state);}
+		if (guicoreChunkList.selectedIdx >= 0 && mouseX > guicoreChunkList.x && mouseX < guicoreChunkList.x+guicoreChunkList.width-6 && mouseY > guicoreChunkList.y && mouseY < guicoreChunkList.y+guicoreChunkList.height) {
+			guioutpostChunkList.selectedIdx = -1;
+			guioutpostChunkList.selectedElement = -1;
+			Main.NET.sendToServer(new MessageAdminToServer(guicoreChunkList.getSelectedMember().pos.x, guicoreChunkList.getSelectedMember().pos.z));
+		}
+        if (guioutpostChunkList.visible) {guioutpostChunkList.mouseReleased(mouseX, mouseY, state);}
+        if (guioutpostChunkList.selectedIdx >= 0 && mouseX > guioutpostChunkList.x && mouseX < guioutpostChunkList.x+guioutpostChunkList.width-6 && mouseY > guioutpostChunkList.y && mouseY < guioutpostChunkList.y+guioutpostChunkList.height) {
+			guicoreChunkList.selectedIdx = -1;
+			guicoreChunkList.selectedElement = -1;
+			Main.NET.sendToServer(new MessageAdminToServer(guioutpostChunkList.getSelectedMember().pos.x, guioutpostChunkList.getSelectedMember().pos.z));
+		}
     }
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -504,6 +602,7 @@ public class GuiAdmin extends GuiScreen{
 		if (perm1.getVisible()) perm1.textboxKeyTyped(typedChar, keyCode);
 		if (perm2.getVisible()) perm2.textboxKeyTyped(typedChar, keyCode);
 		if (perm3.getVisible()) perm3.textboxKeyTyped(typedChar, keyCode);
+		if (landValue.getVisible()) landValue.textboxKeyTyped(typedChar, keyCode);
     }
     
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -540,6 +639,12 @@ public class GuiAdmin extends GuiScreen{
     		break;
     	}
     	case GUILD_LAND: {
+    		this.drawString(this.fontRenderer, "Core Land", guicoreChunkList.x, guicoreChunkList.y-10, 16777215);
+    		this.drawString(this.fontRenderer, "Outpost Land", guioutpostChunkList.x, guioutpostChunkList.y-10, 16777215);
+    		this.drawString(this.fontRenderer, "Land Value", landValue.x, landValue.y-10, 16777215);
+    		guicoreChunkList.drawScreen(mouseX, mouseY, partialTicks);
+    		guioutpostChunkList.drawScreen(mouseX, mouseY, partialTicks);
+    		landValue.drawTextBox();
     		break;
     	}
     	case GUILD_MEMBER: {
@@ -1049,4 +1154,77 @@ public class GuiAdmin extends GuiScreen{
 		}
 
 	}
+
+	 public class GuiListAdminGuildChunks extends GuiNewListExtended{
+	    	private final GuiAdmin guildManager;
+	    	private boolean coreChunk;
+	    	private List<ChunkPos> pos;
+	    	private Map<ChunkPos, Double> chunkValues;
+	        private final List<GuiListAdminGuildChunksEntry> entries = Lists.<GuiListAdminGuildChunksEntry>newArrayList();
+	        /** Index to the currently selected world */
+	        private int selectedIdx = -1;
+	        
+	        public GuiListAdminGuildChunks(GuiAdmin gm, List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+	    		super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+	    		this.guildManager = gm;
+	    		this.pos = pos;
+	    		this.coreChunk = coreChunk;
+	    		this.chunkValues = chunkValues;
+	    		this.refreshList();
+	    	}
+	        
+	        public void refreshList()
+	        {
+	        	entries.clear();
+	           	for (ChunkPos ck : pos) {
+	                this.entries.add(new GuiListAdminGuildChunksEntry(this, ck, coreChunk));
+	            }
+	        }
+	        
+	        public void selectMember(int idx) {
+		    	this.selectedIdx = idx;
+		    }
+	        @Nullable
+		    public GuiListAdminGuildChunksEntry getSelectedMember(){return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;}
+	    	@Override
+	    	public GuiListAdminGuildChunksEntry getListEntry(int index) {return entries.get(index);}
+	    	@Override
+	    	protected int getSize() {return entries.size();}
+	    }
+	    
+	    public class GuiListAdminGuildChunksEntry implements GuiNewListExtended.IGuiNewListEntry{
+	    	private Minecraft client = Minecraft.getMinecraft();
+	    	private final GuiListAdminGuildChunks containingListSel;
+	    	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	    	private final ChunkPos pos;
+	    	private boolean coreChunk;
+	    	
+	    	public GuiListAdminGuildChunksEntry(GuiListAdminGuildChunks listSelectionIn, ChunkPos pos, boolean coreChunk) {
+	    		containingListSel = listSelectionIn;
+	    		this.pos = pos;
+	    		this.coreChunk = coreChunk;
+	    	}
+	    	
+	    	@Override
+	    	public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+
+	    	@Override
+	    	public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+	    		double price = containingListSel.chunkValues.getOrDefault(pos, 0D);
+	    		String value = price >=0 ? TextFormatting.WHITE+"$"+ df.format(price) : TextFormatting.RED+"$"+ df.format(-1*price);
+	    		if (coreChunk) this.client.fontRenderer.drawString(TextFormatting.BLUE+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
+	    		if (!coreChunk) this.client.fontRenderer.drawString(TextFormatting.RED+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
+	    	}
+
+	    	@Override
+	    	public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+	    		this.containingListSel.selectMember(slotIndex);
+		        this.containingListSel.showSelectionBox = true;
+		        return false;}
+
+	    	@Override
+	    	public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {}
+
+	    }
+
 }

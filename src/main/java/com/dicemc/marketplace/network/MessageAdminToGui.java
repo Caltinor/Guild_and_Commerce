@@ -1,7 +1,9 @@
 package com.dicemc.marketplace.network;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -31,12 +34,17 @@ public class MessageAdminToGui implements IMessage{
 	public Map<UUID, String> guildList = new HashMap<UUID, String>();
 	public Map<String, Integer> guildPerms = new HashMap<String, Integer>();
 	public MktPktType marketPacketType = MktPktType.NONE;
+	public List<ChunkPos> posCore = new ArrayList<ChunkPos>();
+	public List<ChunkPos> posOutpost = new ArrayList<ChunkPos>();
+	public Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
 	public String str1 = ""; //uses: vendorName	guildname
 	public String str2 = ""; //uses: locName	perm0
 	public String str3 = ""; //uses: bidderName perm1
 	public String str4 = ""; //uses:			perm2
 	public String str5 = ""; //uses:			perm3
 	public boolean bool1 = true;
+	public boolean bool2 = true;
+	public boolean bool3 = true;
 	public double dbl1 = 0D;
 
 	public MessageAdminToGui() {}
@@ -76,7 +84,20 @@ public class MessageAdminToGui implements IMessage{
 		str3 = bidderName;
 	}
 	
+	public MessageAdminToGui(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {
+		messageIndex = 6;
+		this.posCore = posCore;
+		this.posOutpost = posOutpost;
+		this.chunkValues = chunkValues;
+	}
 	
+	public MessageAdminToGui(double price, boolean isPublic, boolean isForSale, boolean isOutpost) {
+		messageIndex = 7;
+		dbl1 = price;
+		bool1 = isPublic;
+		bool2 = isForSale;
+		bool3 = isOutpost;
+	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -135,6 +156,31 @@ public class MessageAdminToGui implements IMessage{
 			str1 = ByteBufUtils.readUTF8String(buf);
 			str2 = ByteBufUtils.readUTF8String(buf);
 			str3 = ByteBufUtils.readUTF8String(buf);
+			break;
+		}
+		case 6: {
+			try {NBTTagCompound nbt = pbuf.readCompoundTag();
+			NBTTagList list = nbt.getTagList("core", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				posCore.add(new ChunkPos(list.getCompoundTagAt(i).getInteger("x"), list.getCompoundTagAt(i).getInteger("z")));
+			}
+			list = nbt.getTagList("outpost", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				posOutpost.add(new ChunkPos(list.getCompoundTagAt(i).getInteger("x"), list.getCompoundTagAt(i).getInteger("z")));
+			}
+			list = nbt.getTagList("chunkvalues", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				ChunkPos pos = new ChunkPos(list.getCompoundTagAt(i).getInteger("x"), list.getCompoundTagAt(i).getInteger("z"));
+				chunkValues.put(pos, list.getCompoundTagAt(i).getDouble("value"));
+			}
+			} catch (IOException e) {}
+			break;
+		}
+		case 7: {
+			dbl1 = pbuf.readDouble();
+			bool1 = pbuf.readBoolean();
+			bool2 = pbuf.readBoolean();
+			bool3 = pbuf.readBoolean();
 			break;
 		}
 		default:
@@ -211,6 +257,43 @@ public class MessageAdminToGui implements IMessage{
 			ByteBufUtils.writeUTF8String(buf, str3);
 			break;
 		}
+		case 6: {
+			NBTTagCompound nbt = new NBTTagCompound();
+			NBTTagList list = new NBTTagList();
+			for (int i = 0; i < posCore.size(); i++) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setInteger("x", posCore.get(i).x);
+				snbt.setInteger("z", posCore.get(i).z);
+				list.appendTag(snbt);
+			}
+			nbt.setTag("core", list);
+			list = new NBTTagList();
+			for (int i = 0; i < posOutpost.size(); i++) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setInteger("x", posOutpost.get(i).x);
+				snbt.setInteger("z", posOutpost.get(i).z);
+				list.appendTag(snbt);
+			}
+			nbt.setTag("outpost", list);
+			list = new NBTTagList();
+			for (Map.Entry<ChunkPos, Double> entry : chunkValues.entrySet()) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setInteger("x", entry.getKey().x);
+				snbt.setInteger("z", entry.getKey().z);
+				snbt.setDouble("value", entry.getValue());
+				list.appendTag(snbt);
+			}
+			nbt.setTag("chunkvalues", list);
+			pbuf.writeCompoundTag(nbt);
+			break;
+		}
+		case 7: {
+			pbuf.writeDouble(dbl1);
+			pbuf.writeBoolean(bool1);
+			pbuf.writeBoolean(bool2);
+			pbuf.writeBoolean(bool3);
+			break;
+		}
 		default:
 		}
 		
@@ -283,6 +366,14 @@ public class MessageAdminToGui implements IMessage{
 			}
 			case 5: {
 				GuiAdmin.syncMarketDetail(message.str1, message.str2, message.str3);
+				break;
+			}
+			case 6: {
+				GuiAdmin.syncGuildLand(message.posCore, message.posOutpost, message.chunkValues);
+				break;
+			}
+			case 7: {
+				GuiAdmin.syncGuildLandDetail(message.dbl1, message.bool1, message.bool2, message.bool3);
 				break;
 			}
 			default:
