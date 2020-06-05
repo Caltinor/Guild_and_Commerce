@@ -38,10 +38,10 @@ import net.minecraft.world.chunk.Chunk;
 public class Commands extends CommandBase{
 
 	@Override
-	public String getName() { return "admin"; }
+	public String getName() { return "gncadmin"; }
 
 	@Override
-	public String getUsage(ICommandSender sender) { return "/admin <account/market/guild>"; }
+	public String getUsage(ICommandSender sender) { return "/gncadmin <account/market/guild>"; }
 	
 	private void message(String str, ICommandSender sender) {
 		sender.sendMessage(new TextComponentString(str));
@@ -103,6 +103,8 @@ public class Commands extends CommandBase{
 			for (int i = list.size()-1; i > -1; i--) {
 				if (list.get(i).x == cX && list.get(i).z == cZ) list.remove(i);
 			}
+			GuildSaver.get(sender.getEntityWorld()).markDirty();
+			break;
 		}
 		//base arguments <market/account/guild>
 		case "market": {
