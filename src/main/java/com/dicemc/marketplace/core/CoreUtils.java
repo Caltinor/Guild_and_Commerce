@@ -39,8 +39,8 @@ public class CoreUtils {
 	public static String tempClaim(UUID owner, int chunkX, int chunkZ) {
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL)) {
-			if (AccountSaver.get(world).PLAYERS.getBalance(owner) >= (cap.getPrice()*0.1)) {
-				AccountSaver.get(world).PLAYERS.addBalance(owner, (-0.1*cap.getPrice()));
+			if (AccountSaver.get(world).PLAYERS.getBalance(owner) >= (cap.getPrice()*Main.ModConfig.TEMPCLAIM_RATE)) {
+				AccountSaver.get(world).PLAYERS.addBalance(owner, (-1*Main.ModConfig.TEMPCLAIM_RATE*cap.getPrice()));
 				cap.setTempTime(System.currentTimeMillis()+Main.ModConfig.TEMPCLAIM_DURATION);
 				cap.includePlayer(owner);
 				cap.setOwner(owner);
@@ -227,7 +227,7 @@ public class CoreUtils {
 		String resp = "";
 		if (cap.getOwner().equals(glist.get(gindex).guildID)) {
 			if (!cap.getForSale()) {
-				AccountSaver.get(world).GUILDS.addBalance(glist.get(gindex).guildID, cap.getPrice()*.75);
+				AccountSaver.get(world).GUILDS.addBalance(glist.get(gindex).guildID, cap.getPrice()*Main.ModConfig.LAND_ABANDON_REFUND_RATE);
 				resp = "Guild has been refunded $"+String.valueOf(cap.getPrice()*.75);
 			}
 			GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner())).removeLand(ck.getPos());

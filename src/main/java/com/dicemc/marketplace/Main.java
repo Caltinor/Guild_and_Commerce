@@ -99,6 +99,19 @@ public class Main {
 		@RangeInt(min = 20)
 		@RequiresMcRestart
 		public static int GLOBAL_TAX_INTERVAL = 864000;
+		@Name("TEMPCLAIM_RATE")
+		@RangeDouble(min = 0.0, max = 1.0)
+		@RequiresWorldRestart
+		@Comment({"Dictates what percentage of the land value is required to tempclaim", "10% by default (0.10)"})
+		public static double TEMPCLAIM_RATE = 0.1;
+		@Name("LAND_ABANDON_REFUND_RATE")
+		@RangeDouble(min = 0.0, max = 1.0)
+		public static double LAND_ABANDON_REFUND_RATE = 0.75;
+		@Name("LAND_DEFAULT_COST")
+		@RangeDouble(min = 0.0)
+		@RequiresMcRestart
+		@Comment({"The price of land that is never before claimed", "this also dictates  the abandon refund rate"})
+		public static double LAND_DEFAULT_COST = 100;
 		@Name("GUILD_CREATE_COST")
 		@RangeDouble(min = 0.0)
 		@RequiresMcRestart

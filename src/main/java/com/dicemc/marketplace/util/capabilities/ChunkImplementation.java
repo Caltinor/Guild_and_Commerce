@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.util.Reference;
 
 import net.minecraft.block.Block;
@@ -17,7 +18,7 @@ import net.minecraftforge.common.util.Constants;
 
 public class ChunkImplementation implements ChunkCapability{
 	private UUID owner = Reference.NIL;
-	private double price = 100;
+	private double price = Main.ModConfig.LAND_DEFAULT_COST;
 	private boolean redstone = false;
 	private List<String> whitelist = new ArrayList<String>();
 	private long tempclaimEnd = System.currentTimeMillis();
