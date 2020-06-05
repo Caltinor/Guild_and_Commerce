@@ -27,6 +27,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -79,6 +80,29 @@ public class Commands extends CommandBase{
 		case "gui": {
 			Main.proxy.openAdminGui();
 			break;
+		}
+		case "landreset": {
+			int cX = sender.getCommandSenderEntity().chunkCoordX;
+			int cZ = sender.getCommandSenderEntity().chunkCoordZ;
+			ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+			UUID owningGuild = cap.getOwner();
+			cap.setOwner(Reference.NIL);
+			cap.setForSale(false);
+			cap.setOutpost(false);
+			cap.setPlayers(new ArrayList<UUID>());
+			cap.setPrice(Main.ModConfig.LAND_DEFAULT_COST);
+			cap.setPublic(false);
+			cap.setPublicRedstone(false);
+			cap.setTempTime(System.currentTimeMillis());
+			cap.setWhitelist(new NBTTagList());
+			List<ChunkPos> list = GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).coreLand;
+			for (int i = list.size()-1; i > -1; i--) {
+				if (list.get(i).x == cX && list.get(i).z == cZ) list.remove(i);
+			}
+			list = GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).outpostLand;
+			for (int i = list.size()-1; i > -1; i--) {
+				if (list.get(i).x == cX && list.get(i).z == cZ) list.remove(i);
+			}
 		}
 		//base arguments <market/account/guild>
 		case "market": {
@@ -360,6 +384,8 @@ public class Commands extends CommandBase{
 				int cZ = sender.getCommandSenderEntity().chunkCoordZ;
 				ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 				cap.setOwner(owningGuild);
+				GuildSaver.get(sender.getEntityWorld()).GUILDS.get(Integer.valueOf(args[2])).coreLand.add(new ChunkPos(cX, cZ));
+				GuildSaver.get(sender.getEntityWorld()).markDirty();
 				sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).markDirty();
 				message("Claimed Chunk ("+String.valueOf(cX)+","+String.valueOf(cZ)+") for "+GuildSaver.get(sender.getEntityWorld()).GUILDS.get(Integer.valueOf(args[2])).guildName , sender);
 				break;
