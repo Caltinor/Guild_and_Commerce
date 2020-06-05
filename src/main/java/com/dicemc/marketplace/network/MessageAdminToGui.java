@@ -31,12 +31,13 @@ public class MessageAdminToGui implements IMessage{
 	public int messageIndex = -1;
 	public Map<UUID, MarketItem> vendList = new HashMap<UUID, MarketItem>();
 	public Map<Account, String> accountList = new HashMap<Account, String> ();
-	public Map<UUID, String> guildList = new HashMap<UUID, String>();
+	public Map<UUID, String> nameList = new HashMap<UUID, String>();
 	public Map<String, Integer> guildPerms = new HashMap<String, Integer>();
 	public MktPktType marketPacketType = MktPktType.NONE;
 	public List<ChunkPos> posCore = new ArrayList<ChunkPos>();
 	public List<ChunkPos> posOutpost = new ArrayList<ChunkPos>();
 	public Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
+	public Map<UUID, Integer> members = new HashMap<UUID, Integer>();
 	public String str1 = ""; //uses: vendorName	guildname
 	public String str2 = ""; //uses: locName	perm0
 	public String str3 = ""; //uses: bidderName perm1
@@ -68,7 +69,7 @@ public class MessageAdminToGui implements IMessage{
 	
 	public MessageAdminToGui(Map<UUID, String> guildNames, boolean dummy) {
 		messageIndex = 3;
-		guildList = guildNames;
+		nameList = guildNames;
 	}
 	
 	public MessageAdminToGui(Map<UUID, MarketItem> vendList, MktPktType type) {
@@ -97,6 +98,12 @@ public class MessageAdminToGui implements IMessage{
 		bool1 = isPublic;
 		bool2 = isForSale;
 		bool3 = isOutpost;
+	}
+	
+	public MessageAdminToGui(Map<UUID, Integer> members, Map<UUID, String> nameList) {
+		messageIndex = 8;
+		this.members = members;
+		this.nameList = nameList;
 	}
 	
 	@Override
@@ -143,7 +150,7 @@ public class MessageAdminToGui implements IMessage{
 				for (int i = 0; i < list.tagCount(); i++) {
 					map.put(list.getCompoundTagAt(i).getUniqueId("UUID"), list.getCompoundTagAt(i).getString("name"));
 				}
-				guildList = map;	
+				nameList = map;	
 				} catch (IOException e) {}
 				break;
 		}
@@ -181,6 +188,25 @@ public class MessageAdminToGui implements IMessage{
 			bool1 = pbuf.readBoolean();
 			bool2 = pbuf.readBoolean();
 			bool3 = pbuf.readBoolean();
+			break;
+		}
+		case 8: {
+			try {
+			Map<UUID, Integer> map = new HashMap<UUID, Integer>();
+			NBTTagCompound srcNBT = pbuf.readCompoundTag();
+			NBTTagList list = srcNBT.getTagList("mbrlist", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				map.put(list.getCompoundTagAt(i).getUniqueId("UUID"), list.getCompoundTagAt(i).getInteger("rank"));
+			}
+			members = map;	
+			Map<UUID, String> nameMap = new HashMap<UUID, String>();
+			srcNBT = pbuf.readCompoundTag();
+			list = srcNBT.getTagList("namelist", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < list.tagCount(); i++) {
+				nameMap.put(list.getCompoundTagAt(i).getUniqueId("UUID"), list.getCompoundTagAt(i).getString("name"));
+			}
+			nameList = nameMap;
+			} catch (IOException e) {}
 			break;
 		}
 		default:
@@ -230,7 +256,7 @@ public class MessageAdminToGui implements IMessage{
 		case 3: {
 			NBTTagCompound nbt = new NBTTagCompound();
 			NBTTagList list = new NBTTagList();
-			for (Map.Entry<UUID, String> entry : guildList.entrySet()) {	
+			for (Map.Entry<UUID, String> entry : nameList.entrySet()) {	
 				NBTTagCompound snbt = new NBTTagCompound();
 				snbt.setUniqueId("UUID", entry.getKey());
 				snbt.setString("name", entry.getValue());
@@ -294,6 +320,29 @@ public class MessageAdminToGui implements IMessage{
 			pbuf.writeBoolean(bool3);
 			break;
 		}
+		case 8: {
+			NBTTagCompound nbt = new NBTTagCompound();
+			NBTTagList list = new NBTTagList();
+			for (Map.Entry<UUID, Integer> entry : members.entrySet()) {	
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setUniqueId("UUID", entry.getKey());
+				snbt.setInteger("rank", entry.getValue());
+				list.appendTag(snbt);
+			}
+			nbt.setTag("mbrlist", list);
+			pbuf.writeCompoundTag(nbt);
+			nbt = new NBTTagCompound();
+			list = new NBTTagList();
+			for (Map.Entry<UUID, String> entry : nameList.entrySet()) {	
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setUniqueId("UUID", entry.getKey());
+				snbt.setString("name", entry.getValue());
+				list.appendTag(snbt);
+			}
+			nbt.setTag("namelist", list);
+			pbuf.writeCompoundTag(nbt);
+			break;
+		}
 		default:
 		}
 		
@@ -340,7 +389,7 @@ public class MessageAdminToGui implements IMessage{
 				break;
 			}
 			case 3: {
-				GuiAdmin.syncGuildList(message.guildList);
+				GuiAdmin.syncGuildList(message.nameList);
 				break;
 			}
 			case 4: {
@@ -375,6 +424,9 @@ public class MessageAdminToGui implements IMessage{
 			case 7: {
 				GuiAdmin.syncGuildLandDetail(message.dbl1, message.bool1, message.bool2, message.bool3);
 				break;
+			}
+			case 8: {
+				GuiAdmin.syncGuildMembers(message.members, message.nameList);
 			}
 			default:
 			}

@@ -22,29 +22,33 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageMemberInfoToServer implements IMessage{
 	public String name;
-	public Guild guild;
+	public UUID guildID;
+	public boolean isAdmin;
 
 	//this constructor is required otherwise you'll get errors (used somewhere in fml through reflection)
 	public MessageMemberInfoToServer() {}
 	
 	//unused until I need the UUID to pass for the check
-	public MessageMemberInfoToServer(String name, Guild guild) {
+	public MessageMemberInfoToServer(String name, UUID guildID, boolean isAdmin) {
 		this.name = name;
-		this.guild = guild;
+		this.guildID = guildID;
+		this.isAdmin = isAdmin;
 	}
 	 
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
 		name = ByteBufUtils.readUTF8String(buf);
-		try {guild = new Guild(pbuf.readCompoundTag());	} catch (IOException e) {}
+		guildID = pbuf.readUniqueId();
+		isAdmin = pbuf.readBoolean();
 	}
 	
 	@Override
 	public void toBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
 		ByteBufUtils.writeUTF8String(buf, name);
-		pbuf.writeCompoundTag(guild.toNBT());
+		pbuf.writeUniqueId(guildID);
+		pbuf.writeBoolean(isAdmin);
 	}
 	
 	public static class PacketMemberInfoToServer implements IMessageHandler<MessageMemberInfoToServer, IMessage> {
@@ -55,18 +59,16 @@ public class MessageMemberInfoToServer implements IMessage{
 		}  
 		
 		private void handle(MessageMemberInfoToServer message, MessageContext ctx) {
-			int gindex = -1;
+			int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.guildID);
 			List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
-			for (int i = 0; i < glist.size(); i++) {
-				if (glist.get(i).guildID.equals(message.guild.guildID)) {gindex = i; break;}
-			}
 			if (gindex >= 0) {
 				glist.get(gindex).addMember(Commands.playerUUIDfromString(ctx.getServerHandler().player.getServer(), message.name), -1);
 				Map<UUID, String> mbrNames = new HashMap<UUID, String>();
 				for (UUID u : glist.get(gindex).members.keySet()) {
 					mbrNames.put(u, ctx.getServerHandler().player.getServer().getPlayerProfileCache().getProfileByUUID(u).getName());
 				}
-				Main.NET.sendTo(new MessageMemberInfoToGui(glist.get(gindex), mbrNames), ctx.getServerHandler().player);
+				if (!message.isAdmin) Main.NET.sendTo(new MessageMemberInfoToGui(glist.get(gindex), mbrNames), ctx.getServerHandler().player);
+				if (message.isAdmin) Main.NET.sendTo(new MessageAdminToGui(glist.get(gindex).members, mbrNames), ctx.getServerHandler().player);
 			}
 			
 		}

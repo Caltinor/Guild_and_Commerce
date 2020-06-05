@@ -92,7 +92,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 			mc.getMinecraft().displayGuiScreen(new GuiInventory(mc.player));
 		}
 		if (button.id == 11) { //invite Button
-			Main.NET.sendToServer(new MessageMemberInfoToServer(this.inviteText.getText(), guild));
+			Main.NET.sendToServer(new MessageMemberInfoToServer(this.inviteText.getText(), guild.guildID, false));
 			inviteList.refreshList();
 		}
 		if (button == guiProm && memberList.selectedElement >=0) {//Promote button

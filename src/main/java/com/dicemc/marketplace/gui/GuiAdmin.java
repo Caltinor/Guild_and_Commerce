@@ -25,6 +25,7 @@ import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarketEntry;
 import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.network.MessageAdminToServer;
+import com.dicemc.marketplace.network.MessageMemberInfoToServer;
 import com.dicemc.marketplace.util.AdminGuiType;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
@@ -68,6 +69,8 @@ public class GuiAdmin extends GuiScreen{
 	private static GuiTextField landValue;
 	//guild member menu objects
 	private static GuiListAdminGuildMembers listGuildMembers;
+	private static GuiTextField mbrInviteBox;
+	private static GuiButton mbrAdd, mbrSub, mbr0, mbr1, mbr2, mbr3;
 	//market menu objects
 	private static GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
 	private static GuiButton addSale, editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
@@ -127,7 +130,7 @@ public class GuiAdmin extends GuiScreen{
 		updateVisibility();
 	}
 	
-	public static void syncGuldMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
+	public static void syncGuildMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
 		guiGuild.members = members;
 		GuiAdmin.mbrNames = mbrNames;
 		listGuildMembers.refreshList();
@@ -239,8 +242,28 @@ public class GuiAdmin extends GuiScreen{
 		landOutpost.visible = false;
 		landSave.visible = false;
 		//guild members menu specific objects
-		//listGuildMembers = new GuiListAdminGuildMembers(this, mc, 0, 0, 0, 0, 10);
-		//listGuildMembers.visible = false;
+		listGuildMembers = new GuiListAdminGuildMembers(this, mc, 83, 15, 130, this.height-20, 10);
+		mbrInviteBox = new GuiTextField(50, this.fontRenderer, listGuildMembers.x+listGuildMembers.width+20, listGuildMembers.y, 100, 20);
+		mbrAdd = new GuiButton(51, mbrInviteBox.x, mbrInviteBox.y+ mbrInviteBox.height +5, 75, 20, "Add Invite");
+		mbrSub = new GuiButton(52, mbrAdd.x, mbrAdd.y+mbrAdd.height+5, 75, 20, "Remove");
+		mbr0 = new GuiButton(53, mbrAdd.x, mbrSub.y+mbrSub.height+5, 20, 20, "0");
+		mbr1 = new GuiButton(54, mbrAdd.x, mbr0.y+mbr0.height, 20, 20, "1");
+		mbr2 = new GuiButton(55, mbrAdd.x, mbr1.y+mbr1.height, 20, 20, "2");
+		mbr3 = new GuiButton(56, mbrAdd.x, mbr2.y+mbr2.height, 20, 20, "3");
+		this.buttonList.add(mbrAdd);
+		this.buttonList.add(mbrSub);
+		this.buttonList.add(mbr0);
+		this.buttonList.add(mbr1);
+		this.buttonList.add(mbr2);
+		this.buttonList.add(mbr3);
+		listGuildMembers.visible = false;
+		mbrInviteBox.setVisible(false);
+		mbrAdd.visible = false;
+		mbrSub.visible = false;
+		mbr0.visible = false;
+		mbr1.visible = false;
+		mbr2.visible = false;
+		mbr3.visible = false;
 		//markets menu specific objects
 		marketList = new GuiListAdminMarket(this, vendList, Reference.NIL, 0, mc, 83, 40, (this.width-80)/2, this.height-45, 25);
 		toggleLocal = new GuiButton(60, 83, 5, 50, 20, "Local");
@@ -289,7 +312,7 @@ public class GuiAdmin extends GuiScreen{
         if (listGuildPerms.visible) {listGuildPerms.handleMouseInput();}
         if (guicoreChunkList.visible) {guicoreChunkList.handleMouseInput();}
         if (guioutpostChunkList.visible) {guioutpostChunkList.handleMouseInput();}
-        //if (listGuildMembers.visible) {listGuildMembers.handleMouseInput();}
+        if (listGuildMembers.visible) {listGuildMembers.handleMouseInput();}
     }
 	
 	public static void updateVisibility() {
@@ -351,7 +374,14 @@ public class GuiAdmin extends GuiScreen{
 		landOutpost.displayString = "Outpost: " + (isOutpost ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
 		landSave.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
 		//guild member objects
-		//listGuildMembers.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
+		listGuildMembers.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbrInviteBox.setVisible(activeMenu == AdminGuiType.GUILD_MEMBER ? true : false);
+		mbrAdd.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbrSub.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbr0.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbr1.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbr2.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
+		mbr3.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
 		//market objects
 		marketList.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleLocal.visible = activeMenu == AdminGuiType.MARKET ? true : false;
@@ -525,6 +555,11 @@ public class GuiAdmin extends GuiScreen{
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 1));
 		}
+		if (button == openMembers) {
+			activeMenu = AdminGuiType.GUILD_MEMBER;
+			updateVisibility();
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
+		}
 		//guild land actions
 		if (button == landPublic) {
 			isPublic = isPublic ? false : true;
@@ -543,6 +578,30 @@ public class GuiAdmin extends GuiScreen{
 			try {amount = Math.abs(Double.valueOf(landValue.getText()));} catch (NumberFormatException e) {}
 			Main.NET.sendToServer(new MessageAdminToServer(guicoreChunkList.getSelectedMember().pos.x, guicoreChunkList.getSelectedMember().pos.z, amount, isPublic, isForSale, isOutpost));
 			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 1));
+		}
+		//guild member menu actions
+		if (button == mbrAdd) {
+			Main.NET.sendToServer(new MessageMemberInfoToServer(mbrInviteBox.getText(), guildList.getSelectedMember().entityID, true));
+		}
+		if (button == mbrSub) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, listGuildMembers.getSelectedMember().player, -2));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
+		}
+		if (button == mbr0 && listGuildMembers.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, listGuildMembers.getSelectedMember().player, 0));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
+		}
+		if (button == mbr1 && listGuildMembers.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, listGuildMembers.getSelectedMember().player, 1));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
+		}
+		if (button == mbr2 && listGuildMembers.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, listGuildMembers.getSelectedMember().player, 2));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
+		}
+		if (button == mbr3 && listGuildMembers.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, listGuildMembers.getSelectedMember().player, 3));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 2));
 		}
 	}
 	
@@ -564,7 +623,8 @@ public class GuiAdmin extends GuiScreen{
 		if (guicoreChunkList.visible) {guicoreChunkList.mouseClicked(mouseX, mouseY, mouseButton);}
         if (guioutpostChunkList.visible) {guioutpostChunkList.mouseClicked(mouseX, mouseY, mouseButton);}
         if (landValue.getVisible()) {landValue.mouseClicked(mouseX, mouseY, mouseButton);}
-		//if (listGuildMembers.visible) {listGuildMembers.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (listGuildMembers.visible) {listGuildMembers.mouseClicked(mouseX, mouseY, mouseButton);}
+		if (mbrInviteBox.getVisible()) {mbrInviteBox.mouseClicked(mouseX, mouseY, mouseButton);}
 	}
 	
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
@@ -589,6 +649,7 @@ public class GuiAdmin extends GuiScreen{
 			guicoreChunkList.selectedElement = -1;
 			Main.NET.sendToServer(new MessageAdminToServer(guioutpostChunkList.getSelectedMember().pos.x, guioutpostChunkList.getSelectedMember().pos.z));
 		}
+        if (listGuildMembers.visible) {listGuildMembers.mouseReleased(mouseX, mouseY, state);}
     }
 	
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
@@ -603,6 +664,7 @@ public class GuiAdmin extends GuiScreen{
 		if (perm2.getVisible()) perm2.textboxKeyTyped(typedChar, keyCode);
 		if (perm3.getVisible()) perm3.textboxKeyTyped(typedChar, keyCode);
 		if (landValue.getVisible()) landValue.textboxKeyTyped(typedChar, keyCode);
+		if (mbrInviteBox.getVisible()) mbrInviteBox.textboxKeyTyped(typedChar, keyCode);
     }
     
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
@@ -648,6 +710,9 @@ public class GuiAdmin extends GuiScreen{
     		break;
     	}
     	case GUILD_MEMBER: {
+    		this.drawString(this.fontRenderer, "Member List", listGuildMembers.x, listGuildMembers.y-10, 16777215);
+    		listGuildMembers.drawScreen(mouseX, mouseY, partialTicks);
+    		mbrInviteBox.drawTextBox();
     		break;
     	}
     	case MARKET: {
@@ -1155,75 +1220,75 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	 public class GuiListAdminGuildChunks extends GuiNewListExtended{
-	    	private final GuiAdmin guildManager;
-	    	private boolean coreChunk;
-	    	private List<ChunkPos> pos;
-	    	private Map<ChunkPos, Double> chunkValues;
-	        private final List<GuiListAdminGuildChunksEntry> entries = Lists.<GuiListAdminGuildChunksEntry>newArrayList();
-	        /** Index to the currently selected world */
-	        private int selectedIdx = -1;
-	        
-	        public GuiListAdminGuildChunks(GuiAdmin gm, List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
-	    		super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
-	    		this.guildManager = gm;
-	    		this.pos = pos;
-	    		this.coreChunk = coreChunk;
-	    		this.chunkValues = chunkValues;
-	    		this.refreshList();
-	    	}
-	        
-	        public void refreshList()
-	        {
-	        	entries.clear();
-	           	for (ChunkPos ck : pos) {
-	                this.entries.add(new GuiListAdminGuildChunksEntry(this, ck, coreChunk));
-	            }
-	        }
-	        
-	        public void selectMember(int idx) {
-		    	this.selectedIdx = idx;
-		    }
-	        @Nullable
-		    public GuiListAdminGuildChunksEntry getSelectedMember(){return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;}
-	    	@Override
-	    	public GuiListAdminGuildChunksEntry getListEntry(int index) {return entries.get(index);}
-	    	@Override
-	    	protected int getSize() {return entries.size();}
+	public class GuiListAdminGuildChunks extends GuiNewListExtended{
+    	private final GuiAdmin guildManager;
+    	private boolean coreChunk;
+    	private List<ChunkPos> pos;
+    	private Map<ChunkPos, Double> chunkValues;
+        private final List<GuiListAdminGuildChunksEntry> entries = Lists.<GuiListAdminGuildChunksEntry>newArrayList();
+        /** Index to the currently selected world */
+        private int selectedIdx = -1;
+        
+        public GuiListAdminGuildChunks(GuiAdmin gm, List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+    		super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+    		this.guildManager = gm;
+    		this.pos = pos;
+    		this.coreChunk = coreChunk;
+    		this.chunkValues = chunkValues;
+    		this.refreshList();
+    	}
+        
+        public void refreshList()
+        {
+        	entries.clear();
+           	for (ChunkPos ck : pos) {
+                this.entries.add(new GuiListAdminGuildChunksEntry(this, ck, coreChunk));
+            }
+        }
+        
+        public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
 	    }
+        @Nullable
+	    public GuiListAdminGuildChunksEntry getSelectedMember(){return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;}
+    	@Override
+    	public GuiListAdminGuildChunksEntry getListEntry(int index) {return entries.get(index);}
+    	@Override
+    	protected int getSize() {return entries.size();}
+    }
 	    
-	    public class GuiListAdminGuildChunksEntry implements GuiNewListExtended.IGuiNewListEntry{
-	    	private Minecraft client = Minecraft.getMinecraft();
-	    	private final GuiListAdminGuildChunks containingListSel;
-	    	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	    	private final ChunkPos pos;
-	    	private boolean coreChunk;
-	    	
-	    	public GuiListAdminGuildChunksEntry(GuiListAdminGuildChunks listSelectionIn, ChunkPos pos, boolean coreChunk) {
-	    		containingListSel = listSelectionIn;
-	    		this.pos = pos;
-	    		this.coreChunk = coreChunk;
-	    	}
-	    	
-	    	@Override
-	    	public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+	public class GuiListAdminGuildChunksEntry implements GuiNewListExtended.IGuiNewListEntry{
+    	private Minecraft client = Minecraft.getMinecraft();
+    	private final GuiListAdminGuildChunks containingListSel;
+    	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+    	private final ChunkPos pos;
+    	private boolean coreChunk;
+    	
+    	public GuiListAdminGuildChunksEntry(GuiListAdminGuildChunks listSelectionIn, ChunkPos pos, boolean coreChunk) {
+    		containingListSel = listSelectionIn;
+    		this.pos = pos;
+    		this.coreChunk = coreChunk;
+    	}
+    	
+    	@Override
+    	public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
 
-	    	@Override
-	    	public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
-	    		double price = containingListSel.chunkValues.getOrDefault(pos, 0D);
-	    		String value = price >=0 ? TextFormatting.WHITE+"$"+ df.format(price) : TextFormatting.RED+"$"+ df.format(-1*price);
-	    		if (coreChunk) this.client.fontRenderer.drawString(TextFormatting.BLUE+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
-	    		if (!coreChunk) this.client.fontRenderer.drawString(TextFormatting.RED+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
-	    	}
+    	@Override
+    	public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+    		double price = containingListSel.chunkValues.getOrDefault(pos, 0D);
+    		String value = price >=0 ? TextFormatting.WHITE+"$"+ df.format(price) : TextFormatting.RED+"$"+ df.format(-1*price);
+    		if (coreChunk) this.client.fontRenderer.drawString(TextFormatting.BLUE+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
+    		if (!coreChunk) this.client.fontRenderer.drawString(TextFormatting.RED+"("+String.valueOf(pos.x)+","+String.valueOf(pos.z)+") "+value, x+3, y, 16777215);
+    	}
 
-	    	@Override
-	    	public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
-	    		this.containingListSel.selectMember(slotIndex);
-		        this.containingListSel.showSelectionBox = true;
-		        return false;}
+    	@Override
+    	public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+    		this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;}
 
-	    	@Override
-	    	public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {}
+    	@Override
+    	public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {}
 
 	    }
 

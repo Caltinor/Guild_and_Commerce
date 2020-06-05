@@ -17,6 +17,7 @@ import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
+import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
@@ -38,7 +39,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class MessageAdminToServer implements IMessage {
 	public int messageIndex = -1;
 	public MktPktType marketPacketType = MktPktType.NONE;
-	public UUID id = Reference.NIL;
+	public UUID id1 = Reference.NIL;
+	public UUID id2 = Reference.NIL;
 	public int i1 = 0;
 	public int i2 = 0;
 	double dbl1 = 0D;
@@ -59,7 +61,7 @@ public class MessageAdminToServer implements IMessage {
 	public MessageAdminToServer(boolean isGuildAccount, UUID owner, double balance) { //acount changes
 		messageIndex = 0;
 		bool1 = isGuildAccount;
-		id = owner;
+		id1 = owner;
 		dbl1 = balance;
 	}
 	
@@ -71,7 +73,7 @@ public class MessageAdminToServer implements IMessage {
 	public MessageAdminToServer(boolean isGuildList, UUID account) { //account remove
 		messageIndex = 2;
 		bool1 = isGuildList;
-		id = account;
+		id1 = account;
 	}
 	
 	public MessageAdminToServer(int makeMeZero) { //guild list request	
@@ -86,13 +88,13 @@ public class MessageAdminToServer implements IMessage {
 	public MessageAdminToServer(MktPktType type, UUID marketItemID) {//grabs information for the selected item.
 		messageIndex = 5;
 		marketPacketType = type;
-		id = marketItemID;
+		id1 = marketItemID;
 	}
 	
 	public MessageAdminToServer(MktPktType type, UUID marketItemID, double price, boolean vendorGiveItem, int vendStock, boolean infinite, long bidEnd) {
 		messageIndex = 6;
 		marketPacketType = type;
-		id = marketItemID;
+		id1 = marketItemID;
 		this.dbl1 = price;
 		this.bool1 = vendorGiveItem;
 		this.vendStock = vendStock;
@@ -103,12 +105,12 @@ public class MessageAdminToServer implements IMessage {
 	public MessageAdminToServer(MktPktType type, UUID marketItemID, boolean isExpire) {//removes item from the specified market
 		messageIndex = isExpire ? 8 : 7;
 		marketPacketType = type;
-		id = marketItemID;
+		id1 = marketItemID;
 	}
 	
 	public MessageAdminToServer(UUID guildID, String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
 		messageIndex = 11;
-		id = guildID;
+		id1 = guildID;
 		bool1 = open;
 		dbl1 = tax;
 		str1 = name;
@@ -125,7 +127,7 @@ public class MessageAdminToServer implements IMessage {
 		case 1: {messageIndex = 12;	break;} //request for guild land info
 		case 2: {messageIndex = 13;	break;} //request for guild member info
 		default:}
-		id = guildID;
+		id1 = guildID;
 	}
 	
 	public MessageAdminToServer(int chunkX, int chunkZ) {
@@ -143,6 +145,13 @@ public class MessageAdminToServer implements IMessage {
 		bool2 = isForSale;
 		bool3 = isOutpost;
 	}
+
+	public MessageAdminToServer(UUID guildID, UUID playerID, int rank) {
+		messageIndex = 16;
+		id1 = guildID;
+		id2 = playerID;
+		i1 = rank;
+	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -151,7 +160,7 @@ public class MessageAdminToServer implements IMessage {
 		switch (messageIndex) {
 		case 0: {
 			bool1 = pbuf.readBoolean();
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			dbl1 = pbuf.readDouble();
 			break;
 		}
@@ -161,7 +170,7 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 2: {
 			bool1 = pbuf.readBoolean();
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			break;
 		}
 		case 4: {
@@ -170,12 +179,12 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 5: case 7: case 8:{
 			marketPacketType = MktPktType.values()[pbuf.readVarInt()];
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			break;
 		}
 		case 6: {
 			marketPacketType = MktPktType.values()[pbuf.readVarInt()];
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			dbl1 = pbuf.readDouble();
 			bool1 = pbuf.readBoolean();
 			vendStock = pbuf.readInt();
@@ -184,11 +193,11 @@ public class MessageAdminToServer implements IMessage {
 			break;
 		}
 		case 10: case 12: case 13:{
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			break;
 		}
 		case 11: {
-			id = pbuf.readUniqueId();
+			id1 = pbuf.readUniqueId();
 			bool1 = pbuf.readBoolean();
 			dbl1 = pbuf.readDouble();
 			str1 = ByteBufUtils.readUTF8String(buf);
@@ -220,6 +229,12 @@ public class MessageAdminToServer implements IMessage {
 			bool3 = pbuf.readBoolean();
 			break;
 		}
+		case 16: {
+			id1 = pbuf.readUniqueId();
+			id2 = pbuf.readUniqueId();
+			i1 = pbuf.readInt();
+			break;
+		}
 		default:
 		}		
 	}
@@ -231,7 +246,7 @@ public class MessageAdminToServer implements IMessage {
 		switch (messageIndex) {
 		case 0: {
 			pbuf.writeBoolean(bool1);
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			pbuf.writeDouble(dbl1);
 			break;
 		}
@@ -241,7 +256,7 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 2: {
 			pbuf.writeBoolean(bool1);
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			break;
 		}
 		case 4: {
@@ -250,12 +265,12 @@ public class MessageAdminToServer implements IMessage {
 		}
 		case 5: case 7: case 8:{
 			pbuf.writeVarInt(marketPacketType.ordinal());
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			break;
 		}
 		case 6: {
 			pbuf.writeVarInt(marketPacketType.ordinal());
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			pbuf.writeDouble(dbl1);
 			pbuf.writeBoolean(bool1);
 			pbuf.writeInt(vendStock);
@@ -264,11 +279,11 @@ public class MessageAdminToServer implements IMessage {
 			break;
 		}
 		case 10: case 12: case 13:{
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			break;
 		}
 		case 11: {
-			pbuf.writeUniqueId(id);
+			pbuf.writeUniqueId(id1);
 			pbuf.writeBoolean(bool1);
 			pbuf.writeDouble(dbl1);
 			ByteBufUtils.writeUTF8String(buf, str1);
@@ -302,6 +317,12 @@ public class MessageAdminToServer implements IMessage {
 			pbuf.writeBoolean(bool3);
 			break;
 		}
+		case 16: {
+			pbuf.writeUniqueId(id1);
+			pbuf.writeUniqueId(id2);
+			pbuf.writeInt(i1);
+			break;
+		}
 		default:
 		}		
 	}
@@ -317,7 +338,7 @@ public class MessageAdminToServer implements IMessage {
 			switch (message.messageIndex) {
 			case 0: { //acct change
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
-				AcctGroup.setBalance(message.id, message.dbl1);
+				AcctGroup.setBalance(message.id1, message.dbl1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
@@ -329,7 +350,7 @@ public class MessageAdminToServer implements IMessage {
 			}
 			case 2: { //account remove
 				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
-				AcctGroup.removeAccount(message.id);
+				AcctGroup.removeAccount(message.id1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld());
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
@@ -351,15 +372,15 @@ public class MessageAdminToServer implements IMessage {
 			case 5: { //market item details
 				Marketplace market = marketFromType(message.marketPacketType, ctx);
 				MinecraftServer server = ctx.getServerHandler().player.getServer();
-				String str1 = market.vendList.get(message.id).vendor.equals(Reference.NIL) ? "Server" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id).vendor).getName();
-				String str2 = market.vendList.get(message.id).locality.equals(Reference.NIL)? "" : GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildNamefromUUID(market.vendList.get(message.id).locality);
-				String str3 = market.vendList.get(message.id).highestBidder.equals(Reference.NIL) ? "" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id).highestBidder).getName();
+				String str1 = market.vendList.get(message.id1).vendor.equals(Reference.NIL) ? "Server" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id1).vendor).getName();
+				String str2 = market.vendList.get(message.id1).locality.equals(Reference.NIL)? "" : GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildNamefromUUID(market.vendList.get(message.id1).locality);
+				String str3 = market.vendList.get(message.id1).highestBidder.equals(Reference.NIL) ? "" : server.getPlayerProfileCache().getProfileByUUID(market.vendList.get(message.id1).highestBidder).getName();
 				Main.NET.sendTo(new MessageAdminToGui(str1, str2, str3), ctx.getServerHandler().player);
 				break;
 			}
 			case 6: {
 				Marketplace market = marketFromType(message.marketPacketType, ctx);
-				MarketItem item = market.vendList.get(message.id);
+				MarketItem item = market.vendList.get(message.id1);
 				item.price = message.dbl1;
 				item.vendorGiveItem = message.bool1;
 				item.vendStock = message.vendStock;
@@ -371,14 +392,14 @@ public class MessageAdminToServer implements IMessage {
 			}
 			case 7: {
 				Marketplace market = marketFromType(message.marketPacketType, ctx);
-				market.vendList.remove(message.id);
+				market.vendList.remove(message.id1);
 				MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
 				break;
 			}
 			case 8: {
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction();
-				market.vendList.get(message.id).bidEnd = System.currentTimeMillis();
+				market.vendList.get(message.id1).bidEnd = System.currentTimeMillis();
 				MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Main.NET.sendTo(new MessageAdminToGui(market.vendList, message.marketPacketType), ctx.getServerHandler().player);
 				break;
@@ -388,14 +409,14 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 10: { //gathers selected guild information and sends it to the gui
-				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
 				Main.NET.sendTo(new MessageAdminToGui(guild.guildName, guild.openToJoin, guild.guildTax, guild.permLevels.getOrDefault(0, "0-loadFail"),
 						guild.permLevels.getOrDefault(1, "1-loadFail"),guild.permLevels.getOrDefault(2, "2-loadFail"),guild.permLevels.getOrDefault(3, "3-loadFail"), guild.permissions), ctx.getServerHandler().player);
 				break;
 			}
 			case 11: { //saves guild information from guild main to the actual guild object
-				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
 				guild.guildName = message.str1;
 				guild.guildTax = message.dbl1;
@@ -410,7 +431,7 @@ public class MessageAdminToServer implements IMessage {
 			}
 			case 12: {		
 				Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
-				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id);
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gindex);
 				List<ChunkPos> posCore = guild.coreLand;
 				List<ChunkPos> posOutpost = guild.outpostLand; 
@@ -428,7 +449,13 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 13: {
-				
+				List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
+				Map<UUID, String> mbrNames = new HashMap<UUID, String>();			
+				for (UUID u : glist.get(gindex).members.keySet()) {
+					mbrNames.put(u, ctx.getServerHandler().player.getServer().getPlayerProfileCache().getProfileByUUID(u).getName());
+				}
+				Main.NET.sendTo(new MessageAdminToGui(glist.get(gindex).members	, mbrNames), ctx.getServerHandler().player);
 				break;
 			}
 			case 14: {
@@ -443,6 +470,15 @@ public class MessageAdminToServer implements IMessage {
 				cap.setForSale(message.bool2);
 				cap.setOutpost(message.bool3);
 				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.i1, message.i2).markDirty();
+				break;
+			}
+			case 16: {
+				List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
+				if (message.i1 != -2) glist.get(gindex).members.put(message.id2, message.i1);
+				if (message.i1 == -2) glist.get(gindex).members.remove(message.id2);
+				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
+				break;
 			}
 			default:
 			}
