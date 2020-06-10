@@ -106,9 +106,8 @@ public class CoreUtils {
 							if (!cap.getOwner().equals(Reference.NIL)) {
 								AccountSaver.get(world).PLAYERS.addBalance(cap.getOwner(), cap.getPrice()*.1);
 								cap.setPlayers(new ArrayList<UUID>());
-								cap.setWhitelist(new NBTTagList());
+								cap.fromNBTWhitelist(new NBTTagList());
 								cap.setPublic(false);
-								cap.setPublicRedstone(false);
 							}
 							if (cap.getForSale()) {
 								AccountSaver.get(world).GUILDS.addBalance(cap.getOwner(), cap.getPrice());
@@ -116,10 +115,9 @@ public class CoreUtils {
 								GuildSaver.get(world).GUILDS.get(sellerIndex).removeLand(ck.getPos());
 								landShiftChecker(sellerIndex);
 								cap.setOutpost(false);
-								cap.setWhitelist(new NBTTagList());
+								cap.fromNBTWhitelist(new NBTTagList());
 								cap.setPlayers(new ArrayList<UUID>());
 								cap.setPublic(false);
-								cap.setPublicRedstone(false);
 							}
 							AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* cap.getPrice()));
 							cap.setOwner(owningGuild);
@@ -233,9 +231,8 @@ public class CoreUtils {
 			GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner())).removeLand(ck.getPos());
 			landShiftChecker(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner()));
 			cap.setOwner(Reference.NIL);
-			cap.setPublicRedstone(false);
 			cap.setPublic(false);
-			cap.setWhitelist(new NBTTagList());
+			cap.fromNBTWhitelist(new NBTTagList());
 			cap.setForSale(false);
 			cap.setOutpost(false);
 			cap.setPlayers(new ArrayList<UUID>());			

@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
+import com.dicemc.marketplace.core.ProtectionChecker;
+import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.gui.ContainerSell;
+import com.dicemc.marketplace.item.ItemWhitelister;
+import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
@@ -19,7 +24,10 @@ import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ContainerPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -27,6 +35,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityEvent.EnteringChunk;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -34,11 +43,15 @@ import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.relauncher.Side;
 
 @EventBusSubscriber
 public class ChunkEventHandler {
@@ -102,8 +115,7 @@ public class ChunkEventHandler {
 					ncap.setPublic(false);
 					ncap.setOutpost(false);
 					ncap.setPlayers(new ArrayList<UUID>());
-					ncap.setPublicRedstone(false);
-					ncap.setWhitelist(new NBTTagList());
+					ncap.fromNBTWhitelist(new NBTTagList());
 				}
 			}
 			ChunkCapability ocap = event.getEntity().world.getChunkFromChunkCoords(event.getOldChunkX(), event.getOldChunkZ()).getCapability(ChunkProvider.CHUNK_CAP, null);	
@@ -135,62 +147,114 @@ public class ChunkEventHandler {
 		if (event.getPlayer().dimension != 0) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
-		if (!ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
+		switch (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
+		case DENIED: {
 			event.setCanceled(true);
 			event.getPlayer().sendStatusMessage(new TextComponentString("You are not permitted to break blocks here."), true);
+			break;
+		}
+		case WHITELIST: {
+			if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
+				event.setCanceled(true);
+				event.getPlayer().sendStatusMessage(new TextComponentString("You are not permitted to break blocks here."), true);
+			}
+			break;
+		}
+		default:
 		}
 	}
+	
+	@SubscribeEvent
+	public static void onBlockLeftClick(LeftClickBlock event) {
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), true, false);
+			event.setCanceled(true);
+			return;
+		}
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+			ItemWhitelister.setWhitelister(event.getEntityPlayer().getHeldItemMainhand(), cap.getWhitelist());
+			event.setCanceled(true);
+			return;
+		}
+	}
+	
 	@SubscribeEvent
 	public static void onBlockRightClick(RightClickBlock event) {
-		if (event.getEntityPlayer().isCreative()) return;
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), false, true);
+			event.setCanceled(true);
+			return;
+		}		
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			List<Guild> glist = GuildSaver.get(event.getWorld()).GUILDS;
+			int gid = -1;
+			for (int i = 0; i < glist.size(); i++) {if (glist.get(i).members.getOrDefault(event.getEntityPlayer().getUniqueID(), -1) >= 0) gid = i;}
+			if (gid >= 0) {
+				if (cap.getOwner().equals(glist.get(gid).guildID) && glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) <= glist.get(gid).permissions.get("setclaim")
+						&& glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) != -1) {
+					cap.fromNBTWhitelist(event.getEntityPlayer().getHeldItemMainhand().getTagCompound().getTagList("whitelister", Constants.NBT.TAG_COMPOUND));
+					event.setCanceled(true);
+					return;
+				}
+			}
+		}			
+		if (event.getEntityPlayer().isCreative()) return;
 		if (cap.getOwner().equals(Reference.NIL)) return;
-		if (!ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) && !event.getEntity().world.isRemote) {
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
 			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
 		}
-	}
-	@SubscribeEvent
-	public static void onEntityInteract(EntityInteract event) {
-		if (event.getEntityPlayer().isCreative()) return;
-		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
-		if (cap.getOwner().equals(Reference.NIL)) return;
-		if (!ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) && !event.getEntity().world.isRemote) {
-			event.setCanceled(true);
-			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Interaction Denied."), true);
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
+			if (!ProtectionChecker.whitelistInteractCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
+				event.setCanceled(true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+			}
 		}
 	}
 	@SubscribeEvent
 	public static void onEntityInteract(EntityInteractSpecific event) {
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getTarget(), false, true);
+			event.setCanceled(true);
+			return;
+		}
 		if (event.getEntityPlayer().isCreative()) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL)) return;
-		if (!ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) && !event.getEntity().world.isRemote) {
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
 			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Interaction Denied."), true);
+		}
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
+			if (!ProtectionChecker.whitelistInteractCheck(event.getTarget(), cap)) {
+				event.setCanceled(true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+			}
 		}
 	}
 	@SubscribeEvent
 	public static void onEntityAttack(AttackEntityEvent event) {
+		if (event.getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getTarget(), true, false);
+			event.setCanceled(true);
+			return;
+		}
 		if (event.getEntityPlayer().isCreative()) return;
 		if (!(event.getTarget() instanceof EntityMob))	{
 			ChunkCapability cap = event.getEntity().world.getChunkFromBlockCoords(event.getEntity().getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
 			List<Guild> glist = GuildSaver.get(event.getEntity().world).GUILDS;
-			boolean canAttack = false;
-			if (cap.getOwner().equals(Reference.NIL)) canAttack = true;
-			if (!canAttack) {for (UUID plyr : cap.getPlayers()) {if (plyr.equals(event.getEntityPlayer().getUniqueID())) canAttack = true;}}
-			if (!canAttack) { for (int i = 0; i < glist.size(); i++) {
-				if (glist.get(i).guildID.equals(cap.getOwner())) {
-					for (UUID member : glist.get(i).members.keySet()) {
-						if (member.equals(event.getEntityPlayer().getUniqueID())) {
-							canAttack = true;
-						}
-					}
-				}
-			}}
-			if (!canAttack) {
+			if (cap.getOwner().equals(Reference.NIL)) return;
+			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);
 				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Invulnerable."), true);
+			}
+			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST) {
+				if (!ProtectionChecker.whitelistAttackCheck(event.getTarget(), cap)) {
+					event.setCanceled(true);
+					event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+				}
 			}
 		}
 	}
@@ -199,22 +263,23 @@ public class ChunkEventHandler {
 	public static void onEntityDamage(LivingDamageEvent event) {
 		if (event.getSource().isCreativePlayer()) return;
 		if (!(event.getEntityLiving() instanceof EntityMob) && !(event.getEntityLiving() instanceof EntityPlayer) && (event.getSource().getTrueSource() instanceof EntityPlayer))	{
+			if (((EntityPlayer)event.getSource().getTrueSource()).getHeldItemMainhand().getItem().equals(ModItems.WHITELISTER) && !((EntityPlayer)event.getSource().getTrueSource()).isSneaking() && !event.getEntity().world.isRemote) {
+				ItemWhitelister.addToWhitelister(((EntityPlayer)event.getSource().getTrueSource()).getHeldItemMainhand(), event.getEntityLiving(), true, false);
+				event.setCanceled(true);
+				return;
+			}
 			ChunkCapability cap = event.getEntityLiving().world.getChunkFromChunkCoords(event.getEntityLiving().chunkCoordX, event.getEntityLiving().chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 			List<Guild> glist = GuildSaver.get(event.getEntity().world).GUILDS;
-			boolean canAttack = false;
-			if (cap.getOwner().equals(Reference.NIL)) canAttack = true;
-			if (!canAttack && !cap.getForSale()) {for (UUID plyr : cap.getPlayers()) {if (plyr.equals(event.getSource().getTrueSource().getUniqueID())) canAttack = true;}}
-			if (!canAttack && !cap.getForSale()) { for (int i = 0; i < glist.size(); i++) {
-				if (glist.get(i).guildID.equals(cap.getOwner())) {
-					for (UUID member : glist.get(i).members.keySet()) {
-						if (member.equals(event.getSource().getTrueSource().getUniqueID())) {
-							canAttack = true;
-						}
-					}
-				}
-			}}
-			if (!canAttack) {
+			if (cap.getOwner().equals(Reference.NIL)) return;
+			if (ProtectionChecker.ownerMatch(event.getSource().getTrueSource().getUniqueID(), cap, GuildSaver.get(event.getSource().getTrueSource().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);
+				if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentString("Entity Invulnerable."), true);
+			}
+			if (ProtectionChecker.ownerMatch(event.getSource().getTrueSource().getUniqueID(), cap, GuildSaver.get(event.getSource().getTrueSource().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST) {
+				if (!ProtectionChecker.whitelistAttackCheck(event.getSource().getTrueSource(), cap)) {
+					event.setCanceled(true);
+					if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+				}
 			}
 		}
 	}
@@ -226,9 +291,15 @@ public class ChunkEventHandler {
 		if (event.getContainer() instanceof ContainerSell) return;
 		ChunkCapability cap = event.getEntity().world.getChunkFromBlockCoords(event.getEntity().getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL)) return;
-		if (!ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntity().world).GUILDS) && !event.getEntity().world.isRemote) {
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntity().world).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
 			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Container Interaction Denied."), true);
+		}
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
+			if (!ProtectionChecker.whitelistInteractCheck(event.getEntityPlayer().getEntityWorld().getBlockState(event.getEntity().getPosition()).getBlock().getRegistryName().toString(), cap)) {
+				event.setCanceled(true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+			}
 		}
 	}
 	
@@ -237,19 +308,5 @@ public class ChunkEventHandler {
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(new BlockPos(event.getExplosion().getPosition())).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (!cap.getOwner().equals(Reference.NIL)) event.setCanceled(true);
 	}
-	
-	private static boolean ownerMatch(UUID player, ChunkCapability cap, List<Guild> glist) {
-		if (cap.getPublic()) return true;
-		for (UUID plyr : cap.getPlayers()) {if (plyr.equals(player)) return true;}
-		if (!cap.getForSale()) {
-			for (int i = 0; i < glist.size(); i++) {
-				if (glist.get(i).guildID.equals(cap.getOwner())) {
-					for (UUID member : glist.get(i).members.keySet()) {
-						if (member.equals(player)) return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
+
 }

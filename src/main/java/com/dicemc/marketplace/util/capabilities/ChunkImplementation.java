@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import com.dicemc.marketplace.Main;
+import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.util.Reference;
 
 import net.minecraft.block.Block;
@@ -19,8 +20,10 @@ import net.minecraftforge.common.util.Constants;
 public class ChunkImplementation implements ChunkCapability{
 	private UUID owner = Reference.NIL;
 	private double price = Main.ModConfig.LAND_DEFAULT_COST;
+	private double leasePrice = -1;
 	private boolean redstone = false;
-	private List<String> whitelist = new ArrayList<String>();
+	private int permissionMinimum = 3;
+	private List<WhitelistItem> whitelist = new ArrayList<WhitelistItem>();
 	private long tempclaimEnd = System.currentTimeMillis();
 	private boolean isPublic = false;
 	private boolean isForSale = false;
@@ -36,32 +39,36 @@ public class ChunkImplementation implements ChunkCapability{
 	@Override
 	public double getPrice() { return price; }
 	@Override
-	public void setWhitelist(NBTTagList list) {
+	public List<WhitelistItem> getWhitelist() {
+		return whitelist;
+	}
+	@Override
+	public void fromNBTWhitelist(NBTTagList list) {
 		whitelist.clear();
-		for (int i = 0; i < list.tagCount(); i++) {	whitelist.add(list.getStringTagAt(i)); }		
+		for (int i = 0; i < list.tagCount(); i++) {	whitelist.add(new WhitelistItem(list.getCompoundTagAt(i))); }		
 	}
 	@Override
-	public void changeWhitelist(String item) {
-		boolean added = false;
+	public void changeWhitelist(WhitelistItem item) {
 		for (int i = 0; i < whitelist.size(); i++) {
-			if (whitelist.get(i) == item) whitelist.remove(i);
-			added = true;
+			if (item.getBlock() != "" && whitelist.get(i).getBlock().equals(item.getBlock())) {
+				whitelist.set(i, item);
+				return;
+			}
+			if (item.getEntity() != "" && item.getEntity().equals(whitelist.get(i).getEntity())) {
+				whitelist.set(i, item);
+				return;
+			}
 		}		
-		if (!added) whitelist.add(item);
+		whitelist.add(item);
 	}
 	@Override
-	public NBTTagList getWhitelist() {
+	public NBTTagList toNBTWhitelist() {
 		NBTTagList lnbt = new NBTTagList();
 		for (int i = 0; i < whitelist.size(); i++) {
-			NBTTagString nbt = new NBTTagString(whitelist.get(i));
-			lnbt.appendTag(nbt);
+			lnbt.appendTag(whitelist.get(i).toNBT());
 		}
 		return lnbt;
 	}
-	@Override
-	public void setPublicRedstone(boolean allow) {redstone = allow;}
-	@Override
-	public boolean getPublicRedstoner() { return redstone;}
 	@Override
 	public void setTempTime(long millis) { tempclaimEnd = millis;	}
 	@Override
@@ -110,4 +117,12 @@ public class ChunkImplementation implements ChunkCapability{
 	public boolean getOutpost() {return isOutpost;}
 	@Override
 	public void setOutpost(boolean isOutpost) {this.isOutpost = isOutpost; }
+	@Override
+	public void setLeasePrice(double price) {leasePrice = price;}
+	@Override
+	public double getLeasePrice() {return leasePrice;}
+	@Override
+	public int getPermMin() {return permissionMinimum;}
+	@Override
+	public void setPermMin(int level) {permissionMinimum = level;}
 }

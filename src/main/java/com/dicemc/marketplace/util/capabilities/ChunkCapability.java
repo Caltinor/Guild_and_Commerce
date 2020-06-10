@@ -3,6 +3,8 @@ package com.dicemc.marketplace.util.capabilities;
 import java.util.List;
 import java.util.UUID;
 
+import com.dicemc.marketplace.core.WhitelistItem;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.chunk.Chunk;
@@ -30,12 +32,14 @@ public interface ChunkCapability {
 	
 	public void setPrice(double price);
 	public double getPrice();
+	public void setLeasePrice(double price);
+	public double getLeasePrice();
 	
-	public void setWhitelist(NBTTagList list);
-	public void changeWhitelist(String item);
-	public NBTTagList getWhitelist();
+	public List<WhitelistItem> getWhitelist();
+	public void changeWhitelist(WhitelistItem item);
+	public NBTTagList toNBTWhitelist();
+	public void fromNBTWhitelist(NBTTagList list);	
 	
-	public void setPublicRedstone(boolean allow);
-	public boolean getPublicRedstoner();
-	
+	public int getPermMin();
+	public void setPermMin(int level);
 }

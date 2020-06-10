@@ -9,6 +9,7 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
+import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.gui.GuiMarketSell;
@@ -81,6 +82,38 @@ public class Commands extends CommandBase{
 			Main.proxy.openAdminGui();
 			break;
 		}
+		case "whitelist": {
+			int cX = sender.getCommandSenderEntity().chunkCoordX;
+			int cZ = sender.getCommandSenderEntity().chunkCoordZ;
+			ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+			for (int i = 0; i < cap.getWhitelist().size(); i++) {
+				WhitelistItem wl = cap.getWhitelist().get(i);
+				String msg = "["+wl.getBlock()+"] ["+wl.getEntity()+"]Break:"+String.valueOf(wl.getCanBreak()+"Interact:"+String.valueOf(wl.getCanInteract()));
+				message(msg, sender);
+			}
+			break;
+		}
+		case "land": {
+			int cX = sender.getCommandSenderEntity().chunkCoordX;
+			int cZ = sender.getCommandSenderEntity().chunkCoordZ;
+			ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+			switch (args[1]) {
+			case "add": {
+				cap.includePlayer(server.getPlayerProfileCache().getGameProfileForUsername(args[2]).getId());
+				break;
+			}
+			case "remove": {
+				cap.removePlayer(server.getPlayerProfileCache().getGameProfileForUsername(args[2]).getId());
+				break;
+			}
+			case "setlevel": {
+				cap.setPermMin(Integer.valueOf(args[2]));
+				break;
+			}
+			default:
+			}
+			break;
+		}
 		case "landreset": {
 			int cX = sender.getCommandSenderEntity().chunkCoordX;
 			int cZ = sender.getCommandSenderEntity().chunkCoordZ;
@@ -92,9 +125,8 @@ public class Commands extends CommandBase{
 			cap.setPlayers(new ArrayList<UUID>());
 			cap.setPrice(Main.ModConfig.LAND_DEFAULT_COST);
 			cap.setPublic(false);
-			cap.setPublicRedstone(false);
 			cap.setTempTime(System.currentTimeMillis());
-			cap.setWhitelist(new NBTTagList());
+			cap.fromNBTWhitelist(new NBTTagList());
 			List<ChunkPos> list = GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).coreLand;
 			for (int i = list.size()-1; i > -1; i--) {
 				if (list.get(i).x == cX && list.get(i).z == cZ) list.remove(i);
