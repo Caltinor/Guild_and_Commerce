@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "minecraft:paper"
+        },
+        {
+            "item": "minecraft:stick"
+        },
+        {
+            "item": "minecraft:dye",
+            "data": 0
+        }
+    ],
+    "result":
+    {
+        "item": "gnc:whitelister"
+    }
+}

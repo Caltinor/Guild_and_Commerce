@@ -9,4 +9,5 @@ public class ModItems {
 	public static final List<Item> ITEMS = new ArrayList<Item>();
 	
 	public static final Item MONEYBAG = new ItemBase("moneybag");
+	public static final Item WHITELISTER = new ItemWhitelister("whitelister");
 }
