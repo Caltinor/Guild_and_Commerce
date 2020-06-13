@@ -126,7 +126,7 @@ public class MessageGuiRequest implements IMessage{
 						for (int i = 0; i < glist.size(); i++) {if (cap.getOwner().equals(glist.get(i).guildID)) {guildOwned = true; break;}}
 						List<String> plist = new ArrayList<String>();
 						for (int i = 0; i < cap.getPlayers().size(); i++) {	plist.add(Commands.playerNamefromUUID(ctx.getServerHandler().player.getServer(), cap.getPlayers().get(i)));}
-						list.add(new ChunkSummary(guildOwned, cap.getOwner(), ownerName, cap.getPrice(), cap.getPublicRedstoner(), cap.getPublic(), cap.getForSale(), cap.getOutpost(), cap.getTempTime(), new ArrayList<String>(), plist));
+						list.add(new ChunkSummary(guildOwned, cap.getOwner(), ownerName, cap.getPrice(), cap.getPublic(), cap.getForSale(), cap.getOutpost(), cap.getTempTime(), cap.getLeaseDuration(), cap.getWhitelist(), plist, cap.getLeasePrice(), cap.getPermMin()));
 						for (int r = 0; r < 16; r++) {
 							for (int c = 0; c < 16; c++) {
 								int xval = c+ck.getPos().getXStart();
@@ -148,12 +148,10 @@ public class MessageGuiRequest implements IMessage{
 						mapColors.add(colorRows[a][b]);
 					}
 				}
-				UUID gid = (gindex >=0 ) ? glist.get(gindex).guildID : Reference.NIL;
-				boolean canGuildClaim =(gindex >=0 ) ? (glist.get(gindex).members.get(ctx.getServerHandler().player.getUniqueID()) <= glist.get(gindex).permissions.get("setclaim") ? true : false) :false;
-				boolean canGuildSell = (gindex >=0 ) ? (glist.get(gindex).members.get(ctx.getServerHandler().player.getUniqueID()) <= glist.get(gindex).permissions.get("setsell") ? true : false) :false;
-				double balG = gid != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(gid) : 0;
+				Guild myGuild = (gindex >=0 ) ? glist.get(gindex) : new Guild(Reference.NIL);
+				double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(myGuild.guildID) : 0;
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-				Main.NET.sendTo(new MessageChunkToGui(false, list, mapColors, gid, canGuildClaim, canGuildSell, "", balP, balG), ctx.getServerHandler().player);
+				Main.NET.sendTo(new MessageChunkToGui(false, myGuild, list, mapColors, "", balP, balG), ctx.getServerHandler().player);
 				break;
 			}			
 			case 1: {				

@@ -10,6 +10,7 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.ProtectionChecker;
+import com.dicemc.marketplace.core.ProtectionChecker.matchType;
 import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.gui.ContainerSell;
 import com.dicemc.marketplace.item.ItemWhitelister;
@@ -46,9 +47,11 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.relauncher.Side;
@@ -56,7 +59,6 @@ import net.minecraftforge.fml.relauncher.Side;
 @EventBusSubscriber
 public class ChunkEventHandler {
 	public static final ResourceLocation CHUNK_LOC = new ResourceLocation(Reference.MOD_ID, "_ChunkData");
-	//TODO Implement checks for the whitelist.
 	@SubscribeEvent
 	public static void onChunkEnterEvent(EnteringChunk event) {
 		if (event.getEntity() instanceof EntityPlayer) {
@@ -130,17 +132,7 @@ public class ChunkEventHandler {
 	public static void attachChunkCap(AttachCapabilitiesEvent<Chunk> event) {
 		event.addCapability(CHUNK_LOC, new ChunkProvider());
 	}
-	/*
-	 * TODO: Lease permissions. 
-	 * players can be considered "guild exclusive" by having a guild member add them to the chunk, or
-	 * players can lease the property to have their name added to the chunk.
-	 * 
-	 * This will probably be best controlled by a custom gui.  See discord for details.
-	 * 
-	 * ==UPDATE==
-	 * The only check needed in this section is to deny access to otherwise permitted members when a
-	 * player is in the permittedplayers list.  
-	 */
+	
 	@SubscribeEvent
 	public static void onBlockBreak(BreakEvent event) {
 		if (event.getPlayer().isCreative()) return;
@@ -187,20 +179,22 @@ public class ChunkEventHandler {
 			return;
 		}		
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
-		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote && cap.getPlayers().size() == 0) {
 			List<Guild> glist = GuildSaver.get(event.getWorld()).GUILDS;
 			int gid = -1;
 			for (int i = 0; i < glist.size(); i++) {if (glist.get(i).members.getOrDefault(event.getEntityPlayer().getUniqueID(), -1) >= 0) gid = i;}
 			if (gid >= 0) {
-				if (cap.getOwner().equals(glist.get(gid).guildID) && glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) <= glist.get(gid).permissions.get("setclaim")
+				if (cap.getOwner().equals(glist.get(gid).guildID) && glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) <= glist.get(gid).permissions.get("managesublet")
 						&& glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) != -1) {
 					cap.fromNBTWhitelist(event.getEntityPlayer().getHeldItemMainhand().getTagCompound().getTagList("whitelister", Constants.NBT.TAG_COMPOUND));
 					event.setCanceled(true);
+					event.getEntityPlayer().sendStatusMessage(new TextComponentString("Whitelist applied to chunk"), true);
 					return;
 				}
+				else event.getEntityPlayer().sendStatusMessage(new TextComponentString("you cannot apply the whitelist here."), true);
 			}
 		}			
-		if (event.getEntityPlayer().isCreative()) return;
+		
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
@@ -208,11 +202,28 @@ public class ChunkEventHandler {
 		}
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistInteractCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
-				event.setCanceled(true);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+				if (event.getUseBlock() == Result.ALLOW) event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction not whitelisted."), true);
+				event.setUseBlock(Result.DENY);
 			}
 		}
 	}
+	
+	@SubscribeEvent
+	public static void onBlockPlace(PlaceEvent event) {
+		if (event.getPlayer().isCreative()) return;
+		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
+			event.setCanceled(true);
+			event.getPlayer().sendStatusMessage(new TextComponentString("Block Place Denied."), true);
+		}
+		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
+			if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
+				event.setCanceled(true);
+				event.getPlayer().sendStatusMessage(new TextComponentString("Block Place Denied."), true);
+			}
+		}
+	}
+	
 	@SubscribeEvent
 	public static void onEntityInteract(EntityInteractSpecific event) {
 		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
@@ -284,7 +295,7 @@ public class ChunkEventHandler {
 		}
 	}
 	
-	@SubscribeEvent
+	/*@SubscribeEvent
 	public static void onContainerInteract(PlayerContainerEvent.Open event) {
 		if (event.getEntityPlayer().isCreative()) return;
 		if (event.getContainer() instanceof ContainerPlayer) return;
@@ -301,7 +312,7 @@ public class ChunkEventHandler {
 				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
 			}
 		}
-	}
+	}*/
 	
 	@SubscribeEvent
 	public static void onExplosion (ExplosionEvent.Start event) {

@@ -49,8 +49,7 @@ public class TempClaimCommands extends CommandBase{
 				cap.setPublic(false);
 				cap.setOutpost(false);
 				cap.setPlayers(new ArrayList<UUID>());
-				cap.setPublicRedstone(false);
-				cap.setWhitelist(new NBTTagList());
+				cap.fromNBTWhitelist(new NBTTagList());
 			}
 		}
 		return str;

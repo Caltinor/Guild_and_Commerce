@@ -20,6 +20,8 @@ public class ChunkStorage implements IStorage<ChunkCapability>{
 		nbt.setUniqueId("UUID", instance.getOwner());
 		nbt.setDouble("price", instance.getPrice());
 		nbt.setDouble("lease", instance.getLeasePrice());
+		nbt.setInteger("duration", instance.getLeaseDuration());
+		nbt.setInteger("permmin", instance.getPermMin());
 		nbt.setTag("whitelist", instance.toNBTWhitelist());
 		nbt.setTag("permitted", instance.playersToNBT());
 		return nbt;
@@ -31,6 +33,8 @@ public class ChunkStorage implements IStorage<ChunkCapability>{
 		instance.setOwner(((NBTTagCompound) nbt).getUniqueId("UUID"));
 		instance.setPrice(((NBTTagCompound) nbt).getDouble("price"));
 		instance.setLeasePrice(((NBTTagCompound) nbt).getDouble("lease"));
+		instance.setLeaseDuration(((NBTTagCompound) nbt).getInteger("duration"));
+		instance.setPermMin(((NBTTagCompound) nbt).getInteger("permmin"));
 		instance.setTempTime(((NBTTagCompound) nbt).getLong("tempclaimend"));
 		instance.setPublic(((NBTTagCompound) nbt).getBoolean("ispublic"));
 		instance.setPlayers(instance.playersFromNBT(((NBTTagCompound) nbt).getCompoundTag("permitted")));

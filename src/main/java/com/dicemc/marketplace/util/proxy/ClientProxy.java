@@ -35,8 +35,8 @@ public class ClientProxy extends CommonProxy {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiMarketManager(listType, vendList, feeBuy, feeSell, balP, response, locality));
 	}
 	
-	public void openChunkGui(List<ChunkSummary> list, List<Integer> mapColors, UUID playerGuildID, boolean canGuildClaim, boolean canGuildSell, String response, double acctP, double acctG) {
-		Minecraft.getMinecraft().displayGuiScreen(new GuiChunkManager(list, mapColors, playerGuildID, canGuildClaim, canGuildSell, response, acctP, acctG));
+	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
+		Minecraft.getMinecraft().displayGuiScreen(new GuiChunkManager(myGuild, list, mapColors, response, acctP, acctG));
 	}
 	
 	public void openGuildGui(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {

@@ -31,9 +31,7 @@ public class Guild {
 	public Map<UUID, Integer> members = new HashMap<UUID, Integer>();
 	
 	//this constructor is necessary for readFromNBT to properly load the data.
-	public Guild(UUID id) {
-		guildID = id;
-		guildName = "Unnamed Guild" + guildID.toString();
+	private void baseConstr() {
 		permLevels.put(0, "Leader");
 		permLevels.put(1, "Dignitary");
 		permLevels.put(2, "Trustee");
@@ -50,26 +48,18 @@ public class Guild {
 		permissions.put("setsell", 3);
 		permissions.put("setwithdraw", 3);
 		permissions.put("setpromotedemote", 3);
+		permissions.put("managesublet", 3);
+	}
+	
+	public Guild(UUID id) {
+		guildID = id;
+		guildName = "Unnamed Guild" + guildID.toString();
+		baseConstr();
 	}
 	public Guild(String name) {
 		guildName = name;
 		guildID = UUID.randomUUID();
-		permLevels.put(0, "Leader");
-		permLevels.put(1, "Dignitary");
-		permLevels.put(2, "Trustee");
-		permLevels.put(3, "Member");
-		openToJoin = false;
-		guildTax = 0;
-		permissions.put("setname", 3);
-		permissions.put("setopen", 3);
-		permissions.put("settax", 3);
-		permissions.put("setperms", 3);
-		permissions.put("setinvite", 3);
-		permissions.put("setkick", 3);
-		permissions.put("setclaim", 3);
-		permissions.put("setsell", 3);
-		permissions.put("setwithdraw", 3);
-		permissions.put("setpromotedemote", 3);
+		baseConstr();
 	}
 	public Guild(NBTTagCompound nbt) {
 		guildID = nbt.getUniqueId("guildID");
@@ -80,30 +70,22 @@ public class Guild {
 		permLevels.put(1, nbt.getString("perm1"));
 		permLevels.put(2, nbt.getString("perm2"));
 		permLevels.put(3, nbt.getString("perm3"));
-		permissions.put("setname", nbt.getInteger("perm4"));
-		permissions.put("setopen", nbt.getInteger("perm5"));
-		permissions.put("settax", nbt.getInteger("perm6"));
-		permissions.put("setperms", nbt.getInteger("perm7"));
-		permissions.put("setinvite", nbt.getInteger("perm8"));
-		permissions.put("setkick", nbt.getInteger("perm9"));
-		permissions.put("setclaim", nbt.getInteger("perm10"));
-		permissions.put("setsell", nbt.getInteger("perm11"));
-		permissions.put("setwithdraw", nbt.getInteger("perm12"));
-		permissions.put("setpromotedemote", nbt.getInteger("perm13"));
 		NBTTagList lnbt = new NBTTagList();
+		lnbt = nbt.getTagList("permissions", Constants.NBT.TAG_COMPOUND);
+		for (int x= 0; x < lnbt.tagCount(); x++) {
+			permissions.put(lnbt.getCompoundTagAt(x).getString("key"), lnbt.getCompoundTagAt(x).getInteger("value"));
+		}
 		lnbt = nbt.getTagList("members", Constants.NBT.TAG_COMPOUND);
 		for (int x= 0; x < lnbt.tagCount(); x++) {
 			members.put(lnbt.getCompoundTagAt(x).getUniqueId("UUID"), lnbt.getCompoundTagAt(x).getInteger("permLevel"));
 		}
 		lnbt = nbt.getTagList("coreland", Constants.NBT.TAG_COMPOUND);
 		for (int x= 0; x < lnbt.tagCount(); x++) {
-			ChunkPos l = chunkFromLong(lnbt.getCompoundTagAt(x).getLong("chunk"));
-			coreLand.add(l); 
+			coreLand.add(chunkFromLong(lnbt.getCompoundTagAt(x).getLong("chunk"))); 
 		}
 		lnbt = nbt.getTagList("outpostland", Constants.NBT.TAG_COMPOUND);
 		for (int x= 0; x < lnbt.tagCount(); x++) {
-			ChunkPos l = chunkFromLong(lnbt.getCompoundTagAt(x).getLong("outland"));
-			outpostLand.add(l);
+			outpostLand.add(chunkFromLong(lnbt.getCompoundTagAt(x).getLong("outland")));
 		}
 	}
 	
@@ -186,17 +168,15 @@ public class Guild {
 			nbt.setString("perm1", permLevels.getOrDefault(1, "Dignitary"));
 			nbt.setString("perm2", permLevels.getOrDefault(2, "Trustee"));
 			nbt.setString("perm3", permLevels.getOrDefault(3, "Member"));
-			nbt.setInteger("perm4", permissions.getOrDefault("setname", 3));
-			nbt.setInteger("perm5", permissions.getOrDefault("setopen", 3));
-			nbt.setInteger("perm6", permissions.getOrDefault("settax", 3));
-			nbt.setInteger("perm7", permissions.getOrDefault("setperms", 3));
-			nbt.setInteger("perm8", permissions.getOrDefault("setinvite", 3));
-			nbt.setInteger("perm9", permissions.getOrDefault("setkick", 3));
-			nbt.setInteger("perm10", permissions.getOrDefault("setclaim", 3));
-			nbt.setInteger("perm11", permissions.getOrDefault("setsell", 3));
-			nbt.setInteger("perm12", permissions.getOrDefault("setwithdraw", 3));
-			nbt.setInteger("perm13", permissions.getOrDefault("setpromotedemote", 3));
 			NBTTagList lnbt = new NBTTagList();
+			for (Map.Entry<String, Integer> entry : permissions.entrySet()) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setString("key", entry.getKey());
+				snbt.setInteger("value", entry.getValue());
+				lnbt.appendTag(snbt);
+			}
+			nbt.setTag("permissions", lnbt);
+			lnbt = new NBTTagList();
 			for (Map.Entry<UUID, Integer> entry : members.entrySet()) {
 				NBTTagCompound snbt = new NBTTagCompound();
 				snbt.setUniqueId("UUID", entry.getKey());

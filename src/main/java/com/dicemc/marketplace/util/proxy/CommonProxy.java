@@ -28,7 +28,7 @@ public class CommonProxy {
 	
 	public void openMarketGui(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response, UUID locality) {}
 	
-	public void openChunkGui(List<ChunkSummary> list, List<Integer> mapColors, UUID playerGuildID, boolean canGuildClaim, boolean canGuildSell, String response, double acctP, double acctG) {}
+	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {}
 	
 	public void openGuildGui(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {}
 	

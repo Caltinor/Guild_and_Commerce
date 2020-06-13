@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
+import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 
@@ -20,23 +21,20 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageChunkToGui implements IMessage{
+	public Guild guild;
 	public List<ChunkSummary> chunkSummary;
 	public List<Integer> mapColors;
-	public UUID playerGuildID;
-	public boolean canGuildClaim, canGuildSell;
 	public String response;
 	public double acctPlayer, acctGuild;
 	public boolean isUpdate;
 	
 	public MessageChunkToGui() {}
 	
-	public MessageChunkToGui(boolean isUpdate, List<ChunkSummary> chunkSummary, List<Integer> mapColors, UUID playerGuildID, boolean canGuildClaim, boolean canGuildSell, String response, double acctP, double acctG) {
+	public MessageChunkToGui(boolean isUpdate, Guild guild, List<ChunkSummary> chunkSummary, List<Integer> mapColors, String response, double acctP, double acctG) {
+		this.guild = guild;
 		this.isUpdate = isUpdate;
 		this.chunkSummary = chunkSummary;
 		this.mapColors = mapColors;
-		this.playerGuildID = playerGuildID;
-		this.canGuildClaim = canGuildClaim;
-		this.canGuildSell = canGuildSell;
 		this.response = response;
 		this.acctPlayer = acctP;
 		this.acctGuild = acctG;
@@ -55,13 +53,11 @@ public class MessageChunkToGui implements IMessage{
 		for (int i = 0; i < size; i++) {
 			mapColors.add(pbuf.readInt());
 		}
-		playerGuildID = pbuf.readUniqueId();
-		canGuildClaim = pbuf.readBoolean();
-		canGuildSell = pbuf.readBoolean();
 		response = ByteBufUtils.readUTF8String(buf);
 		acctPlayer = pbuf.readDouble();
 		acctGuild = pbuf.readDouble();
 		isUpdate = pbuf.readBoolean();
+		try { guild = new Guild(pbuf.readCompoundTag()); } catch (IOException e) {}
 	}
 
 	@Override
@@ -75,13 +71,11 @@ public class MessageChunkToGui implements IMessage{
 		for (int i = 0; i < mapColors.size(); i++) {
 			pbuf.writeInt(mapColors.get(i));
 		}
-		pbuf.writeUniqueId(playerGuildID);
-		pbuf.writeBoolean(canGuildClaim);
-		pbuf.writeBoolean(canGuildSell);
 		ByteBufUtils.writeUTF8String(buf, response);
 		pbuf.writeDouble(acctPlayer);
 		pbuf.writeDouble(acctGuild);
 		pbuf.writeBoolean(isUpdate);
+		pbuf.writeCompoundTag(guild.toNBT());
 	}
 	public static class PacketChunkToGui implements IMessageHandler<MessageChunkToGui, IMessage> {
 		@Override
@@ -91,8 +85,8 @@ public class MessageChunkToGui implements IMessage{
 		}  
 		
 		private void handle(MessageChunkToGui message, MessageContext ctx) {
-			if (!message.isUpdate) Main.proxy.openChunkGui(message.chunkSummary, message.mapColors, message.playerGuildID, message.canGuildClaim, message.canGuildSell, message.response, message.acctPlayer, message.acctGuild);
-			if (message.isUpdate) GuiChunkManager.guiUpdate(message.chunkSummary, message.mapColors, message.playerGuildID, message.canGuildClaim, message.canGuildSell, message.response, message.acctPlayer, message.acctGuild);
+			if (!message.isUpdate) Main.proxy.openChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
+			if (message.isUpdate) GuiChunkManager.guiUpdate(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
 		}
 	}
 }

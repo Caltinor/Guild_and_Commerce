@@ -97,7 +97,6 @@ public class ItemWhitelister extends Item implements IHasModel{
 	}
 	
 	public static void addToWhitelister(ItemStack stack, Entity entity, boolean enableCanBreak, boolean enableCanInteract) {
-		System.out.println("proc");
 		List<WhitelistItem> whitelist = getWhitelist(stack);
 		WhitelistItem wlItem = new WhitelistItem(entity);
 		boolean existingEntry = false;

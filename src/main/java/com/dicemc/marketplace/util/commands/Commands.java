@@ -337,7 +337,6 @@ public class Commands extends CommandBase{
 		case "guild": {
 			List<Guild> glist = GuildSaver.get(sender.getEntityWorld()).GUILDS;
 			switch(args[1]) {
-			//TODO: probably want a player management option.
 			//base arguments <create/set/list/claim>
 			case "create": {
 				GuildSaver.get(sender.getEntityWorld()).GUILDS.add(new Guild(args[2]));

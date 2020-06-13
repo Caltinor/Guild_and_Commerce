@@ -1,13 +1,19 @@
 package com.dicemc.marketplace.gui;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Guild;
+import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
+import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.network.MessagePermsToServer;
 import com.dicemc.marketplace.util.Reference;
+import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -16,129 +22,204 @@ import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildPerms extends GuiScreen {
-	private static GuiButton setB[][] = new GuiButton[10][4];
-	public static final String permIndex[] = new String[10];
-	private double arrayX, arrayY;
-	private static int rankOffset;
+	private static GuiListPerms permList;
+	private static GuiButton set0, set1, set2, set3;
+	private static boolean hasPermission = true;
+	public static String permIndex[];
 	
 	public static Guild guild;
 	
 	public static void syncGui(Guild guild) {
 		GuiGuildPerms.guild = guild;
-		updateButtonEnables();
+		permList.refreshList();
+		if (permList.selectedIdx >= 0 && hasPermission) {
+        	set0.enabled = permList.getSelectedMember().permLvlRank == 0 ? false : true;
+        	set1.enabled = permList.getSelectedMember().permLvlRank == 1 ? false : true;
+        	set2.enabled = permList.getSelectedMember().permLvlRank == 2 ? false : true;
+        	set3.enabled = permList.getSelectedMember().permLvlRank == 3 ? false : true;
+        }
 	}
 	
 	public GuiGuildPerms(Guild guild) {
 		this.guild = guild;
-		
-		permIndex[0] = "setname";
-		permIndex[1] = "setopen";
-		permIndex[2] = "settax";
-		permIndex[3] = "setperms";
-		permIndex[4] = "setinvite";
-		permIndex[5] = "setkick";
-		permIndex[6] = "setclaim";
-		permIndex[7] = "setsell";
-		permIndex[8] = "setwithdraw";
-		permIndex[9] = "setpromotedemote";
-		rankOffset = 25;
+		permIndex = new String[guild.permissions.size()];
+		int i = 0;
+		for (Map.Entry<String, Integer> entry : guild.permissions.entrySet()) {permIndex[i] = entry.getKey(); i++;}
 	}
 	
 	public void initGui() {
-		arrayX = (this.width/2)-40;
-		arrayY = 25;
-		for (int r = 0; r < 10; r++) {
-			for (int c = 0; c < 4; c++) {
-				String idx = String.valueOf(r)+String.valueOf(c);
-				setB[r][c] = new GuiButton(Integer.valueOf(idx), (int)arrayX + (c*20), (int)arrayY + (r*20), 20, 20, String.valueOf(c));
-				this.buttonList.add(setB[r][c]);
-			}
-		}
+		permList = new GuiListPerms(this, mc, (this.width-350)/2, 30, 250, this.height - 40, 11);
+		set0 = new GuiButton(10, permList.x+permList.width+3, this.height/2 - 44, 100, 20, guild.permLevels.get(0));
+		set1 = new GuiButton(11, permList.x+permList.width+3, this.height/2 - 22, 100, 20, guild.permLevels.get(1));
+		set2 = new GuiButton(12, permList.x+permList.width+3, this.height/2 + 2, 100, 20, guild.permLevels.get(2));
+		set3 = new GuiButton(13, permList.x+permList.width+3, this.height/2 + 24, 100, 20, guild.permLevels.get(3));
 		this.buttonList.add(new GuiButton(16, this.width - 78, 3, 75, 20, "Back"));
-		updateButtonEnables();
-		
+		this.buttonList.add(set0);
+		this.buttonList.add(set1);
+		this.buttonList.add(set2);
+		this.buttonList.add(set3);	
+		hasPermission = guild.members.getOrDefault(mc.player.getUniqueID(), 3) <= guild.permissions.getOrDefault("setperms", 0);
+		set0.enabled = hasPermission ? true : false;
+		set1.enabled = hasPermission ? true : false;
+		set2.enabled = hasPermission ? true : false;
+		set3.enabled = hasPermission ? true : false;
 	}
 	
-	private static void updateButtonEnables() {		
-		rankOffset = 25;
-		for (int r = 0; r < 10; r++) {
-			for (int c = 0; c < 4; c++) {
-				setB[r][c].enabled = true;
-			}
-		}
-		for (int b = 0; b < 4; b++) {
-			int count = 0;
-			for (Map.Entry<UUID, Integer> entry : guild.members.entrySet()) {if(entry.getValue() == b) count++;}
-			if (b == 0 && count == 0) setB[3][b].enabled = false;
-			else if (count == 0 && !setB[3][b-1].enabled) setB[3][b].enabled = false;
-		}
-		for (int i = 0; i < 10; i++) {
-			setB[i][guild.permissions.get(permIndex[i])].enabled = false;
-		}
-		//permission based changes
-		if (guild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) > guild.permissions.getOrDefault("setperms", 0)) {
-			for (int r = 0; r < 10; r++) {
-				for (int c = 0; c < 4; c++) {
-					setB[r][c].enabled = false;
-					setB[r][c].visible = false;
-				}
-			}
-			rankOffset = -60;
-		}
-	}
+	public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        permList.handleMouseInput();
+    }
+	
+	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        permList.mouseClicked(mouseX, mouseY, mouseButton);
+        if (permList.selectedIdx >= 0 && hasPermission) {
+        	set0.enabled = permList.getSelectedMember().permLvlRank == 0 ? false : true;
+        	set1.enabled = permList.getSelectedMember().permLvlRank == 1 ? false : true;
+        	set2.enabled = permList.getSelectedMember().permLvlRank == 2 ? false : true;
+        	set3.enabled = permList.getSelectedMember().permLvlRank == 3 ? false : true;
+        }
+    }
+	
+	protected void mouseReleased(int mouseX, int mouseY, int state) {
+        super.mouseReleased(mouseX, mouseY, state);
+        permList.mouseReleased(mouseX, mouseY, state);
+    }
 	
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 16) {
 			mc.player.closeScreen();
 			mc.getMinecraft().displayGuiScreen(new GuiInventory(mc.player));
 		}
-		if (button.id != 16) {Main.NET.sendToServer(new MessagePermsToServer(guild.guildID, permIndex[(button.id/10)] , (button.id%10)));}
+		if (button == set0 && permList.selectedIdx >= 0) {Main.NET.sendToServer(new MessagePermsToServer(guild.guildID, permList.getSelectedMember().permName , 0));}
+		if (button == set1 && permList.selectedIdx >= 0) {Main.NET.sendToServer(new MessagePermsToServer(guild.guildID, permList.getSelectedMember().permName , 1));}
+		if (button == set2 && permList.selectedIdx >= 0) {Main.NET.sendToServer(new MessagePermsToServer(guild.guildID, permList.getSelectedMember().permName , 2));}
+		if (button == set3 && permList.selectedIdx >= 0) {Main.NET.sendToServer(new MessagePermsToServer(guild.guildID, permList.getSelectedMember().permName , 3));}
 	}
 	
 	public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRenderer, TextFormatting.GOLD+"Guild Permissions", this.width/2, 3, 16777215);
-        //Draw the permission descriptions
-        int o = 130;
-        this.drawString(this.fontRenderer, "Change Guild Name  ", setB[0][0].x - o, setB[0][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Open-To-Join", setB[1][0].x - o, setB[1][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Guild Tax   ", setB[2][0].x - o, setB[2][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Permissions ", setB[3][0].x - o, setB[3][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Invite Level", setB[4][0].x - o, setB[4][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Kick Level  ", setB[5][0].x - o, setB[5][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Claim Level ", setB[6][0].x - o, setB[6][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Sell Level  ", setB[7][0].x - o, setB[7][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Withdraw Lvl", setB[8][0].x - o, setB[8][0].y+5, 16777215);
-        this.drawString(this.fontRenderer, "Change Member Ranks", setB[9][0].x - o, setB[9][0].y+5, 16777215);
-        //Draw the current setting
-        for (int v = 0; v < 10; v++) this.drawString(this.fontRenderer, permName(permIndex[v]) , setB[v][3].x + rankOffset, setB[v][0].y+5, 16777215);
-        //Next
+        permList.drawScreen(mouseX, mouseY, partialTicks);
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
-	
-	private String permName(String key) {
-		String str = "";
-		switch (guild.permissions.get(key)) {
-		case 0: {
-			str = TextFormatting.DARK_GREEN+ guild.permLevels.get(guild.permissions.get(key));
-			break;
+
+	public class GuiListPerms extends GuiNewListExtended{
+	    private final GuiGuildPerms permsManager;
+	    public Guild guild;
+	    private final List<GuiListPermsEntry> entries = Lists.<GuiListPermsEntry>newArrayList();
+	    /** Index to the currently selected world */
+	    private int selectedIdx = -1;
+		
+		public GuiListPerms(GuiGuildPerms guiGM, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
+			this.permsManager = guiGM;
+			this.refreshList();
 		}
-		case 1: {
-			str = TextFormatting.DARK_PURPLE+ guild.permLevels.get(guild.permissions.get(key));
-			break;
+		
+	    public void refreshList()
+	    {
+	    	entries.clear();
+	    	guild = permsManager.guild;
+	        Map<String, Integer> permissions = guild.permissions;
+
+	        for (Map.Entry<String, Integer> entry : permissions.entrySet()){
+	            this.entries.add(new GuiListPermsEntry(this, entry.getKey(), entry.getValue()));
+	        }
+	    }
+	    
+	    public void selectMember(int idx) {
+	    	this.selectedIdx = idx;
+	    }
+	    
+	    @Nullable
+	    public GuiListPermsEntry getSelectedMember()
+	    {
+	        return this.selectedIdx >= 0 && this.selectedIdx < this.getSize() ? this.getListEntry(this.selectedIdx) : null;
+	    }
+
+		@Override
+		public GuiListPermsEntry getListEntry(int index) {
+			return entries.get(index);
 		}
-		case 2: {
-			str = TextFormatting.BLUE+ guild.permLevels.get(guild.permissions.get(key));
-			break;
+
+		@Override
+		protected int getSize() {
+			return entries.size();
 		}
-		case 3: {
-			str = guild.permLevels.get(guild.permissions.get(key));
-			break;
-		}
-		default:
-		}
-		return str;
+
 	}
 	
+	public class GuiListPermsEntry implements GuiNewListExtended.IGuiNewListEntry{
+		public String permName; 
+		public int permLvlRank;
+		private Minecraft client = Minecraft.getMinecraft();
+	    private final GuiListPerms containingListSel;
+		
+		public GuiListPermsEntry (GuiListPerms listSelectionIn, String permName, int permLvlRank) {
+			containingListSel = listSelectionIn;
+			this.permName = permName;
+			this.permLvlRank = permLvlRank;
+		}
+		
+		public void updatePosition(int slotIndex, int x, int y, float partialTicks) {}
+
+		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+	        this.client.fontRenderer.drawString(permDescription(permName), x+3, y , 16777215);
+	        this.client.fontRenderer.drawString(permName(permLvlRank), x+180, y , 16777215);
+		}
+		
+		private String permName(int key) {
+			String str = "";
+			switch (key) {
+			case 0: {
+				str = TextFormatting.DARK_GREEN+ containingListSel.guild.permLevels.get(key);
+				break;
+			}
+			case 1: {
+				str = TextFormatting.DARK_PURPLE+ containingListSel.guild.permLevels.get(key);
+				break;
+			}
+			case 2: {
+				str = TextFormatting.BLUE+ containingListSel.guild.permLevels.get(key);
+				break;
+			}
+			case 3: {
+				str = containingListSel.guild.permLevels.get(key);
+				break;
+			}
+			default:
+			}
+			return str;
+		}
+		
+		private String permDescription(String title) {
+			switch (title) {
+			case "setopen": { 			return "Can Toggle Open-To-Join"; }
+			case "setname": { 			return "Can Change Guild Name"; }
+			case "settax": {			return "Can Set Guild Tax Rate"; }
+			case "setperms":{ 			return "Can Change Permission Levels"; }
+			case "setinvite":{			return "Can Send Guild Invites"; }
+			case "setkick":{			return "Can Kick Guild Members"; }
+			case "setclaim": {			return "Can Claim New Land";}
+			case "setsell": {			return "Can Sell Guild Land";}
+			case "setwithdraw":{		return "Can Withdraw from Guild Account";}
+			case "setpromotedemote":{	return "Can Change Member Ranks"; }
+			case "managesublet": {		return "Can Manage Subletting";}
+			default: 
+			}
+			return "";
+		}
+
+		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
+	        this.containingListSel.selectMember(slotIndex);
+	        this.containingListSel.showSelectionBox = true;
+	        return false;
+		}
+
+		public void mouseReleased(int slotIndex, int x, int y, int mouseEvent, int relativeX, int relativeY) {		
+		}
+
+	}
 }

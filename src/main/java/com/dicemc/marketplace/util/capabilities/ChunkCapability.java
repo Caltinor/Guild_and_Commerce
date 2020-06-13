@@ -34,6 +34,8 @@ public interface ChunkCapability {
 	public double getPrice();
 	public void setLeasePrice(double price);
 	public double getLeasePrice();
+	public int getLeaseDuration();
+	public void setLeaseDuration(int duration);
 	
 	public List<WhitelistItem> getWhitelist();
 	public void changeWhitelist(WhitelistItem item);

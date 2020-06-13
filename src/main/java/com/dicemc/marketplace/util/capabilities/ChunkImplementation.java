@@ -21,7 +21,7 @@ public class ChunkImplementation implements ChunkCapability{
 	private UUID owner = Reference.NIL;
 	private double price = Main.ModConfig.LAND_DEFAULT_COST;
 	private double leasePrice = -1;
-	private boolean redstone = false;
+	private int leaseDuration = 0;
 	private int permissionMinimum = 3;
 	private List<WhitelistItem> whitelist = new ArrayList<WhitelistItem>();
 	private long tempclaimEnd = System.currentTimeMillis();
@@ -121,6 +121,10 @@ public class ChunkImplementation implements ChunkCapability{
 	public void setLeasePrice(double price) {leasePrice = price;}
 	@Override
 	public double getLeasePrice() {return leasePrice;}
+	@Override
+	public int getLeaseDuration() {return leaseDuration;}
+	@Override
+	public void setLeaseDuration(int duration) {leaseDuration = duration;}	
 	@Override
 	public int getPermMin() {return permissionMinimum;}
 	@Override

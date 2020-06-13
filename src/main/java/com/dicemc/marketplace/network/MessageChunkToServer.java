@@ -1,5 +1,6 @@
 package com.dicemc.marketplace.network;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
+import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.events.PlayerEventHandler;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.util.CkPktType;
@@ -20,6 +22,7 @@ import com.dicemc.marketplace.util.datasaver.GuildSaver;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
@@ -33,14 +36,16 @@ public class MessageChunkToServer implements IMessage{
 	public int cX, cZ;
 	public CkPktType type;
 	public String name;
+	public WhitelistItem wlItem;
 	
 	public MessageChunkToServer () {}
 	
-	public MessageChunkToServer(CkPktType type, int chunkX, int chunkZ, String name) {
+	public MessageChunkToServer(CkPktType type, int chunkX, int chunkZ, String name, WhitelistItem wlItem) {
 		this.type = type;
 		cX = chunkX;
 		cZ = chunkZ;
 		this.name = name;
+		this.wlItem = wlItem;
 	}
 	
 	@Override
@@ -50,6 +55,7 @@ public class MessageChunkToServer implements IMessage{
 		cZ = pbuf.readInt();
 		this.type = CkPktType.values()[pbuf.readVarInt()];
 		this.name = pbuf.readString(32);
+		try {this.wlItem = new WhitelistItem(pbuf.readCompoundTag());} catch (IOException e) {}
 	}
 
 	@Override
@@ -59,6 +65,7 @@ public class MessageChunkToServer implements IMessage{
 		pbuf.writeInt(cZ);
 		pbuf.writeVarInt(type.ordinal());
 		pbuf.writeString(name);
+		pbuf.writeCompoundTag(wlItem.toNBT());
 	}
 	
 	public static class PacketChunkToServer implements IMessageHandler<MessageChunkToServer, IMessage> {
@@ -101,10 +108,76 @@ public class MessageChunkToServer implements IMessage{
 				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
 				break;
 			}
-			case ADDMEMBER: {
+			case ADDMEMBER: {	
+				UUID pid = ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name) != null ? 
+						ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name).getId() : Reference.NIL;
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				if (!pid.equals(Reference.NIL)) cap.includePlayer(pid);
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
 				break;
 			}
 			case REMOVEMEMBER: {
+				UUID pid = ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name) != null ? 
+						ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name).getId() : Reference.NIL;	
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(cap.getOwner()));
+				if (cap.getOwner().equals(ctx.getServerHandler().player.getUniqueID()) || guild.members.getOrDefault(pid, -1) >= 0) {					
+					if (!pid.equals(Reference.NIL)) cap.removePlayer(pid);
+				}
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case WL_CHANGE: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.changeWhitelist(message.wlItem);
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case WL_CLEAR: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.fromNBTWhitelist(new NBTTagList());
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case SUBLET_INTERVAL: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.setLeaseDuration(Integer.valueOf(message.name));
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case SUBLET_PRICE: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.setLeasePrice(Integer.valueOf(message.name));
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case WL_GUILD_MIN: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				cap.setPermMin(Integer.valueOf(message.name));
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				break;
+			}
+			case RENT_START: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				if (balP >= cap.getLeasePrice()) {
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), -1*cap.getLeasePrice());
+					cap.includePlayer(ctx.getServerHandler().player.getUniqueID());
+					cap.setTempTime(System.currentTimeMillis()+(3600000*cap.getLeaseDuration()));
+				}
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
+				break;
+			}
+			case RENT_EXTEND: {
+				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				if (balP >= cap.getLeasePrice()) {
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), -1*(cap.getLeasePrice()*cap.getPlayers().size()));
+					cap.setTempTime(cap.getTempTime()+(3600000*cap.getLeaseDuration()));
+				}
+				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				break;
 			}
 			default:
@@ -127,7 +200,7 @@ public class MessageChunkToServer implements IMessage{
 					for (int i = 0; i < glist.size(); i++) {if (cap.getOwner().equals(glist.get(i).guildID)) {guildOwned = true; break;}}
 					List<String> plist = new ArrayList<String>();
 					for (int i = 0; i < cap.getPlayers().size(); i++) {	plist.add(Commands.playerNamefromUUID(ctx.getServerHandler().player.getServer(), cap.getPlayers().get(i)));}
-					list.add(new ChunkSummary(guildOwned, cap.getOwner(), ownerName, cap.getPrice(), cap.getPublicRedstoner(), cap.getPublic(), cap.getForSale(), cap.getOutpost(), cap.getTempTime(), new ArrayList<String>(), plist));
+					list.add(new ChunkSummary(guildOwned, cap.getOwner(), ownerName, cap.getPrice(), cap.getPublic(), cap.getForSale(), cap.getOutpost(), cap.getTempTime(), cap.getLeaseDuration(), cap.getWhitelist(), plist, cap.getLeasePrice(), cap.getPermMin()));
 					for (int r = 0; r < 16; r++) {
 						for (int c = 0; c < 16; c++) {
 							int xval = c+ck.getPos().getXStart();
@@ -149,20 +222,16 @@ public class MessageChunkToServer implements IMessage{
 					mapColors.add(colorRows[a][b]);
 				}
 			}
-			UUID gid = Reference.NIL;
-			boolean canGuildClaim = false;
-			boolean canGuildSell = false;
+			Guild myGuild = new Guild(Reference.NIL);
 			for (int i = 0; i < glist.size(); i++) {
 				if (glist.get(i).members.getOrDefault(ctx.getServerHandler().player.getUniqueID(), -2) >= 0) {
-					gid = glist.get(i).guildID; 
-					canGuildClaim = glist.get(i).members.get(ctx.getServerHandler().player.getUniqueID()) <= glist.get(i).permissions.get("setclaim") ? true : false;
-					canGuildSell = glist.get(i).members.get(ctx.getServerHandler().player.getUniqueID()) <= glist.get(i).permissions.get("setsell") ? true : false;
+					myGuild = glist.get(i);
 					break;
 				} 
 			}
-			double balG = gid != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(gid) : 0;
+			double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(myGuild.guildID) : 0;
 			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-			Main.NET.sendTo(new MessageChunkToGui(true, list, mapColors, gid, canGuildClaim, canGuildSell, response, balP, balG), ctx.getServerHandler().player);
+			Main.NET.sendTo(new MessageChunkToGui(true,myGuild, list, mapColors, response, balP, balG), ctx.getServerHandler().player);
 		}
 	}
 }

@@ -87,6 +87,27 @@ public class GuildCommands extends CommandBase{
 				else message("Unable to find guild information.", sender);
 				break;
 			}
+			case "land": {
+				int cX = sender.getCommandSenderEntity().chunkCoordX;
+				int cZ = sender.getCommandSenderEntity().chunkCoordZ;
+				ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+				switch (args[1]) {
+				case "add": {
+					cap.includePlayer(server.getPlayerProfileCache().getGameProfileForUsername(args[2]).getId());
+					break;
+				}
+				case "remove": {
+					cap.removePlayer(server.getPlayerProfileCache().getGameProfileForUsername(args[2]).getId());
+					break;
+				}
+				case "setlevel": {
+					cap.setPermMin(Integer.valueOf(args[2]));
+					break;
+				}
+				default:
+				}
+				break;
+			}
 			case "leave": {
 				for (int i = 0; i < glist.size(); i++) {
 					if (glist.get(i).members.containsKey(sender.getCommandSenderEntity().getUniqueID())) {
