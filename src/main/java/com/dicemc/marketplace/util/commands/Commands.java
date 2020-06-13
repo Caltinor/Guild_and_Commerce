@@ -13,6 +13,7 @@ import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.gui.GuiMarketSell;
+import com.dicemc.marketplace.network.MessageAdminGuiOpen;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
@@ -72,14 +73,14 @@ public class Commands extends CommandBase{
 		ItemStack item;
 		EntityPlayerMP plyr;
 		if (args.length == 0) {
-			message("/admin market <local/global/auction>", sender);
-			message("/admin account <player/guild>", sender);
-			message("/admin guild <create/set/list/claim>", sender);
+			message("/gncadmin market <local/global/auction>", sender);
+			message("/gncadmin account <player/guild>", sender);
+			message("/gncadmin guild <create/set/list/claim>", sender);
 			return;
 		}
 		switch(args[0]) {
 		case "gui": {
-			Main.proxy.openAdminGui();
+			Main.NET.sendTo(new MessageAdminGuiOpen(), (EntityPlayerMP) sender);
 			break;
 		}
 		case "whitelist": {

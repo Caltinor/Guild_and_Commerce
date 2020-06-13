@@ -10,6 +10,7 @@ import com.dicemc.marketplace.network.MessagePermsToGui.PacketPermsToGui;
 import com.dicemc.marketplace.network.MessagePermsToServer.PacketPermsToServer;
 import com.dicemc.marketplace.network.MessageAccountInfoToServer.PacketAccountInfoToServer;
 import com.dicemc.marketplace.network.MessageAccountToGui.PacketAccountToGui;
+import com.dicemc.marketplace.network.MessageAdminGuiOpen.PacketAdminGuiOpen;
 import com.dicemc.marketplace.network.MessageAdminToGui.PacketAdminToGui;
 import com.dicemc.marketplace.network.MessageAdminToServer.PacketAdminToServer;
 import com.dicemc.marketplace.network.MessageChunkToGui.PacketChunkToGui;
@@ -47,5 +48,6 @@ public class PacketHandler {
 		Main.NET.registerMessage(PacketMarketsToGui.class, MessageMarketsToGui.class, nextID(), Side.CLIENT);		
 		Main.NET.registerMessage(PacketGuildToGui.class, MessageGuildToGui.class, nextID(), Side.CLIENT);
 		Main.NET.registerMessage(PacketAdminToGui.class, MessageAdminToGui.class, nextID(), Side.CLIENT);
+		Main.NET.registerMessage(PacketAdminGuiOpen.class, MessageAdminGuiOpen.class, nextID(), Side.CLIENT);
 	}
 }
