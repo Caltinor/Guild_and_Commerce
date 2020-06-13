@@ -194,7 +194,7 @@ public class ChunkEventHandler {
 				else event.getEntityPlayer().sendStatusMessage(new TextComponentString("you cannot apply the whitelist here."), true);
 			}
 		}			
-		
+		if (event.getEntityPlayer().isCreative()) return;
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
@@ -202,8 +202,8 @@ public class ChunkEventHandler {
 		}
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistInteractCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
-				if (event.getUseBlock() == Result.ALLOW) event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction not whitelisted."), true);
 				event.setUseBlock(Result.DENY);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction not whitelisted."), true);
 			}
 		}
 	}

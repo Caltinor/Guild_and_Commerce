@@ -162,6 +162,7 @@ public class MessageChunkToServer implements IMessage{
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
 				if (balP >= cap.getLeasePrice()) {
 					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), -1*cap.getLeasePrice());
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.addBalance(cap.getOwner(), cap.getLeasePrice());
 					cap.includePlayer(ctx.getServerHandler().player.getUniqueID());
 					cap.setTempTime(System.currentTimeMillis()+(3600000*cap.getLeaseDuration()));
 				}
@@ -174,6 +175,7 @@ public class MessageChunkToServer implements IMessage{
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
 				if (balP >= cap.getLeasePrice()) {
 					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), -1*(cap.getLeasePrice()*cap.getPlayers().size()));
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.addBalance(cap.getOwner(), (cap.getLeasePrice()*cap.getPlayers().size()));
 					cap.setTempTime(cap.getTempTime()+(3600000*cap.getLeaseDuration()));
 				}
 				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();

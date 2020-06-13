@@ -67,7 +67,6 @@ public class Main {
 	
 	@EventHandler
 	public static void PostInit(FMLPostInitializationEvent event) {
-		
 	}
 	
 	@EventHandler

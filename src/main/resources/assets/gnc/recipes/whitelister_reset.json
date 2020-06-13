@@ -1,0 +1,12 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "gnc:whitelister"
+        }
+    ],
+    "result":
+    {
+        "item": "gnc:whitelister"
+    }
+}
