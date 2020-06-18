@@ -27,6 +27,7 @@ import com.dicemc.marketplace.util.datasaver.MarketSaver;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
@@ -198,7 +199,7 @@ public class MessageGuiRequest implements IMessage{
 				break;
 			}
 			case 5: {
-				Main.proxy.openAdminGui();
+				Main.NET.sendTo(new MessageAdminGuiOpen(), ctx.getServerHandler().player);
 			}
 			default:
 			}

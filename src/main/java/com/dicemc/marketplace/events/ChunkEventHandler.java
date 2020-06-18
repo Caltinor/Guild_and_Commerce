@@ -180,6 +180,12 @@ public class ChunkEventHandler {
 		}		
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote && cap.getPlayers().size() == 0) {
+			if (event.getEntityPlayer().canUseCommand(2, "") && event.getEntityPlayer().isCreative()) {
+				cap.fromNBTWhitelist(event.getEntityPlayer().getHeldItemMainhand().getTagCompound().getTagList("whitelister", Constants.NBT.TAG_COMPOUND));
+				event.setCanceled(true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Whitelist applied to chunk"), true);
+				return;
+			}
 			List<Guild> glist = GuildSaver.get(event.getWorld()).GUILDS;
 			int gid = -1;
 			for (int i = 0; i < glist.size(); i++) {if (glist.get(i).members.getOrDefault(event.getEntityPlayer().getUniqueID(), -1) >= 0) gid = i;}
@@ -225,8 +231,30 @@ public class ChunkEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onEntityInteract(EntityInteractSpecific event) {
+	public static void onEntityInteract(EntityInteract event) {
 		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
+			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getTarget(), false, true);
+			event.setCanceled(true);
+			return;
+		}
+		if (event.getEntityPlayer().isCreative()) return;
+		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (cap.getOwner().equals(Reference.NIL)) return;
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
+			event.setCanceled(true);
+			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Interaction Denied."), true);
+		}
+		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
+			if (!ProtectionChecker.whitelistInteractCheck(event.getTarget(), cap)) {
+				event.setCanceled(true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+			}
+		}
+	}
+	
+	@SubscribeEvent
+	public static void onEntityInteract(EntityInteractSpecific event) {
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote && event.getResult().equals(EnumActionResult.SUCCESS)) {
 			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getTarget(), false, true);
 			event.setCanceled(true);
 			return;
@@ -294,25 +322,6 @@ public class ChunkEventHandler {
 			}
 		}
 	}
-	
-	/*@SubscribeEvent
-	public static void onContainerInteract(PlayerContainerEvent.Open event) {
-		if (event.getEntityPlayer().isCreative()) return;
-		if (event.getContainer() instanceof ContainerPlayer) return;
-		if (event.getContainer() instanceof ContainerSell) return;
-		ChunkCapability cap = event.getEntity().world.getChunkFromBlockCoords(event.getEntity().getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
-		if (cap.getOwner().equals(Reference.NIL)) return;
-		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntity().world).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
-			event.setCanceled(true);
-			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Container Interaction Denied."), true);
-		}
-		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
-			if (!ProtectionChecker.whitelistInteractCheck(event.getEntityPlayer().getEntityWorld().getBlockState(event.getEntity().getPosition()).getBlock().getRegistryName().toString(), cap)) {
-				event.setCanceled(true);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
-			}
-		}
-	}*/
 	
 	@SubscribeEvent
 	public static void onExplosion (ExplosionEvent.Start event) {

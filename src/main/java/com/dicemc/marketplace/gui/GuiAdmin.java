@@ -1119,7 +1119,7 @@ public class GuiAdmin extends GuiScreen{
 	    private final GuiAdmin guildManager;
 	    public Map<String, Integer> perms;
 	    public Map<Integer, String> permRanks;
-	    public final String permIndex[] = new String[10];
+	    public final String permIndex[] = new String[11];
 	    private final List<GuiListAdminPermsEntry> entries = Lists.<GuiListAdminPermsEntry>newArrayList();
 	    /** Index to the currently selected world */
 	    private int selectedIdx = -1;
@@ -1139,6 +1139,7 @@ public class GuiAdmin extends GuiScreen{
 			permIndex[7] = "setsell";
 			permIndex[8] = "setwithdraw";
 			permIndex[9] = "setpromotedemote";
+			permIndex[10] = "managesublet";
 			this.refreshList();
 		}
 		
@@ -1157,6 +1158,7 @@ public class GuiAdmin extends GuiScreen{
 	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[7], TextFormatting.YELLOW+"Change Sell Level  ", colorize(perms.get(permIndex[7]))+permRanks.get(perms.get(permIndex[7]))));
 	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[8], TextFormatting.YELLOW+"Change Withdraw Lvl", colorize(perms.get(permIndex[8]))+permRanks.get(perms.get(permIndex[8]))));
 	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[9], TextFormatting.YELLOW+"Change Member Ranks", colorize(perms.get(permIndex[9]))+permRanks.get(perms.get(permIndex[9]))));
+	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[10],TextFormatting.YELLOW+"Manage Subletting  ", colorize(perms.get(permIndex[10]))+permRanks.get(perms.get(permIndex[10]))));
 	    }
 	    
 	    private String colorize(int rank) {
