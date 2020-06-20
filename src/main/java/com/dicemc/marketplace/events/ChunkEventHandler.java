@@ -201,6 +201,7 @@ public class ChunkEventHandler {
 			}
 		}			
 		if (event.getEntityPlayer().isCreative()) return;
+		if (event.getEntityPlayer().dimension != 0) return;
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
@@ -217,6 +218,7 @@ public class ChunkEventHandler {
 	@SubscribeEvent
 	public static void onBlockPlace(PlaceEvent event) {
 		if (event.getPlayer().isCreative()) return;
+		if (event.getPlayer().dimension != 0) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
