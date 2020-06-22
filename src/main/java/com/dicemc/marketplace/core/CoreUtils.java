@@ -44,6 +44,7 @@ public class CoreUtils {
 				cap.setTempTime(System.currentTimeMillis()+Main.ModConfig.TEMPCLAIM_DURATION);
 				cap.includePlayer(owner);
 				cap.setOwner(owner);
+				cap.setExplosionsOn(false);
 				AccountSaver.get(world).markDirty();
 				return "Chunk Claimed";
 			}
@@ -103,7 +104,7 @@ public class CoreUtils {
 				if (bordersGuildLand) {
 					if (GuildSaver.get(world).guildNamefromUUID(cap.getOwner()).equalsIgnoreCase("Guild N/A") || cap.getForSale()) {
 						if (AccountSaver.get(world).GUILDS.getBalance(owningGuild) >= cap.getPrice()) {
-							if (!cap.getOwner().equals(Reference.NIL)) {
+							if (!cap.getOwner().equals(Reference.NIL) && GuildSaver.get(world).guildNamefromUUID(cap.getOwner()).equalsIgnoreCase("Guild N/A")) {
 								AccountSaver.get(world).PLAYERS.addBalance(cap.getOwner(), cap.getPrice()*.1);
 								cap.setPlayers(new ArrayList<UUID>());
 								cap.fromNBTWhitelist(new NBTTagList());
@@ -122,6 +123,7 @@ public class CoreUtils {
 							AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* cap.getPrice()));
 							cap.setOwner(owningGuild);
 							cap.setForSale(false);
+							cap.setExplosionsOn(false);
 							if (bordersOutpost) {
 								cap.setOutpost(true);
 								GuildSaver.get(world).GUILDS.get(gindex).outpostLand.add(ck.getPos());

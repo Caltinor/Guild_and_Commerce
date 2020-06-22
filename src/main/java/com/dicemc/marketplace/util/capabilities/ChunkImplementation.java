@@ -29,6 +29,7 @@ public class ChunkImplementation implements ChunkCapability{
 	private boolean isForSale = false;
 	private boolean isOutpost = false;
 	private List<UUID> permittedPlayers = new ArrayList<UUID>();
+	private boolean explosionsOn = true;
 	
 	@Override
 	public void setOwner(UUID guild) {owner = guild; }
@@ -129,4 +130,8 @@ public class ChunkImplementation implements ChunkCapability{
 	public int getPermMin() {return permissionMinimum;}
 	@Override
 	public void setPermMin(int level) {permissionMinimum = level;}
+	@Override
+	public boolean getExplosionsOn() {return explosionsOn;}
+	@Override
+	public void setExplosionsOn(boolean set) {explosionsOn = set;}
 }

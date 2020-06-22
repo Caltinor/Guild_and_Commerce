@@ -44,4 +44,7 @@ public interface ChunkCapability {
 	
 	public int getPermMin();
 	public void setPermMin(int level);
+	
+	public boolean getExplosionsOn();
+	public void setExplosionsOn(boolean set);
 }
