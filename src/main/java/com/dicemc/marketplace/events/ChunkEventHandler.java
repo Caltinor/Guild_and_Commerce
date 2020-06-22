@@ -220,6 +220,7 @@ public class ChunkEventHandler {
 		if (event.getPlayer().isCreative()) return;
 		if (event.getPlayer().dimension != 0) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
 		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
 			event.getPlayer().sendStatusMessage(new TextComponentString("Block Place Denied."), true);
