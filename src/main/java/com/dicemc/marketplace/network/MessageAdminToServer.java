@@ -126,6 +126,7 @@ public class MessageAdminToServer implements IMessage {
 		case 0: {messageIndex = 10;	break;} //request for guild main info
 		case 1: {messageIndex = 12;	break;} //request for guild land info
 		case 2: {messageIndex = 13;	break;} //request for guild member info
+		case 3: {messageIndex = 17; break;} //delete guild
 		default:}
 		id1 = guildID;
 	}
@@ -192,7 +193,7 @@ public class MessageAdminToServer implements IMessage {
 			bidEnd = pbuf.readLong();
 			break;
 		}
-		case 10: case 12: case 13:{
+		case 10: case 12: case 13: case 17:{
 			id1 = pbuf.readUniqueId();
 			break;
 		}
@@ -278,7 +279,7 @@ public class MessageAdminToServer implements IMessage {
 			pbuf.writeLong(bidEnd);
 			break;
 		}
-		case 10: case 12: case 13:{
+		case 10: case 12: case 13: case 17:{
 			pbuf.writeUniqueId(id1);
 			break;
 		}
@@ -477,6 +478,13 @@ public class MessageAdminToServer implements IMessage {
 				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				if (message.i1 != -2) glist.get(gindex).members.put(message.id2, message.i1);
 				if (message.i1 == -2) glist.get(gindex).members.remove(message.id2);
+				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
+				break;
+			}
+			case 17: {
+				List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
+				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.remove(gindex);
 				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				break;
 			}

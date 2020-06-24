@@ -57,7 +57,7 @@ public class GuiAdmin extends GuiScreen{
 	private static GuiListAccount guiListAccounts;
 	private static boolean isPlayerList = true;
 	//guild select menu objects;
-	private static GuiButton selectGuild;
+	private static GuiButton selectGuild, deleteGuild;
 	private static GuiListNameList guildList;
 	//guild main menu objects
 	private static GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
@@ -179,9 +179,12 @@ public class GuiAdmin extends GuiScreen{
 		accountRemove.visible = false;
 		//Guild Select menu specific objects
 		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, "Select Guild");
+		deleteGuild = new GuiButton(21, this.width - 80, this.height-30, 75, 20, "DELETE GUILD");
 		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 12);
 		this.buttonList.add(selectGuild);
+		this.buttonList.add(deleteGuild);
 		selectGuild.visible = false;
+		deleteGuild.visible = false;
 		guildList.visible = false;
 		//Guild Main menu specific objects
 		nameBox = new GuiTextField(37, this.fontRenderer, 85, 20, 150, 20);
@@ -331,8 +334,9 @@ public class GuiAdmin extends GuiScreen{
 		toggleAccountPlayer.enabled = isPlayerList ? false : true;
 		toggleAccountGuild.enabled = isPlayerList ? true : false;
 		//guild select objects
-		selectGuild.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
-		guildList.visible = activeMenu == AdminGuiType.GUILD_SELECT ? true : false;
+		selectGuild.visible = activeMenu == AdminGuiType.GUILD_SELECT;
+		deleteGuild.visible = activeMenu == AdminGuiType.GUILD_SELECT;
+		guildList.visible = activeMenu == AdminGuiType.GUILD_SELECT;
 		//guild main objects
 		setOpen.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
@@ -525,6 +529,12 @@ public class GuiAdmin extends GuiScreen{
 			updateVisibility();
 			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 0));
 		}
+		if (button == deleteGuild && guildList.selectedIdx >= 0) {
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, 3));
+			Main.NET.sendToServer(new MessageAdminToServer(0));
+			updateVisibility();
+		}
+		//guild main actions
 		if (button == setOpen) {
 			guiGuild.openToJoin = guiGuild.openToJoin ? false : true;
 			setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
