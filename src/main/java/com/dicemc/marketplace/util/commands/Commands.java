@@ -12,6 +12,7 @@ import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
+import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.gui.GuiMarketSell;
 import com.dicemc.marketplace.network.MessageAdminGuiOpen;
 import com.dicemc.marketplace.util.Reference;
@@ -29,6 +30,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -67,6 +69,8 @@ public class Commands extends CommandBase{
 		if (sender.canUseCommand(2, this.getName())) return true;
 		return false;
 	}
+	
+	//TODO add admin moneybag command to give moneybags without account interaction.
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
@@ -92,6 +96,13 @@ public class Commands extends CommandBase{
 				String msg = "["+wl.getBlock()+"] ["+wl.getEntity()+"]Break:"+String.valueOf(wl.getCanBreak()+"Interact:"+String.valueOf(wl.getCanInteract()));
 				message(msg, sender);
 			}
+			break;
+		}
+		case "moneybag": {
+			item = new ItemStack(ModItems.MONEYBAG);
+			item.setTagInfo("value", new NBTTagDouble(Math.abs(Double.valueOf(args[1]))));
+			server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);
+			message("$"+args[1]+" Moneybag placed in inventory.", sender);
 			break;
 		}
 		case "land": {
