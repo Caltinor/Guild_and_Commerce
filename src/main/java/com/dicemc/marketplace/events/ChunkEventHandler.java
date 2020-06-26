@@ -327,10 +327,17 @@ public class ChunkEventHandler {
 	}
 	
 	@SubscribeEvent
-	public static void onExplosion (ExplosionEvent.Start event) {
-		//TODO prevent detonations outside protected land from affecting protected land.
-		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(new BlockPos(event.getExplosion().getPosition())).getCapability(ChunkProvider.CHUNK_CAP, null);		
-		if (!cap.getOwner().equals(Reference.NIL) && !cap.getExplosionsOn()) event.setCanceled(true);
+	public static void onExplosion (ExplosionEvent.Detonate event) {
+		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(new BlockPos(event.getExplosion().getPosition())).getCapability(ChunkProvider.CHUNK_CAP, null);
+		for (int i = event.getAffectedBlocks().size()-1; i > 0; i--) {
+			cap = event.getWorld().getChunkFromBlockCoords(event.getAffectedBlocks().get(i)).getCapability(ChunkProvider.CHUNK_CAP, null);
+			if (!cap.getOwner().equals(Reference.NIL) && !cap.getExplosionsOn()) event.getAffectedBlocks().remove(i);
+		}
+		for (int i = event.getAffectedEntities().size()-1; i > 0; i--) {
+			cap = event.getWorld().getChunkFromBlockCoords(event.getAffectedEntities().get(i).getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
+			if (!cap.getOwner().equals(Reference.NIL) && !cap.getExplosionsOn()) event.getAffectedEntities().remove(i);
+		}		
+		
 	}
 
 }
