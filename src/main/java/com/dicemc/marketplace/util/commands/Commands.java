@@ -69,8 +69,6 @@ public class Commands extends CommandBase{
 		if (sender.canUseCommand(2, this.getName())) return true;
 		return false;
 	}
-	
-	//TODO add admin moneybag command to give moneybags without account interaction.
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {

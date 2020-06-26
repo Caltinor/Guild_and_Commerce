@@ -189,11 +189,11 @@ public class MessageChunkToServer implements IMessage{
 			int cZ = ctx.getServerHandler().player.chunkCoordZ;
 			List<Integer> mapColors = new ArrayList<Integer>();
 			List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
-			int[][] colorRows = new int[80][80];
-			for (int z = 0; z < 5; z++) {
-				for (int x = 0; x < 5; x++) {
-					int modX = x - 2;
-					int modZ = z - 2;
+			int[][] colorRows = new int[176][176];
+			for (int z = 0; z < 11; z++) {
+				for (int x = 0; x < 11; x++) {
+					int modX = x - 5;
+					int modZ = z - 5;
 					//ChunkSummary(String owner, double price, boolean redstone, boolean isPublic, boolean isForSale, boolean isOutpost, long claimEnd, List<String> whitelist, List<UUID> members)
 					Chunk ck = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(cX + modX, cZ + modZ);
 					ChunkCapability cap = ck.getCapability(ChunkProvider.CHUNK_CAP, null);
@@ -219,8 +219,8 @@ public class MessageChunkToServer implements IMessage{
 					}
 				}
 			}
-			for (int a = 0; a < 80; a++) {
-				for (int b = 0; b < 80; b++) {
+			for (int a = 0; a < 176; a++) {
+				for (int b = 0; b < 176; b++) {
 					mapColors.add(colorRows[a][b]);
 				}
 			}

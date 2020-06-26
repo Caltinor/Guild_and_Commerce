@@ -63,7 +63,7 @@ public class GuiChunkManager extends GuiScreen{
 	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 	private static GuiListChunkMembers chunkMbrList;
 	private static GuiListWhitelist wlList;
-	private static int selectedIdx = 12;
+	private static int selectedIdx = 60;
 	private static boolean overlayOwners = false;
 	public static boolean canGuildClaim;
 	public static boolean canGuildSell;
@@ -327,8 +327,8 @@ public class GuiChunkManager extends GuiScreen{
 	}
 	
 	public ChunkPos fromIndex() {
-		int cX = mc.player.chunkCoordX + ((selectedIdx%5) - 2);
-		int cZ = mc.player.chunkCoordZ + ((selectedIdx/5) - 2);
+		int cX = mc.player.chunkCoordX + ((selectedIdx%11) - 5);
+		int cZ = mc.player.chunkCoordZ + ((selectedIdx/11) - 5);
 		return new ChunkPos(cX, cZ);
 	}
 	
@@ -429,8 +429,8 @@ public class GuiChunkManager extends GuiScreen{
     {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (!isSubletMenu && mouseX > mapX && mouseX < mapX + mapD && mouseY > mapY && mouseY < mapY+mapD) {
-        	double ivl = (mapD/5);
-        	double yModifier = Math.floor((mouseY-mapY)/ivl)*5;
+        	double ivl = (mapD/11);
+        	double yModifier = Math.floor((mouseY-mapY)/ivl)*11;
         	double xModifier = (mouseX-mapX)/ivl;        	
         	selectedIdx = (int) (Math.floor(xModifier) + Math.floor(yModifier));
         	button4.displayString = chunkList.get(selectedIdx).isPublic ? "Public: Yes" : "Public: No";
@@ -481,12 +481,12 @@ public class GuiChunkManager extends GuiScreen{
 	        bufferbuilder.pos(x, y+d, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
 	        tessellator.draw();
 	        //Draw the map
-	        double ivl = ((d-2)/80); //the draw dimensions for a single block on screen.
+	        double ivl = ((d-2)/176); //the draw dimensions for a single block on screen.
 	        drawChunkMap(tessellator, bufferbuilder, ivl, x, y, d);
 	        drawFacingArrow(tessellator, bufferbuilder, ivl);
 	        //draw selection box
-	        double boxX = x+ ((double)((int)selectedIdx%5)*(ivl*16));
-	        double boxY = y+ ((double)((int)selectedIdx/5)*(ivl*16));
+	        double boxX = x+ ((double)((int)selectedIdx%11)*(ivl*16));
+	        double boxY = y+ ((double)((int)selectedIdx/11)*(ivl*16));
 	        GlStateManager.enableBlend();
 	        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 	        bufferbuilder.pos(boxX+(ivl*16)	,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(70, 151, 255, 128).endVertex();
@@ -496,9 +496,9 @@ public class GuiChunkManager extends GuiScreen{
 	        tessellator.draw();
 	        //draw the overlay if enabled
 	        if (overlayOwners) {
-	        	for (int i = 0; i < 25; i++) {
-	        		boxX = x+ ((double)((int)i%5)*(ivl*16));
-	                boxY = y+ ((double)((int)i/5)*(ivl*16));
+	        	for (int i = 0; i < 121; i++) {
+	        		boxX = x+ ((double)((int)i%11)*(ivl*16));
+	                boxY = y+ ((double)((int)i/11)*(ivl*16));
 	                int alpha = 0;
 	                Color clr = Color.WHITE;
 	                if (!chunkList.get(i).ownerID.equals(Reference.NIL)) {
@@ -517,8 +517,8 @@ public class GuiChunkManager extends GuiScreen{
 	        GlStateManager.enableTexture2D();
 	        //tooltip code
 	        if (mouseX > x && mouseX < x+d && mouseY > y && mouseY < y+d) {
-	        	double interval = (d/5);
-	        	double yModifier = Math.floor((mouseY-y)/interval)*5;
+	        	double interval = (d/11);
+	        	double yModifier = Math.floor((mouseY-y)/interval)*11;
 	        	double xModifier = (mouseX-x)/interval;        	
 	        	hoveredIdx = (int) (Math.floor(xModifier) + Math.floor(yModifier));        	
 	        	if (hoveredIdx < chunkList.size()) {
@@ -534,9 +534,9 @@ public class GuiChunkManager extends GuiScreen{
     }
     
     private void drawChunkMap(Tessellator tess, BufferBuilder buf, double ivl, double x, double y, double d) {
-    	for (double yy = 0; yy < 80; yy++) {
-        	for (double xx = 0; xx < 80; xx++) {
-                Color color = new Color(mapColors.get((int) ((yy*80)+xx))); 
+    	for (double yy = 0; yy < 176; yy++) {
+        	for (double xx = 0; xx < 176; xx++) {
+                Color color = new Color(mapColors.get((int) ((yy*176)+xx))); 
         		buf.begin(7, DefaultVertexFormats.POSITION_COLOR);
                 buf.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)+ivl	, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
                 buf.pos((x+1)+(xx*ivl)+ivl, (y+1)+(yy*ivl)		, 0.0D).color(color.getRed(), color.getGreen(), color.getBlue(), 255).endVertex();
@@ -546,7 +546,7 @@ public class GuiChunkManager extends GuiScreen{
         	}
         }
         //draw the grid
-        for (int v = 1; v < 5; v++) {
+        for (int v = 1; v < 11; v++) {
         	buf.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
             buf.pos(x+(ivl*v*16)+1	, y+d	, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
             buf.pos(x+(ivl*v*16)+1	, y		, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
@@ -554,7 +554,7 @@ public class GuiChunkManager extends GuiScreen{
             buf.pos(x+(ivl*v*16)	, y+d	, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
             tess.draw();
         }
-        for (int h = 1; h < 5; h++) {
+        for (int h = 1; h < 11; h++) {
         	buf.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
             buf.pos(x+d	,y+(ivl*h*16)+1	, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
             buf.pos(x+d	,y+(ivl*h*16)	, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
@@ -565,8 +565,8 @@ public class GuiChunkManager extends GuiScreen{
     }
     
     private void drawFacingArrow(Tessellator tess, BufferBuilder buf, double ivl) {
-    	double centX = mapX+ (40*ivl);
-        double centY = mapY+ (40*ivl);
+    	double centX = mapX+ (88*ivl);
+        double centY = mapY+ (88*ivl);
         switch (mc.player.getHorizontalFacing()) {
         case NORTH: {
         	buf.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
