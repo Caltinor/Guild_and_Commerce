@@ -31,6 +31,7 @@ public class TempClaimCommands extends CommandBase{
 	public String getUsage(ICommandSender sender) {return "/tempclaim <renew/set/add>";	}
 	
 	private void message(String str, ICommandSender sender) {sender.sendMessage(new TextComponentString(str));}
+	
 	//TODO: Simplify and move this function
 	//it should only return the owner, not interact with the chunk
 	//MessageGuiRequest and the update to GuiChunkManager should interact with chunk properties.

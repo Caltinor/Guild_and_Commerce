@@ -395,19 +395,19 @@ public class MessageAdminToGui implements IMessage{
 			case 4: {
 				switch (message.marketPacketType) {
 				case LOCAL: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(0, message.vendList, Reference.NIL));
+					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(0, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case GLOBAL: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(1, message.vendList, Reference.NIL));
+					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(1, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case AUCTION: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(2, message.vendList, Reference.NIL));
+					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(2, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case SERVER: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(4, message.vendList, Reference.NIL));
+					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(4, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				default:

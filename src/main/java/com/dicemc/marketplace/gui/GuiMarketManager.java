@@ -48,6 +48,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class GuiMarketManager extends GuiScreen{
 	private GuiButton localToggle, globalToggle, auctionToggle, serverToggle, buyItem, newSale, playerContent, restockSale;
+	private GuiButton sortPriceAsc, sortPriceDes, sortNameAsc, sortNameDes, sortMySalesOn, sortMySalesOff;
 	private GuiTextField bidBox;
 	private static GuiListMarket marketList;
 	public static Map<UUID, MarketItem> vendList;
@@ -59,6 +60,7 @@ public class GuiMarketManager extends GuiScreen{
 	public static String response = "";
 	public static String header = "";
 	public static int listType;
+	private int sortType;
 	private String prompt1 = " | RECEIVE |";
 	private String prompt2 = " | GIVE |";
 	private String prompt3 = " | SUPPLY REMAINING |";
@@ -70,7 +72,7 @@ public class GuiMarketManager extends GuiScreen{
 		GuiMarketManager.listType = listType;
 		GuiMarketManager.balP = balP;
 		GuiMarketManager.response = listType != 3 ? response: "";
-		GuiMarketManager.marketList.vendList = sortedMarketList(listType, vendList, GuiMarketManager.locality);
+		GuiMarketManager.marketList.vendList = sortedMarketList(listType, vendList, GuiMarketManager.locality, 0, true);
 		GuiMarketManager.marketList.listType = listType;
 		GuiMarketManager.marketList.locality = GuiMarketManager.locality;
 		if (listType == 3) GuiMarketManager.marketList.locality = UUID.fromString(response);
@@ -78,30 +80,108 @@ public class GuiMarketManager extends GuiScreen{
 		header = (GuiMarketManager.listType == 3) ? "My Transactions"+ TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]" :"Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
 	}
 	
-	public static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn) {
+	public static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn, int sortType, boolean includeOwnSales) {
 		List<MarketListItem> outputList = new ArrayList<MarketListItem>();
 		switch (listType) {
 		case 0: {
+			List<MarketListItem> holderList = new ArrayList<MarketListItem>();
 			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (i.getValue().locality.equals(locIn)) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				if (i.getValue().locality.equals(locIn)) { 
+					if (includeOwnSales) holderList.add(new MarketListItem(i.getKey(), i.getValue()));
+					else if (!includeOwnSales && !i.getValue().vendor.equals(Minecraft.getMinecraft().player.getUniqueID()))  holderList.add(new MarketListItem(i.getKey(), i.getValue()));
+				}
 			}
+			switch (sortType) {
+			case 1: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				break;
+			}
+			case 2: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				Collections.reverse(holderList);
+				break;
+			}
+			case 3: {
+				Collections.sort(holderList);
+				break;
+			}
+			case 4: {
+				Collections.sort(holderList);
+				Collections.reverse(holderList);
+				break;
+			}
+			default:
+			}
+			outputList = holderList;
+			holderList = new ArrayList<MarketListItem>();
 			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (!i.getValue().locality.equals(locIn)) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				if (!i.getValue().locality.equals(locIn)) {
+					if (includeOwnSales) holderList.add(new MarketListItem(i.getKey(), i.getValue()));
+					else if (!includeOwnSales && !i.getValue().vendor.equals(Minecraft.getMinecraft().player.getUniqueID()))  holderList.add(new MarketListItem(i.getKey(), i.getValue()));
+				}
 			}
+			switch (sortType) {
+			case 1: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				break;
+			}
+			case 2: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				Collections.reverse(holderList);
+				break;
+			}
+			case 3: {
+				Collections.sort(holderList);
+				break;
+			}
+			case 4: {
+				Collections.sort(holderList);
+				Collections.reverse(holderList);
+				break;
+			}
+			default:
+			}
+			outputList.addAll(holderList);
 			break;
 		}
 		case 1: {
-			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (i.getValue().infinite) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) { 
+				if (includeOwnSales) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				else if (!includeOwnSales && !i.getValue().vendor.equals(Minecraft.getMinecraft().player.getUniqueID()))  outputList.add(new MarketListItem(i.getKey(), i.getValue()));
 			}
-			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (!i.getValue().infinite) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+			switch (sortType) {
+			case 1: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(outputList, IPC);
+				break;
+			}
+			case 2: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(outputList, IPC);
+				Collections.reverse(outputList);
+				break;
+			}
+			case 3: {
+				Collections.sort(outputList);
+				break;
+			}
+			case 4: {
+				Collections.sort(outputList);
+				Collections.reverse(outputList);
+				break;
+			}
+			default:
 			}
 			break;
 		}
 		case 2: {
 			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				if (includeOwnSales) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				else if (!includeOwnSales && !i.getValue().vendor.equals(Minecraft.getMinecraft().player.getUniqueID()))  outputList.add(new MarketListItem(i.getKey(), i.getValue()));
 			}
 			break;
 		}
@@ -112,12 +192,62 @@ public class GuiMarketManager extends GuiScreen{
 			break;
 		}
 		case 4: {
+			List<MarketListItem> holderList = new ArrayList<MarketListItem>();
 			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (!i.getValue().vendorGiveItem) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				if (!i.getValue().vendorGiveItem) holderList.add(new MarketListItem(i.getKey(), i.getValue()));
 			}
+			switch (sortType) {
+			case 1: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				break;
+			}
+			case 2: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				Collections.reverse(holderList);
+				break;
+			}
+			case 3: {
+				Collections.sort(holderList);
+				break;
+			}
+			case 4: {
+				Collections.sort(holderList);
+				Collections.reverse(holderList);
+				break;
+			}
+			default:
+			}
+			outputList = holderList;
+			holderList = new ArrayList<MarketListItem>();
 			for (Map.Entry<UUID, MarketItem> i : inputList.entrySet()) {
-				if (i.getValue().vendorGiveItem) outputList.add(new MarketListItem(i.getKey(), i.getValue()));
+				if (i.getValue().vendorGiveItem) holderList.add(new MarketListItem(i.getKey(), i.getValue()));
 			}
+			switch (sortType) {
+			case 1: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				break;
+			}
+			case 2: {
+				ItemPriceCompare IPC = new ItemPriceCompare();
+				Collections.sort(holderList, IPC);
+				Collections.reverse(holderList);
+				break;
+			}
+			case 3: {
+				Collections.sort(holderList);
+				break;
+			}
+			case 4: {
+				Collections.sort(holderList);
+				Collections.reverse(holderList);
+				break;
+			}
+			default:
+			}
+			outputList.addAll(holderList);
 			break;
 		}
 		default:
@@ -154,7 +284,19 @@ public class GuiMarketManager extends GuiScreen{
 		this.buttonList.add(playerContent);
 		this.buttonList.add(restockSale);
 		this.buttonList.add(new GuiButton(15, 3, this.height - 23, 75, 20, "Back"));
-		marketList = new GuiListMarket(this, sortedMarketList(0, vendList, locality), locality, listType, mc, 81, 26, this.width-84, this.height-39, 25);
+		marketList = new GuiListMarket(this, sortedMarketList(0, vendList, locality, 0, true), locality, listType, mc, 81, 26, this.width-114, this.height-39, 25);
+		sortPriceAsc = new GuiButton(50, this.width-25, marketList.y, 20, 20, "$>");
+		sortPriceDes = new GuiButton(51, this.width-25, marketList.y+ 25, 20, 20, "$<");
+		sortNameAsc = new GuiButton(52, this.width-25, sortPriceDes.y + 25, 20, 20, "AZ");
+		sortNameDes = new GuiButton(53, this.width-25, sortNameAsc.y +25, 20, 20, "ZA");
+		sortMySalesOn = new GuiButton(54, this.width-25, sortNameDes.y +25, 20, 20, "+Me");
+		sortMySalesOff = new GuiButton(55, this.width-25, sortMySalesOn.y+25, 20, 20, "-Me");
+		this.buttonList.add(sortPriceAsc);
+		this.buttonList.add(sortPriceDes);
+		this.buttonList.add(sortNameAsc);
+		this.buttonList.add(sortNameDes);
+		this.buttonList.add(sortMySalesOn);
+		this.buttonList.add(sortMySalesOff);
 		//update default load settings.
 		localToggle.enabled = false;
 		restockSale.visible = false;
@@ -249,7 +391,7 @@ public class GuiMarketManager extends GuiScreen{
 			prompt1 = " | RECEIVE |";
 			prompt2 = " | GIVE |";
 			prompt3 = "";
-			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SERVER, 2, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SERVER, 4, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
 		if (button == playerContent) {
 			localToggle.enabled = true;
@@ -262,7 +404,7 @@ public class GuiMarketManager extends GuiScreen{
 			slotIdx = -1;
 			prompt1 = " | GIVE |";
 			prompt2 = " | RECEIVE |";
-			prompt3 = " | SUPPLY REMAINING |";
+			prompt3 = "| SUPPLY REMAINING |";
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.PERSONAL, 3, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
 		if (button == buyItem && marketList.selectedElement != -1) {
@@ -285,6 +427,54 @@ public class GuiMarketManager extends GuiScreen{
 		}
 		if (button == newSale) {
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SALE_GUI_LAUNCH, 4, Reference.NIL, ItemStack.EMPTY, 0D, true));
+		}
+		if (button == sortPriceAsc) {
+			sortPriceAsc.enabled = false;
+			sortPriceDes.enabled = true;
+			sortNameAsc.enabled = true;
+			sortNameDes.enabled = true;
+			sortType = 1;
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, sortMySalesOn.enabled);
+			marketList.refreshList();
+		}
+		if (button == sortPriceDes) {
+			sortPriceAsc.enabled = true;
+			sortPriceDes.enabled = false;
+			sortNameAsc.enabled = true;
+			sortNameDes.enabled = true;
+			sortType = 2;
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, sortMySalesOn.enabled);
+			marketList.refreshList();
+		}
+		if (button == sortNameAsc) {
+			sortPriceAsc.enabled = true;
+			sortPriceDes.enabled = true;
+			sortNameAsc.enabled = false;
+			sortNameDes.enabled = true;
+			sortType = 3;
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, sortMySalesOn.enabled);
+			marketList.refreshList();
+		}
+		if (button == sortNameDes) {
+			sortPriceAsc.enabled = true;
+			sortPriceDes.enabled = true;
+			sortNameAsc.enabled = true;
+			sortNameDes.enabled = false;
+			sortType = 4;
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, sortMySalesOn.enabled);
+			marketList.refreshList();
+		}
+		if (button == sortMySalesOn) {
+			sortMySalesOn.enabled = false;
+			sortMySalesOff.enabled = true; 
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, true);
+			marketList.refreshList();
+		}
+		if (button == sortMySalesOff) {
+			sortMySalesOn.enabled = true;
+			sortMySalesOff.enabled = false;
+			marketList.vendList = sortedMarketList(listType, vendList, locality, sortType, false);
+			marketList.refreshList();
 		}
 	}
 	
@@ -379,8 +569,8 @@ public class GuiMarketManager extends GuiScreen{
 			if (containingListSel.listType < 2 || containingListSel.listType == 4) {
 				line1 = posting.item.vendorGiveItem? "" : TextFormatting.GOLD+"$"+df.format(posting.item.price);
 				line3 = posting.item.vendorGiveItem? TextFormatting.GOLD+"$"+df.format(posting.item.price) : "";	
-				line4 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "Server" : String.valueOf(posting.item.vendStock)) + " Remaining";
-				if (containingListSel.listType == 0) line4 += posting.item.locality.equals(locality) ? "" : TextFormatting.RED+" [NOT LOCAL SALE]";
+				line4 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "Unlimited" : String.valueOf(posting.item.vendStock)) + " Remaining";
+				if (containingListSel.listType == 0) line5 += posting.item.locality.equals(locality) ? "" : TextFormatting.RED+" [NOT LOCAL SALE]";
 			}
 			if (containingListSel.listType == 2) {
 				line1 = "Current Bid:   "+TextFormatting.GOLD+"$" + df.format(posting.item.price);
@@ -424,8 +614,8 @@ public class GuiMarketManager extends GuiScreen{
 	        this.client.fontRenderer.drawString(line1, x+30, y+3, 16777215);
 	        this.client.fontRenderer.drawString(line2, x+30, y+13 , 16777215);
 	        this.client.fontRenderer.drawString(line3, x+130, y+3 , 16777215);
-	        this.client.fontRenderer.drawString(line4, x+230, y+3 , 16777215);
-	        this.client.fontRenderer.drawString(line5, x+230, y+13, 16777215);
+	        this.client.fontRenderer.drawString(line4, x+200, y+3 , 16777215);
+	        this.client.fontRenderer.drawString(line5, x+200, y+13, 16777215);
 	        RenderHelper.enableGUIStandardItemLighting();
 	        FontRenderer font = posting.item.item.getItem().getFontRenderer(posting.item.item);
 	        if (font == null) font = fontRenderer;
@@ -451,10 +641,24 @@ public class GuiMarketManager extends GuiScreen{
 		}
 	}
 	
-	public static class MarketListItem {
+	public static class MarketListItem implements Comparable<MarketListItem>{
 		UUID key;
 		MarketItem item;		
 		public MarketListItem(UUID key, MarketItem item) {this.key = key; this.item = item;}
+		
+		@Override
+		public int compareTo(MarketListItem o) {
+			return this.item.item.getDisplayName().compareTo(o.item.item.getDisplayName());
+		}
+	}
+	
+	public static class ItemPriceCompare implements Comparator<MarketListItem> {
+		@Override
+		public int compare(MarketListItem o1, MarketListItem o2) {
+			if (o1.item.price < o2.item.price) return -1;
+			if (o1.item.price > o2.item.price) return 1;
+			return 0;
+		}	
 	}
 }
 

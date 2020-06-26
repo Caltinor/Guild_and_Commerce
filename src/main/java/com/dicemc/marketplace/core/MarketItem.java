@@ -1,6 +1,5 @@
 package com.dicemc.marketplace.core;
 
-import java.util.Comparator;
 import java.util.UUID;
 
 import com.dicemc.marketplace.util.Reference;
@@ -8,7 +7,7 @@ import com.dicemc.marketplace.util.Reference;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class MarketItem {
+public class MarketItem{
 	public ItemStack item;
 	public int vendStock;
 	public UUID vendor;
@@ -41,3 +40,6 @@ public class MarketItem {
 		this.infinite = infinite;
 	}
 }
+
+
+
