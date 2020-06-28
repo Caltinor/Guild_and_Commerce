@@ -110,7 +110,6 @@ public class MessageGuiRequest implements IMessage{
 			
 			switch(message.guiType) {
 			case 0: {
-				//TODO increase chunk screen to 11x11
 				List<ChunkSummary> list = new ArrayList<ChunkSummary>();
 				int cX = ctx.getServerHandler().player.chunkCoordX;
 				int cZ = ctx.getServerHandler().player.chunkCoordZ;
