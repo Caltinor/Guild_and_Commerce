@@ -1,5 +1,7 @@
 package com.dicemc.marketplace.events;
 
+import org.lwjgl.input.Keyboard;
+
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.network.MessageGuiRequest;
 import com.dicemc.marketplace.util.Reference;
@@ -45,6 +47,17 @@ public class GuiEventHandler {
 			if (event.getButton().equals(guildButton)) Main.NET.sendToServer(new MessageGuiRequest(1));
 			if (event.getButton().equals(permsButton)) Main.NET.sendToServer(new MessageGuiRequest(3));
 			if (event.getButton().equals(marketsButton)) Main.NET.sendToServer(new MessageGuiRequest(4));
+		}
+	}
+	
+	@SubscribeEvent
+	public static void onKeyPress(GuiScreenEvent.KeyboardInputEvent.Post event) {
+		if (event.getGui() instanceof GuiInventory) {
+			if (Keyboard.getEventKey() == Keyboard.KEY_1 && Keyboard.isKeyDown(Keyboard.KEY_1)) Main.NET.sendToServer(new MessageGuiRequest(0));
+			if (Keyboard.getEventKey() == Keyboard.KEY_2 && Keyboard.isKeyDown(Keyboard.KEY_2)) Main.NET.sendToServer(new MessageGuiRequest(4));
+			if (Keyboard.getEventKey() == Keyboard.KEY_3 && Keyboard.isKeyDown(Keyboard.KEY_3)) Main.NET.sendToServer(new MessageGuiRequest(1));
+			if (Keyboard.getEventKey() == Keyboard.KEY_4 && Keyboard.isKeyDown(Keyboard.KEY_4)) Main.NET.sendToServer(new MessageGuiRequest(2));
+			if (Keyboard.getEventKey() == Keyboard.KEY_5 && Keyboard.isKeyDown(Keyboard.KEY_5)) Main.NET.sendToServer(new MessageGuiRequest(3));
 		}
 	}
 }

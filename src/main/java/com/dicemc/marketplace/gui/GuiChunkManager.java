@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import com.dicemc.marketplace.Main;
@@ -343,6 +344,23 @@ public class GuiChunkManager extends GuiScreen{
 		super.keyTyped(typedChar, keyCode);
 		if (this.sellprice.isFocused() && CoreUtils.validNumberKey(keyCode)) this.sellprice.textboxKeyTyped(typedChar, keyCode);
 		if (this.memberAdd.isFocused()) this.memberAdd.textboxKeyTyped(typedChar, keyCode);
+		if (!sellprice.isFocused() && !memberAdd.isFocused()) {
+			if (keyCode == Keyboard.KEY_C) { if (button1.displayString == "Temp Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
+			if (keyCode == Keyboard.KEY_G) { if (button2.displayString == "Guild Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
+			if (keyCode == Keyboard.KEY_S) {
+				isSubletMenu = isSubletMenu ? false : true;
+				subletMenu.displayString = isSubletMenu ? "Chunk Menu" : "Sublet Menu";
+				wlList.selectedIdx = -1;
+				wlList.selectedElement = -1;
+				wlList.refreshList(selectedIdx);
+			}
+			if (keyCode == Keyboard.KEY_T) {
+				if (!overlayToggle.displayString.equalsIgnoreCase("Disable Sublet")) {
+					overlayOwners = overlayOwners ? false : true;
+					overlayToggle.displayString = overlayOwners? "Owner Overlay: On" : "Owner Overlay: Off";
+				}
+			}
+		}
     }
 	
 	protected void actionPerformed(GuiButton button) throws IOException {

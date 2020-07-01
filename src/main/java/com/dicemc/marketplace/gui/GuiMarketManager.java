@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.lwjgl.input.Keyboard;
+
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
@@ -326,6 +328,94 @@ public class GuiMarketManager extends GuiScreen{
     {
 		super.keyTyped(typedChar, keyCode);
 		if (bidBox.isFocused()&& CoreUtils.validNumberKey(keyCode)) bidBox.textboxKeyTyped(typedChar, keyCode);
+		if (!bidBox.isFocused()) {
+			if (keyCode == Keyboard.KEY_S) {
+				localToggle.enabled = true;
+				globalToggle.enabled = true;
+				auctionToggle.enabled = true;
+				serverToggle.enabled = false;
+				playerContent.enabled = true;
+				buyItem.displayString = "Buy Selected";
+				restockSale.visible = false;
+				bidBox.setVisible(false);
+				slotIdx = -1;
+				prompt1 = " | RECEIVE |";
+				prompt2 = " | GIVE |";
+				prompt3 = "";
+				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SERVER, 4, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			}
+			if (keyCode == Keyboard.KEY_G) {
+				localToggle.enabled = true;
+				globalToggle.enabled = false;
+				auctionToggle.enabled = true;
+				serverToggle.enabled = true;
+				playerContent.enabled = true;
+				buyItem.displayString = "Buy Selected";
+				restockSale.visible = false;
+				bidBox.setVisible(false);
+				slotIdx = -1;
+				prompt1 = " | RECEIVE |";
+				prompt2 = " | GIVE |";
+				prompt3 = " | SUPPLY REMAINING |";
+				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.GLOBAL, 1, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			}
+			if (keyCode == Keyboard.KEY_A) {
+				localToggle.enabled = true;
+				globalToggle.enabled = true;
+				auctionToggle.enabled = false;
+				serverToggle.enabled = true;
+				playerContent.enabled = true;
+				buyItem.displayString = "Place Bid";
+				restockSale.visible = false;
+				bidBox.setVisible(true);
+				slotIdx = -1;
+				prompt1 = " Select an item to bid for. Enter your bid amount. Press Place Bid.";
+				prompt2 = "";
+				prompt3 = "";
+				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.AUCTION, 2, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			}
+			if (keyCode == Keyboard.KEY_F) {
+				localToggle.enabled = false;
+				globalToggle.enabled = true;
+				auctionToggle.enabled = true;
+				serverToggle.enabled = true;
+				playerContent.enabled = true;
+				buyItem.displayString = "Buy Selected";
+				restockSale.visible = false;
+				bidBox.setVisible(false);
+				slotIdx = -1;
+				prompt1 = " | RECEIVE |";
+				prompt2 = " | GIVE |";
+				prompt3 = " | SUPPLY REMAINING |";
+				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.LOCAL, 0, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			}
+			if (keyCode == Keyboard.KEY_D) {
+				localToggle.enabled = true;
+				globalToggle.enabled = true;
+				auctionToggle.enabled = true;
+				playerContent.enabled = false;
+				buyItem.displayString = "Remove";
+				restockSale.visible = true;
+				bidBox.setVisible(false);
+				slotIdx = -1;
+				prompt1 = " | GIVE |";
+				prompt2 = " | RECEIVE |";
+				prompt3 = "| SUPPLY REMAINING |";
+				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.PERSONAL, 3, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
+			}
+			if (keyCode == Keyboard.KEY_B && marketList.selectedElement != -1) {
+				if (this.listType == 0 || this.listType == 1 || this.listType == 4) {
+					Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.BUY, this.listType, marketList.getSelectedMember().posting.key, ItemStack.EMPTY, 0D, true));}
+				else if (this.listType == 2 && bidBox.getText().length() > 0) {
+					double bidAmount = -1D;
+					try {bidAmount = Double.valueOf(this.bidBox.getText());} catch (NumberFormatException e) {}
+					if (bidAmount != -1) Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.BUY, this.listType, marketList.getSelectedMember().posting.key, ItemStack.EMPTY, bidAmount, true));}
+				else if (this.listType == 3 && marketList.getSelectedMember().posting.item.price == -1) {
+					Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.COLLECT, 0, Reference.NIL, marketList.getSelectedMember().posting.item.item, 0D, true));}
+				else if (this.listType == 3 && marketList.getSelectedMember().posting.item.price != -1) {
+					Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.REMOVE, 0, marketList.getSelectedMember().posting.key, ItemStack.EMPTY, 0D, false));}
+			}
+		}
     }
 	
 	protected void actionPerformed(GuiButton button) throws IOException {
