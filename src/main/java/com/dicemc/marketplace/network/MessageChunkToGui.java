@@ -86,7 +86,7 @@ public class MessageChunkToGui implements IMessage{
 		
 		private void handle(MessageChunkToGui message, MessageContext ctx) {
 			if (!message.isUpdate) Main.proxy.openChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
-			if (message.isUpdate) GuiChunkManager.guiUpdate(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
+			if (message.isUpdate) Main.proxy.updateChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
 		}
 	}
 }

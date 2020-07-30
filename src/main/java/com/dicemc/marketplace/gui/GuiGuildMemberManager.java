@@ -26,16 +26,16 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildMemberManager extends GuiScreen{
-	public static Guild guild;
-	public static Map<UUID, String> mbrNames;
-	public static GuiListGuildMembers memberList, inviteList;
+	private Guild guild;
+	private Map<UUID, String> mbrNames;
+	private GuiListGuildMembers memberList, inviteList;
 	private GuiTextField inviteText;
 	private GuiButton guiProm, guiDemo, guiKick, guiInvite;
 	private boolean permProDemo, permKick;
 	private boolean inviteListClicked;
-	public static Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
+	private Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
 	
-	public static void syncMembers(Guild updatedguild, Map<UUID, String> memberNames) {
+	public void syncMembers(Guild updatedguild, Map<UUID, String> memberNames) {
 		guild = updatedguild; 
 		mbrNames = memberNames;
 		inviteList.guild = updatedguild;

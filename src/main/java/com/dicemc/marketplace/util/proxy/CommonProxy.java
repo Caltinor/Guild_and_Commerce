@@ -10,6 +10,7 @@ import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
+import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.dicemc.marketplace.network.PacketHandler;
 import com.dicemc.marketplace.util.Reference;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -39,6 +40,32 @@ public class CommonProxy {
 	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP) {}
 	
 	public void openAdminGui() {}
+	
+	public void updateMarketGui(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response) {}
+	
+	public void updateChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {}
+	
+	public void updateGuildGuiAccounts(Account acctG, double balP) {}
+	
+	public void updateMemberGui(Guild guild, Map<UUID, String> memberNames) {}
+	
+	public void updatePermsGui(Guild guild) {}
+	
+	public void updateAdminSyncAccounts(Map<Account, String> accountList) {}
+	
+	public void updateAdminSyncGuildList(Map<UUID, String> nameList) {}
+	
+	public void updateAdminSyncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {}
+	
+	public void updateAdminSyncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {}
+	
+	public void updateAdminSyncGuildLandDetail(double value, boolean isPublic, boolean isForSale, boolean isOutpost) {}
+	
+	public void updateAdminSyncGuildMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {}
+	
+	public void updateAdminSyncMarkets(List<MarketListItem> list) {}
+	
+	public void updateAdminSyncMarketDetail(String vendorName, String locName, String bidderName) {}
 	
 	public void registerNetworkPackets() {
 		Main.NET = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MOD_ID);

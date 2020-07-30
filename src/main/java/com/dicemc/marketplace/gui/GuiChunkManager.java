@@ -54,30 +54,30 @@ import net.minecraftforge.fml.client.config.GuiUtils;
 
 
 public class GuiChunkManager extends GuiScreen{
-	public static Guild myGuild;
-	public static List<ChunkSummary> chunkList;
-	public static List<Integer> mapColors;
-	private static GuiButton button1, button2, button3, overlayToggle, subletMenu, addMember, removeMember, backButton, wl0, wl1, wl2, wl3;
-	private static GuiButton button4;
-	private static GuiTextField sellprice, memberAdd;
-	public static double acctPlayer, acctGuild;
-	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	private static GuiListChunkMembers chunkMbrList;
-	private static GuiListWhitelist wlList;
-	private static int selectedIdx = 60;
-	private static boolean overlayOwners = false;
-	public static boolean canGuildClaim;
-	public static boolean canGuildSell;
-	public static boolean canGuildSublet;
-	public static boolean isSubletMenu = false;
-	public static Map<UUID, Integer> overlayColors = new HashMap<UUID, Integer>();
+	private Guild myGuild;
+	private List<ChunkSummary> chunkList;
+	private List<Integer> mapColors;
+	private GuiButton button1, button2, button3, overlayToggle, subletMenu, addMember, removeMember, backButton, wl0, wl1, wl2, wl3;
+	private GuiButton button4;
+	private GuiTextField sellprice, memberAdd;
+	private double acctPlayer, acctGuild;
+	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private GuiListChunkMembers chunkMbrList;
+	private GuiListWhitelist wlList;
+	private int selectedIdx = 60;
+	private boolean overlayOwners = false;
+	private boolean canGuildClaim;
+	private boolean canGuildSell;
+	private boolean canGuildSublet;
+	private boolean isSubletMenu = false;
+	private Map<UUID, Integer> overlayColors = new HashMap<UUID, Integer>();
 	private Map<Integer, Color> colorReference = colorSetup();
-	private static String response = "";
-	private static String sellpricelabel = "";
-	int hoveredIdx = 0;
-	int mapX, mapY, mapD;
-	static String topString;
-	private static EntityPlayer player = Minecraft.getMinecraft().player;
+	private String response = "";
+	private String sellpricelabel = "";
+	private int hoveredIdx = 0;
+	private int mapX, mapY, mapD;
+	private String topString;
+	private EntityPlayer player = Minecraft.getMinecraft().player;
 
 	private Map<Integer, Color> colorSetup() {
 		Map<Integer, Color> clr = new HashMap<Integer, Color>();
@@ -96,7 +96,7 @@ public class GuiChunkManager extends GuiScreen{
 		return clr;
 	}
 	
-	private static void setOverlayColors() {
+	private void setOverlayColors() {
 		int index = 0;	
 		overlayColors.put(Reference.NIL, -1);
 		for (ChunkSummary entry : chunkList) {
@@ -104,20 +104,20 @@ public class GuiChunkManager extends GuiScreen{
 		}
 	}
 	
-	public static void guiUpdate(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
-		GuiChunkManager.myGuild = myGuild;
-		chunkList = list;
-		GuiChunkManager.mapColors = mapColors;
-		GuiChunkManager.canGuildClaim = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("setclaim", 3);
-		GuiChunkManager.canGuildSell = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("setsell", 3);
-		GuiChunkManager.canGuildSublet = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("managesublet", 3);
-		GuiChunkManager.response = response;
-		acctPlayer = acctP;
-		acctGuild = acctG;
+	public void guiUpdate(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
+		this.myGuild = myGuild;
+		this.chunkList = list;
+		this.mapColors = mapColors;
+		this.canGuildClaim = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("setclaim", 3);
+		this.canGuildSell = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("setsell", 3);
+		this.canGuildSublet = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("managesublet", 3);
+		this.response = response;
+		this.acctPlayer = acctP;
+		this.acctGuild = acctG;
 		setOverlayColors();
-		GuiChunkManager.chunkMbrList.refreshList(selectedIdx);
-		GuiChunkManager.wlList.refreshList(selectedIdx);
-		GuiChunkManager.updateVisibility();
+		this.chunkMbrList.refreshList(selectedIdx);
+		this.wlList.refreshList(selectedIdx);
+		this.updateVisibility();
 	}
 	
 	public GuiChunkManager(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
@@ -140,7 +140,7 @@ public class GuiChunkManager extends GuiScreen{
 		button3 = new GuiButton(13, button1.x, button1.y+ 46, 75, 20, "New Outpost");
 		button4 = new GuiButton(14, button1.x, button1.y+ 69, 75, 20, chunkList.get(12).isPublic ? "Public: Yes" : "Public: No");
 		overlayToggle = new GuiButton(15, 3, this.height - 30, 100, 20, overlayOwners? "Owner Overlay: On" : "Owner Overlay: Off");
-		chunkMbrList = new GuiListChunkMembers(this, mc.getMinecraft(), button1.x+button1.width+175, 30, this.width/3, (this.height-60)/2, 10);
+		chunkMbrList = new GuiListChunkMembers(this, selectedIdx, mc.getMinecraft(), button1.x+button1.width+175, 30, this.width/3, (this.height-60)/2, 10);
 		sellprice = new GuiTextField(1, this.fontRenderer, button1.x, button4.y+button4.height+12, 75, 20);
 		memberAdd = new GuiTextField(2, this.fontRenderer, chunkMbrList.x, chunkMbrList.y+chunkMbrList.height+3, 100, 20);
 		subletMenu = new GuiButton(16, button1.x, sellprice.y+sellprice.height+3, 75, 20, "Sublet Menu");
@@ -185,7 +185,7 @@ public class GuiChunkManager extends GuiScreen{
 		return hoveredText;
 	}
 	
-	public static void updateVisibility () {
+	private void updateVisibility () {
 		backButton.enabled = true;
 		backButton.displayString = "Back";
 		button2.enabled = false;
@@ -744,9 +744,10 @@ public class GuiChunkManager extends GuiScreen{
 	    /** Index to the currently selected member */
 	    private int selectedIdx = -1;
 		
-		public GuiListChunkMembers(GuiChunkManager guiGM, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+		public GuiListChunkMembers(GuiChunkManager guiGM, int index, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
 			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
 			this.chunkManager = guiGM;
+			refreshList(index);
 		}
 		
 	    public void refreshList(int index)

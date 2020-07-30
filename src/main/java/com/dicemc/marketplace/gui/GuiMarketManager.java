@@ -52,34 +52,36 @@ public class GuiMarketManager extends GuiScreen{
 	private GuiButton localToggle, globalToggle, auctionToggle, serverToggle, buyItem, newSale, playerContent, restockSale;
 	private GuiButton sortPriceAsc, sortPriceDes, sortNameAsc, sortNameDes, sortMySalesOn, sortMySalesOff;
 	private GuiTextField bidBox;
-	private static GuiListMarket marketList;
-	public static Map<UUID, MarketItem> vendList;
-	public static double feeBuy, feeSell;
-	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	public static UUID locality;
-	public static double balP;
-	public static int slotIdx = -1;
-	public static String response = "";
-	public static String header = "";
-	public static int listType;
+	private GuiListMarket marketList;
+	private Map<UUID, MarketItem> vendList;
+	private double feeBuy, feeSell;
+	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private UUID locality;
+	private double balP;
+	private int slotIdx = -1;
+	private String response = "";
+	private String header = "";
+	private int listType;
 	private int sortType;
 	private String prompt1 = " | RECEIVE |";
 	private String prompt2 = " | GIVE |";
 	private String prompt3 = " | SUPPLY REMAINING |";
+	
+	public void setSlotIdx(int idx) {slotIdx = idx;}
 
-	public static void syncMarket(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response) {
-		GuiMarketManager.vendList = vendList;
-		GuiMarketManager.feeBuy = feeBuy;
-		GuiMarketManager.feeSell = feeSell;
-		GuiMarketManager.listType = listType;
-		GuiMarketManager.balP = balP;
-		GuiMarketManager.response = listType != 3 ? response: "";
-		GuiMarketManager.marketList.vendList = sortedMarketList(listType, vendList, GuiMarketManager.locality, 0, true);
-		GuiMarketManager.marketList.listType = listType;
-		GuiMarketManager.marketList.locality = GuiMarketManager.locality;
-		if (listType == 3) GuiMarketManager.marketList.locality = UUID.fromString(response);
-		GuiMarketManager.marketList.refreshList();
-		header = (GuiMarketManager.listType == 3) ? "My Transactions"+ TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]" :"Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
+	public void syncMarket(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response) {
+		this.vendList = vendList;
+		this.feeBuy = feeBuy;
+		this.feeSell = feeSell;
+		this.listType = listType;
+		this.balP = balP;
+		this.response = listType != 3 ? response: "";
+		this.marketList.vendList = sortedMarketList(listType, vendList, this.locality, 0, this.sortMySalesOff.enabled);
+		this.marketList.listType = listType;
+		this.marketList.locality = this.locality;
+		if (listType == 3) this.marketList.locality = UUID.fromString(response);
+		this.marketList.refreshList();
+		header = (this.listType == 3) ? "My Transactions"+ TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]" :"Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
 	}
 	
 	public static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn, int sortType, boolean includeOwnSales) {
@@ -717,7 +719,7 @@ public class GuiMarketManager extends GuiScreen{
 		        itemRender.renderItemAndEffectIntoGUI(new ItemStack(ModItems.MONEYBAG), costX, y);
 		        itemRender.renderItemOverlayIntoGUI(font, new ItemStack(ModItems.MONEYBAG), costX, y, null);
 	        }
-	        if (mouseX > itemX && mouseX < itemX+20 && mouseY > y && mouseY < y+20) {GuiMarketManager.slotIdx = slotIndex; slotY = y;}
+	        if (mouseX > itemX && mouseX < itemX+20 && mouseY > y && mouseY < y+20) {this.containingListSel.guildManager.setSlotIdx(slotIndex); slotY = y;}
 	        RenderHelper.disableStandardItemLighting();	        
 		}
 

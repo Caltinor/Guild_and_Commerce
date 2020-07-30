@@ -47,59 +47,59 @@ import net.minecraft.util.text.TextFormatting;
 
 public class GuiAdmin extends GuiScreen{
 	//Gui Structural variables
-	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	private static DecimalFormat taxformat = new DecimalFormat("0.00000");
-	public static AdminGuiType activeMenu = AdminGuiType.NONE;
-	private static GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
+	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
+	private DecimalFormat taxformat = new DecimalFormat("0.00000");
+	private AdminGuiType activeMenu = AdminGuiType.NONE;
+	private GuiButton toggleAccount, toggleGuild, toggleMarket, exitButton;
 	//Account Menu Objects;
-	private static GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd, accountRemove;
-	private static GuiTextField balanceBox;
-	private static GuiListAccount guiListAccounts;
-	private static boolean isPlayerList = true;
+	private GuiButton toggleAccountGuild, toggleAccountPlayer, accountSet, accountAdd, accountRemove;
+	private GuiTextField balanceBox;
+	private GuiListAccount guiListAccounts;
+	private boolean isPlayerList = true;
 	//guild select menu objects;
-	private static GuiButton selectGuild, deleteGuild;
-	private static GuiListNameList guildList;
+	private GuiButton selectGuild, deleteGuild;
+	private GuiListNameList guildList;
 	//guild main menu objects
-	private static GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
-	private static GuiTextField nameBox, taxBox, perm0, perm1, perm2, perm3;
-	private static GuiListAdminPerms listGuildPerms;
+	private GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
+	private GuiTextField nameBox, taxBox, perm0, perm1, perm2, perm3;
+	private GuiListAdminPerms listGuildPerms;
 	//guild land menu objects
-	private static GuiListAdminGuildChunks guicoreChunkList, guioutpostChunkList;
-	private static GuiButton landPublic, landForSale, landOutpost, landSave;
-	private static GuiTextField landValue;
+	private GuiListAdminGuildChunks guicoreChunkList, guioutpostChunkList;
+	private GuiButton landPublic, landForSale, landOutpost, landSave;
+	private GuiTextField landValue;
 	//guild member menu objects
-	private static GuiListAdminGuildMembers listGuildMembers;
-	private static GuiTextField mbrInviteBox;
-	private static GuiButton mbrAdd, mbrSub, mbr0, mbr1, mbr2, mbr3;
+	private GuiListAdminGuildMembers listGuildMembers;
+	private GuiTextField mbrInviteBox;
+	private GuiButton mbrAdd, mbrSub, mbr0, mbr1, mbr2, mbr3;
 	//market menu objects
-	private static GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
-	private static GuiButton addSale, editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
-	private static GuiTextField priceBox, stockBox;
-	private static GuiListAdminMarket marketList;
-	private static boolean isVendorGive = true;
-	private static boolean isInfinite = false;
-	public static int selectedMarket = -1;
+	private GuiButton toggleLocal, toggleGlobal, toggleAuction, toggleServer;
+	private GuiButton addSale, editSave, toggleVendorGive, toggleInfinite, saleExpire, saleRemove;
+	private GuiTextField priceBox, stockBox;
+	private GuiListAdminMarket marketList;
+	private boolean isVendorGive = true;
+	private boolean isInfinite = false;
+	private int selectedMarket = -1;
 	//Gui Data variables
-	public static int slotIdx = -1;
-	public static Guild guiGuild = new Guild(Reference.NIL);
-	public static Map<UUID, String> mbrNames = new HashMap<UUID, String>();
-	private static Map<Account, String> accountList = new HashMap<Account, String>();
-	private static Map<UUID, String> nameList = new HashMap<UUID, String>();
-	private static List<MarketListItem> vendList = new ArrayList<MarketListItem>();
-	private static List<ChunkPos> pos = new ArrayList<ChunkPos>();
-	private static Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
-	private static String vendorName, locName, bidderName;
-	private static double value = 0D;
-	private static boolean isPublic = false;
-	private static boolean isForSale = false;
-	private static boolean isOutpost = false;
+	private int slotIdx = -1;
+	private Guild guiGuild = new Guild(Reference.NIL);
+	private Map<UUID, String> mbrNames = new HashMap<UUID, String>();
+	private Map<Account, String> accountList = new HashMap<Account, String>();
+	private Map<UUID, String> nameList = new HashMap<UUID, String>();
+	private List<MarketListItem> vendList = new ArrayList<MarketListItem>();
+	private List<ChunkPos> pos = new ArrayList<ChunkPos>();
+	private Map<ChunkPos, Double> chunkValues = new HashMap<ChunkPos, Double>();
+	private String vendorName, locName, bidderName;
+	private double value = 0D;
+	private boolean isPublic = false;
+	private boolean isForSale = false;
+	private boolean isOutpost = false;
 	
 	
-	public static void syncAccounts(Map<Account, String> accountList) {GuiAdmin.accountList = accountList; guiListAccounts.refreshList();}
+	public void syncAccounts(Map<Account, String> accountList) {this.accountList = accountList; guiListAccounts.refreshList();}
 	
-	public static void syncGuildList(Map<UUID, String> nameList) {GuiAdmin.nameList = nameList; guildList.refreshList();}
+	public void syncGuildList(Map<UUID, String> nameList) {this.nameList = nameList; guildList.refreshList();}
 	
-	public static void syncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+	public void syncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
 		guiGuild.guildName = name;
 		guiGuild.openToJoin = open;
 		guiGuild.guildTax = tax;
@@ -112,7 +112,7 @@ public class GuiAdmin extends GuiScreen{
 		listGuildPerms.refreshList();
 	}
 	
-	public static void syncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {
+	public void syncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {
 		guicoreChunkList.pos = posCore;
 		guicoreChunkList.chunkValues = chunkValues;
 		guicoreChunkList.refreshList();
@@ -122,31 +122,34 @@ public class GuiAdmin extends GuiScreen{
 		updateVisibility();
 	}
 	
-	public static void syncGuildLandDetail(double value, boolean isPublic, boolean isForSale, boolean isOutpost) {
-		GuiAdmin.value = value;
-		GuiAdmin.isPublic = isPublic;
-		GuiAdmin.isForSale = isForSale;
-		GuiAdmin.isOutpost = isOutpost;
+	public void syncGuildLandDetail(double value, boolean isPublic, boolean isForSale, boolean isOutpost) {
+		this.value = value;
+		this.isPublic = isPublic;
+		this.isForSale = isForSale;
+		this.isOutpost = isOutpost;
 		updateVisibility();
 	}
 	
-	public static void syncGuildMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
+	public void syncGuildMembers(Map<UUID, Integer> members, Map<UUID,String> mbrNames) {
 		guiGuild.members = members;
-		GuiAdmin.mbrNames = mbrNames;
+		this.mbrNames = mbrNames;
 		listGuildMembers.refreshList();
 		updateVisibility();
 	}
 	
-	public static void syncMarkets(List<MarketListItem> list) {GuiAdmin.vendList = list; marketList.listType = selectedMarket; marketList.refreshList();}
+	public void syncMarkets(List<MarketListItem> list) {this.vendList = list; marketList.listType = selectedMarket; marketList.refreshList();}
 	
-	public static void syncMarketDetail(String vendorName, String locName, String bidderName) {
-		GuiAdmin.vendorName = vendorName;
-		GuiAdmin.locName = locName;
-		GuiAdmin.bidderName = bidderName;
-		GuiAdmin.updateVisibility();
+	public void syncMarketDetail(String vendorName, String locName, String bidderName) {
+		this.vendorName = vendorName;
+		this.locName = locName;
+		this.bidderName = bidderName;
+		this.updateVisibility();
 	}
 	
-	public GuiAdmin() {}
+	public GuiAdmin() {
+		activeMenu = AdminGuiType.MARKET;
+		selectedMarket = -1;
+	}
 	
 	public void initGui() {
 		toggleAccount = new GuiButton(1, 3, 3, 75, 20, "Accounts");
@@ -304,7 +307,7 @@ public class GuiAdmin extends GuiScreen{
 		saleRemove.visible = false;
 		priceBox.setVisible(false);
 		stockBox.setVisible(false);
-		//market Sell specific objects
+		updateVisibility();
 	}
 	
 	public void handleMouseInput() throws IOException {
@@ -318,7 +321,7 @@ public class GuiAdmin extends GuiScreen{
         if (listGuildMembers.visible) {listGuildMembers.handleMouseInput();}
     }
 	
-	public static void updateVisibility() {
+	public void updateVisibility() {
 		//Main menu buttons
 		toggleAccount.enabled = activeMenu == AdminGuiType.ACCOUNT ? false : true;
 		toggleGuild.enabled = activeMenu == AdminGuiType.GUILD_SELECT ? false : true;
@@ -429,6 +432,8 @@ public class GuiAdmin extends GuiScreen{
 			updateVisibility();
 		}
 		if (button == toggleMarket) {
+			marketList.selectedIdx = -1;
+			selectedMarket = 0;
 			activeMenu = AdminGuiType.MARKET;
 			Main.NET.sendToServer(new MessageAdminToServer(MktPktType.LOCAL));
 			updateVisibility();
@@ -505,7 +510,7 @@ public class GuiAdmin extends GuiScreen{
 			stockBox.setEnabled(isInfinite ? false : true);
 		}
 		if (button == editSave && marketList.selectedIdx >= 0) {			
-			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			MktPktType type = selectedMarket == 0 ? MktPktType.LOCAL : (selectedMarket == 1 ? MktPktType.GLOBAL : (selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
 			double amount = -1D;
 			try {Math.abs(amount = Double.valueOf(priceBox.getText()));} catch (NumberFormatException e) {}
 			int stock = 0;
@@ -518,7 +523,7 @@ public class GuiAdmin extends GuiScreen{
 			marketList.selectedElement = -1;			
 		}
 		if (button == saleRemove && marketList.selectedIdx >= 0) {
-			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			MktPktType type = selectedMarket == 0 ? MktPktType.LOCAL : (selectedMarket == 1 ? MktPktType.GLOBAL : (selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
 			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key, false));
 			marketList.selectedIdx = -1;
 			marketList.selectedElement = -1;
@@ -643,7 +648,7 @@ public class GuiAdmin extends GuiScreen{
 		if (guildList.visible) {guildList.mouseReleased(mouseX, mouseY, state);}
 		if (marketList.visible) {marketList.mouseReleased(mouseX, mouseY, state);}
 		if (marketList.selectedIdx >= 0 && mouseX > marketList.x && mouseX < marketList.x+marketList.width-6 && mouseY > marketList.y && mouseY < marketList.height+marketList.y) {
-			MktPktType type = GuiAdmin.selectedMarket == 0 ? MktPktType.LOCAL : (GuiAdmin.selectedMarket == 1 ? MktPktType.GLOBAL : (GuiAdmin.selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
+			MktPktType type = selectedMarket == 0 ? MktPktType.LOCAL : (selectedMarket == 1 ? MktPktType.GLOBAL : (selectedMarket == 2 ? MktPktType.AUCTION : MktPktType.SERVER));
 			Main.NET.sendToServer(new MessageAdminToServer(type, marketList.getSelectedMember().posting.key));
 		}
 		if (listGuildPerms.visible) {listGuildPerms.mouseReleased(mouseX, mouseY, state);}
@@ -936,7 +941,7 @@ public class GuiAdmin extends GuiScreen{
 	    public void refreshList()
 	    {
 	    	entries.clear();
-	    	vendList = GuiAdmin.vendList;
+	    	vendList = parentGui.vendList;
 	        for (MarketListItem entry : vendList) {
 	            this.entries.add(new GuiListAdminMarketEntry(this, entry, locality));
 	        }
@@ -1000,7 +1005,7 @@ public class GuiAdmin extends GuiScreen{
 	        if (font == null) font = fontRenderer;
 	        itemRender.renderItemAndEffectIntoGUI(posting.item.item, x+3, y);
 	        itemRender.renderItemOverlayIntoGUI(font, posting.item.item, x+3, y, null);
-	        if (mouseX > x+3 && mouseX < x+23 && mouseY > y && mouseY < y+20) {GuiAdmin.slotIdx = slotIndex; slotY = y;}
+	        if (mouseX > x+3 && mouseX < x+23 && mouseY > y && mouseY < y+20) {containingListSel.parentGui.slotIdx = slotIndex; slotY = y;}
 	        RenderHelper.disableStandardItemLighting();	        
 		}
 

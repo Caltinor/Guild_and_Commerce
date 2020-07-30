@@ -22,15 +22,14 @@ import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildPerms extends GuiScreen {
-	private static GuiListPerms permList;
-	private static GuiButton set0, set1, set2, set3;
-	private static boolean hasPermission = true;
-	public static String permIndex[];
+	private GuiListPerms permList;
+	private GuiButton set0, set1, set2, set3;
+	private boolean hasPermission = true;
+	private String permIndex[];	
+	private Guild guild;
 	
-	public static Guild guild;
-	
-	public static void syncGui(Guild guild) {
-		GuiGuildPerms.guild = guild;
+	public void syncGui(Guild guild) {
+		this.guild = guild;
 		permList.refreshList();
 		if (permList.selectedIdx >= 0 && hasPermission) {
         	set0.enabled = permList.getSelectedMember().permLvlRank == 0 ? false : true;

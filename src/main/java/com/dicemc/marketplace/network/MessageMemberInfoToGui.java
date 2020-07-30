@@ -77,7 +77,7 @@ public class MessageMemberInfoToGui implements IMessage{
 		}  
 		
 		private void handle(MessageMemberInfoToGui message, MessageContext ctx) {		
-			GuiGuildMemberManager.syncMembers(message.guild, message.mbrNames);
+			Main.proxy.updateMemberGui(message.guild, message.mbrNames);
 		}
 	}
 }

@@ -381,52 +381,52 @@ public class MessageAdminToGui implements IMessage{
 		private void handle(MessageAdminToGui message, MessageContext ctx) {
 			switch (message.messageIndex) {
 			case 1: {
-				GuiAdmin.syncAccounts(message.accountList);
+				Main.proxy.updateAdminSyncAccounts(message.accountList);
 				break;
 			}
 			case 2: {
-				GuiAdmin.syncGuildData(message.str1, message.bool1, message.dbl1, message.str2, message.str3, message.str4, message.str5, message.guildPerms);
+				Main.proxy.updateAdminSyncGuildData(message.str1, message.bool1, message.dbl1, message.str2, message.str3, message.str4, message.str5, message.guildPerms);
 				break;
 			}
 			case 3: {
-				GuiAdmin.syncGuildList(message.nameList);
+				Main.proxy.updateAdminSyncGuildList(message.nameList);
 				break;
 			}
 			case 4: {
 				switch (message.marketPacketType) {
 				case LOCAL: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(0, message.vendList, Reference.NIL, 0, true));
+					Main.proxy.updateAdminSyncMarkets(GuiMarketManager.sortedMarketList(0, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case GLOBAL: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(1, message.vendList, Reference.NIL, 0, true));
+					Main.proxy.updateAdminSyncMarkets(GuiMarketManager.sortedMarketList(1, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case AUCTION: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(2, message.vendList, Reference.NIL, 0, true));
+					Main.proxy.updateAdminSyncMarkets(GuiMarketManager.sortedMarketList(2, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				case SERVER: {
-					GuiAdmin.syncMarkets(GuiMarketManager.sortedMarketList(4, message.vendList, Reference.NIL, 0, true));
+					Main.proxy.updateAdminSyncMarkets(GuiMarketManager.sortedMarketList(4, message.vendList, Reference.NIL, 0, true));
 					break;
 				}
 				default:
 				}
 			}
 			case 5: {
-				GuiAdmin.syncMarketDetail(message.str1, message.str2, message.str3);
+				Main.proxy.updateAdminSyncMarketDetail(message.str1, message.str2, message.str3);
 				break;
 			}
 			case 6: {
-				GuiAdmin.syncGuildLand(message.posCore, message.posOutpost, message.chunkValues);
+				Main.proxy.updateAdminSyncGuildLand(message.posCore, message.posOutpost, message.chunkValues);
 				break;
 			}
 			case 7: {
-				GuiAdmin.syncGuildLandDetail(message.dbl1, message.bool1, message.bool2, message.bool3);
+				Main.proxy.updateAdminSyncGuildLandDetail(message.dbl1, message.bool1, message.bool2, message.bool3);
 				break;
 			}
 			case 8: {
-				GuiAdmin.syncGuildMembers(message.members, message.nameList);
+				Main.proxy.updateAdminSyncGuildMembers(message.members, message.nameList);
 			}
 			default:
 			}

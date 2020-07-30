@@ -42,7 +42,7 @@ public class MessagePermsToGui implements IMessage{
 		}  
 		
 		private void handle(MessagePermsToGui message, MessageContext ctx) {
-			GuiGuildPerms.syncGui(message.guild);
+			Main.proxy.updatePermsGui(message.guild);
 		}
 	}
 }

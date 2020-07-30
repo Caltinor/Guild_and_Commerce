@@ -109,7 +109,7 @@ public class MessageMarketsToGui implements IMessage{
 		
 		private void handle(MessageMarketsToGui message, MessageContext ctx) {
 			if (!message.isUpdate) Main.proxy.openMarketGui(message.listType, message.vendList, message.feeBuy, message.feeSell, message.balP, message.response, message.locality);
-			else if (message.isUpdate) GuiMarketManager.syncMarket(message.listType, message.vendList, message.feeBuy, message.feeSell, message.balP, message.response);
+			else if (message.isUpdate) Main.proxy.updateMarketGui(message.listType, message.vendList, message.feeBuy, message.feeSell, message.balP, message.response);
 		}
 	}
 }

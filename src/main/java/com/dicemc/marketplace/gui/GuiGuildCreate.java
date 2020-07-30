@@ -24,20 +24,14 @@ import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildCreate extends GuiScreen {
-	public static Map<UUID, String> invitedGuilds;
-	public static double balance;
+	private Map<UUID, String> invitedGuilds;
+	private double balance;
 	//Components
 	private GuiTextField guildName;
-	public static GuiListGuildInvite inviteList;
-	private static GuiButton createButton;
+	private GuiListGuildInvite inviteList;
+	private GuiButton createButton;
 	private GuiButton joinButton, rejectButton;
-	
-	public static void syncGui(Map<UUID, String> invitedGuilds, double balP) { 
-		GuiGuildCreate.invitedGuilds = invitedGuilds;
-		GuiGuildCreate.balance = balP;
-		GuiGuildCreate.inviteList.refreshList();
-		GuiGuildCreate.createButton.enabled = balP >= Main.ModConfig.GUILD_CREATE_COST ? true : false;
-	}
+
 	
 	public GuiGuildCreate(Map<UUID, String> invitedGuilds, double balP) {
 		this.invitedGuilds = invitedGuilds;
@@ -135,7 +129,7 @@ public class GuiGuildCreate extends GuiScreen {
 		
 	    public void refreshList()
 	    {
-	    	this.invitedGuilds = GuiGuildCreate.invitedGuilds;
+	    	this.invitedGuilds = guiManager.invitedGuilds;
 	    	entries.clear();
 	    	if (invitedGuilds.size() > 0) {		    	
 		        Map<UUID, String> members = invitedGuilds;	

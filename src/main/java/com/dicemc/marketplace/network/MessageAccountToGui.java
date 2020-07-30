@@ -51,7 +51,7 @@ public class MessageAccountToGui implements IMessage{
 		}  
 		
 		private void handle(MessageAccountToGui message, MessageContext ctx) {
-			GuiGuildManager.syncAccounts(message.acctG, message.balP);
+			Main.proxy.updateGuildGuiAccounts(message.acctG, message.balP);
 		}
 	}
 }

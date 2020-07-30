@@ -233,7 +233,7 @@ public class MessageChunkToServer implements IMessage{
 			}
 			double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(myGuild.guildID) : 0;
 			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-			Main.NET.sendTo(new MessageChunkToGui(true,myGuild, list, mapColors, response, balP, balG), ctx.getServerHandler().player);
+			Main.NET.sendTo(new MessageChunkToGui(true ,myGuild, list, mapColors, response, balP, balG), ctx.getServerHandler().player);
 		}
 	}
 }

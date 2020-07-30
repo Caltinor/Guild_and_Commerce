@@ -39,44 +39,20 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiGuildManager extends GuiScreen{
-	public static Guild guild;
-	private static Account acctGuild;
-	private static double worthTax, worthGuild, balP;
-	private static Map<ChunkPos, Double> chunkValues;
+	private Guild guild;
+	private Account acctGuild;
+	private double worthTax, worthGuild, balP;
+	private Map<ChunkPos, Double> chunkValues;
 	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
-	private static DecimalFormat taxformat = new DecimalFormat("0.00000");
-    protected static String screenTitle = "Guild Info";
-    private static GuiTextField guildNameTextField, guildFundExchangeTextField, guildTaxTextField;
-    private static GuiTextField perm0TF, perm1TF, perm2TF, perm3TF;
-    private static GuiListGuildChunks guicoreChunkList, guioutpostChunkList;
-    public long time;
-    public static Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
+	private DecimalFormat taxformat = new DecimalFormat("0.00000");
+    protected String screenTitle = "Guild Info";
+    private GuiTextField guildNameTextField, guildFundExchangeTextField, guildTaxTextField;
+    private GuiTextField perm0TF, perm1TF, perm2TF, perm3TF;
+    private GuiListGuildChunks guicoreChunkList, guioutpostChunkList;
+    private long time;
+    private Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
     
-    public static void syncAccounts(Account acctG, double balancePlayer) {acctGuild = acctG; balP = balancePlayer;}
-    
-    public static void syncGui(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {
-    	GuiGuildManager.guild = guild;
-    	GuiGuildManager.acctGuild = acctGuild;
-    	GuiGuildManager.worthTax = worthT;
-    	GuiGuildManager.worthGuild = worthG;
-    	GuiGuildManager.chunkValues = chunkValues;
-    	GuiGuildManager.balP = balancePlayer;
-    	GuiGuildManager.screenTitle = "Guild Info";
-    	GuiGuildManager.guicoreChunkList.pos = GuiGuildManager.guild.coreLand;
-    	GuiGuildManager.guicoreChunkList.chunkValues = GuiGuildManager.chunkValues;
-    	GuiGuildManager.guicoreChunkList.refreshList();
-    	GuiGuildManager.guioutpostChunkList.pos = GuiGuildManager.guild.outpostLand;
-    	GuiGuildManager.guioutpostChunkList.chunkValues = GuiGuildManager.chunkValues;
-    	GuiGuildManager.guioutpostChunkList.refreshList();
-		newDescrims();
-		GuiGuildManager.guildNameTextField.setText(guild.guildName);
-		GuiGuildManager.guildTaxTextField.setText(taxformat.format(guild.guildTax));
-		GuiGuildManager.guildTaxTextField.setCursorPositionZero();
-		GuiGuildManager.perm0TF.setText(guild.permLevels.get(0));
-		GuiGuildManager.perm1TF.setText(guild.permLevels.get(1));
-		GuiGuildManager.perm2TF.setText(guild.permLevels.get(2));
-		GuiGuildManager.perm3TF.setText(guild.permLevels.get(3));
-    }
+    public void syncAccounts(Account acctG, double balancePlayer) {acctGuild = acctG; balP = balancePlayer;}
 	
 	public GuiGuildManager(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {
 		this.guild = guild;
@@ -88,7 +64,7 @@ public class GuiGuildManager extends GuiScreen{
 		newDescrims();
 	}
 	
-	public static void newDescrims() {
+	public void newDescrims() {
 		discriminators.put("name", false);
 		discriminators.put("open", false);
 		discriminators.put("tax", false);
