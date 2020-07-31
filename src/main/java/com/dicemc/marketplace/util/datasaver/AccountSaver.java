@@ -12,8 +12,8 @@ import net.minecraftforge.common.util.Constants;
 
 public class AccountSaver extends WorldSavedData {
 	private static final String DATA_NAME = Reference.MOD_ID + "_AccountsData";
-	public final AccountGroup PLAYERS = new AccountGroup(this, "Player Accounts");
-	public final AccountGroup GUILDS = new AccountGroup(this, "Guild Accounts");
+	public final AccountGroup PLAYERS = new AccountGroup(this, "Player Accounts", true);
+	public final AccountGroup GUILDS = new AccountGroup(this, "Guild Accounts", false);
 
 	public AccountSaver(String name) { super(name); }
 	

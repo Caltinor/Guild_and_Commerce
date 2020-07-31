@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url = "https://files.minecraftforge.net/maven" }
+        maven { url = "https://files.minecraftforge.net/maven"  }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "1.2.4"
+version = "1.2.4a"
 group = "com.yourname.modid" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "Guild&Commerce"
 
@@ -45,6 +45,7 @@ dependencies {
 
     // the 'provided' configuration is for optional dependencies that exist at compile-time but might not at runtime.
     //provided 'com.mod-buildcraft:buildcraft:6.0.8:dev'
+    provided 'org.spongepowered:spongeapi:7.1.0'
 
     // the deobf configurations:  'deobfCompile' and 'deobfProvided' are the same as the normal compile and provided,
     // except that these dependencies get remapped to your current MCP mappings
@@ -55,6 +56,10 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+}
+
+repositories {
+    maven { url 'https://repo.spongepowered.org/maven' }
 }
 
 processResources {

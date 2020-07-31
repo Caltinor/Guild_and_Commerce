@@ -15,12 +15,14 @@ import net.minecraft.nbt.NBTTagList;
 public class AccountGroup {
 	public List<Account> accountList;
 	public String groupName;
+	public boolean isPlayer;
 	private final AccountSaver manager;
 	
-	public AccountGroup (AccountSaver manager, String name) {
+	public AccountGroup (AccountSaver manager, String name, boolean isPlayerList) {
 		groupName = name;
 		accountList = new ArrayList<Account>();
 		accountList.add(new Account(Reference.NIL, 0));
+		isPlayer = isPlayerList;
 		this.manager = manager;
 	}
 	
@@ -37,6 +39,7 @@ public class AccountGroup {
 	}
 	
 	public String addAccount (UUID owner, double amount) {
+		if (Main.useGrandEconomy) return "Grand Economy Used";
 		if (accountExists(owner)) return "An account already exists for this entity";
 		else {
 			accountList.add(new Account(owner, amount));
@@ -46,6 +49,7 @@ public class AccountGroup {
 	}
 	
 	public void removeAccount (UUID owner) {
+		if (Main.useGrandEconomy) return;
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(owner)) {
 				System.out.println("Guild Transfer to Server on delete $"+String.valueOf(transferPlayers(accountList.get(i).owner, accountList.get(0).owner, accountList.get(i).balance)));
@@ -60,6 +64,9 @@ public class AccountGroup {
 	}
 	
 	public double getBalance (UUID player) {
+		if (Main.useGrandEconomy) {
+			return Main.interop.getBalance(player, isPlayer);			
+		}
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(player)) {return accountList.get(i).balance;}
 		}
@@ -67,6 +74,10 @@ public class AccountGroup {
 	}
 	
 	public void setBalance (UUID player, double amount) {
+		if (Main.useGrandEconomy) {
+			Main.interop.setBalance(player, amount, isPlayer);
+			return;
+		}
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(player)) {
 				accountList.get(i).balance = amount;
@@ -77,6 +88,10 @@ public class AccountGroup {
 	}
 	
 	public void addBalance (UUID player, double amount) {
+		if (Main.useGrandEconomy) {
+			Main.interop.addToBalance(player, amount, isPlayer);
+			return;
+		}
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(player)) {
 				accountList.get(i).balance += amount;
@@ -87,6 +102,11 @@ public class AccountGroup {
 	}
 	
 	public boolean transferPlayers (UUID fromPlayer, UUID toPlayer, double amount) {
+		if (Main.useGrandEconomy) {
+			if (Main.interop.takeFromBalance(fromPlayer, amount, isPlayer)) {
+				Main.interop.addToBalance(toPlayer, amount, isPlayer);
+			}
+		}
 		if (getBalance(fromPlayer) >= amount) {
 			addBalance(fromPlayer, (-1 * amount));
 			addBalance(toPlayer, amount);
@@ -94,14 +114,5 @@ public class AccountGroup {
 			return true;
 		}
 		return false;
-	}
-	
-	public double transferToOtherGroup (UUID fromPlayer, double amount) {
-		if (getBalance(fromPlayer) >= amount) {
-			addBalance(fromPlayer, (-1 * amount));
-			manager.markDirty();
-			return amount;
-		}
-		return 0;
 	}
 }
