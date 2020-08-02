@@ -104,7 +104,7 @@ public class Marketplace {
 		int acctIndex = -1;
 		EntityPlayerMP bidder = server.getPlayerList().getPlayerByUUID(buyer);
 		if (bidder != null && vendList.get(index).bidEnd > System.currentTimeMillis()) {
-			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).PLAYERS;
+			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).getPlayers();
 			for (int i = 0; i  < acctPlayers.accountList.size(); i++) {
 				if (acctPlayers.accountList.get(i).owner.equals(buyer)) {acctIndex = i; break;}}
 			if (acctPlayers.accountList.get(acctIndex).balance >= offer) {
@@ -127,13 +127,10 @@ public class Marketplace {
 		if (player != null) {
 			double fee = vendList.get(index).price * feeBuy;		
 			String itemStr = vendList.get(index).item.getDisplayName();
-			int acctIndex = -1;
-			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).PLAYERS;
-			for (int i = 0; i  < acctPlayers.accountList.size(); i++) {
-				if (acctPlayers.accountList.get(i).owner.equals(buyer)) {acctIndex = i; break;}}
+			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).getPlayers();
 			if (vendList.get(index).vendorGiveItem) {
-				if (acctPlayers.accountList.get(acctIndex).balance >= (fee + vendList.get(index).price)) {
-					acctPlayers.accountList.get(acctIndex).balance -= (fee + vendList.get(index).price);
+				if (acctPlayers.getBalance(buyer) >= (fee + vendList.get(index).price)) {
+					acctPlayers.addBalance(buyer, (-1 * (fee + vendList.get(index).price)));
 					acctPlayers.addBalance(vendList.get(index).vendor, vendList.get(index).price);
 					player.addItemStackToInventory(vendList.get(index).item.copy());
 					double printPrice = vendList.get(index).price;
@@ -171,9 +168,9 @@ public class Marketplace {
 							}
 						}
 					}
-					if (acctPlayers.accountList.get(acctIndex).balance >= fee) {
-						acctPlayers.accountList.get(acctIndex).balance -= fee;
-						acctPlayers.accountList.get(acctIndex).balance += vendList.get(index).price;
+					if (acctPlayers.getBalance(buyer) >= fee) {
+						acctPlayers.addBalance(buyer, -1 * fee);;
+						acctPlayers.addBalance(buyer, vendList.get(index).price);
 						addToQueue(vendList.get(index).vendor, vendList.get(index).item);
 						double price = vendList.get(index).price;
 						if (!vendList.get(index).infinite) vendList.get(index).vendStock -= 1;
@@ -195,14 +192,11 @@ public class Marketplace {
 		EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(seller);
 		ChunkCapability cap = player.world.getChunkFromChunkCoords(player.chunkCoordX, player.chunkCoordZ).getCapabilities().getCapability(ChunkProvider.CHUNK_CAP, null);
 		double cost = price * feeSell;
-		int acctIndex = -1;
 		if (player != null) {	
-			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).PLAYERS;
-			for (int i = 0; i  < acctPlayers.accountList.size(); i++) {
-				if (acctPlayers.accountList.get(i).owner.equals(seller)) {acctIndex = i; break;}}
+			AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).getPlayers();
 			if (sellerGiveItem) { //this condition means the seller is giving an item such that they receive price in return
-				if (acctPlayers.accountList.get(acctIndex).balance >= cost) {
-					acctPlayers.accountList.get(acctIndex).balance -= cost;
+				if (acctPlayers.getBalance(seller) >= cost) {
+					acctPlayers.addBalance(seller, -1 * cost);;
 					vendList.put(unrepeatedUUID(vendList), new MarketItem(sellerGiveItem, item.copy(), seller, price, 1, cap.getOwner(), Reference.NIL, false, System.currentTimeMillis()+Main.ModConfig.AUCTION_OPEN_DURATION));
 					player.openContainer.inventorySlots.get(0).putStack(ItemStack.EMPTY);
 					manager.markDirty();
@@ -211,8 +205,8 @@ public class Marketplace {
 				else return "Insufficient Funds to post this sale.  Amount required = $"+String.valueOf(cost);
 			}
 			else if (!sellerGiveItem) {
-				if (acctPlayers.accountList.get(acctIndex).balance >= (cost + price)) {
-					acctPlayers.accountList.get(acctIndex).balance -= (cost + price);
+				if (acctPlayers.getBalance(seller) >= (cost + price)) {
+					acctPlayers.addBalance(seller, (-1 * (cost + price)));;
 					vendList.put(unrepeatedUUID(vendList), new MarketItem(sellerGiveItem, item.copy(), seller, price, 1, cap.getOwner(), Reference.NIL));
 					manager.markDirty();
 					return "Requested " + item.getDisplayName() + " on "+marketName+" for $" + String.valueOf(price) + ". A fee of $"+ String.valueOf(cost) + " was applied.";
@@ -238,7 +232,7 @@ public class Marketplace {
 				}
 				if (stockCount <= 0) {hasItemStock = true; break;}
 			}
-			if (hasItemStock && AccountSaver.get(server.getEntityWorld()).PLAYERS.getBalance(player.getUniqueID()) >= cost) {
+			if (hasItemStock && AccountSaver.get(server.getEntityWorld()).getPlayers().getBalance(player.getUniqueID()) >= cost) {
 				stockCount = vendList.get(index).item.getCount();
 				for (int i = 0; i < player.inventoryContainer.inventorySlots.size(); i++) {
 					invStack = player.inventoryContainer.getSlot(i).getStack().copy();
@@ -256,15 +250,15 @@ public class Marketplace {
 				}
 				vendList.get(index).vendStock += 1;
 				manager.markDirty();
-				AccountSaver.get(server.getEntityWorld()).PLAYERS.addBalance(player.getUniqueID(), (-1 * Math.abs(cost)));
+				AccountSaver.get(server.getEntityWorld()).getPlayers().addBalance(player.getUniqueID(), (-1 * Math.abs(cost)));
 				AccountSaver.get(server.getEntityWorld()).markDirty();
 				return "Restocked";
 			}
 			else if (!hasItemStock) return "You do not have enough of this item to add stock.";
-			else if (AccountSaver.get(server.getEntityWorld()).PLAYERS.getBalance(player.getUniqueID()) < cost) return "You do not have enough funds.";
+			else if (AccountSaver.get(server.getEntityWorld()).getPlayers().getBalance(player.getUniqueID()) < cost) return "You do not have enough funds.";
 		}
-		if (!vendList.get(index).vendorGiveItem && AccountSaver.get(server.getEntityWorld()).PLAYERS.getBalance(player.getUniqueID()) >= (cost + vendList.get(index).price)) {
-			AccountSaver.get(server.getEntityWorld()).PLAYERS.addBalance(player.getUniqueID(), (-1 * (Math.abs(cost)+vendList.get(index).price)));
+		if (!vendList.get(index).vendorGiveItem && AccountSaver.get(server.getEntityWorld()).getPlayers().getBalance(player.getUniqueID()) >= (cost + vendList.get(index).price)) {
+			AccountSaver.get(server.getEntityWorld()).getPlayers().addBalance(player.getUniqueID(), (-1 * (Math.abs(cost)+vendList.get(index).price)));
 			vendList.get(index).vendStock += 1;
 			manager.markDirty();
 			AccountSaver.get(server.getEntityWorld()).markDirty();

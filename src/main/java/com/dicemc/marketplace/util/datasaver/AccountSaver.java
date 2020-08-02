@@ -1,5 +1,9 @@
 package com.dicemc.marketplace.util.datasaver;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.util.Reference;
 
@@ -12,8 +16,9 @@ import net.minecraftforge.common.util.Constants;
 
 public class AccountSaver extends WorldSavedData {
 	private static final String DATA_NAME = Reference.MOD_ID + "_AccountsData";
-	public final AccountGroup PLAYERS = new AccountGroup(this, "Player Accounts", true);
-	public final AccountGroup GUILDS = new AccountGroup(this, "Guild Accounts", false);
+	private final AccountGroup PLAYERS = new AccountGroup(this, "Player Accounts");
+	private final AccountGroup GUILDS = new AccountGroup(this, "Guild Accounts");
+	public static Map<UUID, Double> debt = new HashMap<UUID, Double>();
 
 	public AccountSaver(String name) { super(name); }
 	
@@ -25,22 +30,26 @@ public class AccountSaver extends WorldSavedData {
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
-		PLAYERS.readFromNBT(nbt.getTagList("playeraccounts", Constants.NBT.TAG_COMPOUND));
-		GUILDS.readFromNBT(nbt.getTagList("guildaccounts", Constants.NBT.TAG_COMPOUND));
+		PLAYERS.readFromNBT(nbt.getTagList(PLAYERS.groupName, Constants.NBT.TAG_COMPOUND));
+		GUILDS.readFromNBT(nbt.getTagList(GUILDS.groupName, Constants.NBT.TAG_COMPOUND));
+		NBTTagList list = nbt.getTagList("debt", Constants.NBT.TAG_COMPOUND);
+		for (int i = 0; i < list.tagCount(); i++) { debt.put(list.getCompoundTagAt(i).getUniqueId("UUID"), list.getCompoundTagAt(i).getDouble("amount")); }
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+		compound.setTag(PLAYERS.groupName, PLAYERS.writeToNBT(new NBTTagCompound()));
+		compound.setTag(GUILDS.groupName, GUILDS.writeToNBT(new NBTTagCompound()));
 		NBTTagList list = new NBTTagList();
-		for (int i = 0; i < PLAYERS.accountList.size(); i++) {
-			list.appendTag(PLAYERS.writeToNBT(new NBTTagCompound(), i));
+		if (debt.size() > 0) {
+			for (Map.Entry<UUID, Double> entry : debt.entrySet()) {
+				NBTTagCompound snbt = new NBTTagCompound();
+				snbt.setUniqueId("UUID", entry.getKey());
+				snbt.setDouble("amount", entry.getValue());
+				list.appendTag(snbt);
+			}
 		}
-		compound.setTag("playeraccounts", list);
-		list = new NBTTagList();
-		for (int i = 0; i < GUILDS.accountList.size(); i++) {
-			list.appendTag(GUILDS.writeToNBT(new NBTTagCompound(), i));
-		}
-		compound.setTag("guildaccounts", list);
+		compound.setTag("debt", list);
 		return compound;
 	}
 

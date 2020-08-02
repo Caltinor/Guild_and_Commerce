@@ -35,7 +35,7 @@ public class AccountCommands extends CommandBase {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if (args.length == 0) {
-			double acctP = AccountSaver.get(sender.getEntityWorld()).PLAYERS.getBalance(sender.getCommandSenderEntity().getUniqueID());
+			double acctP = AccountSaver.get(sender.getEntityWorld()).getPlayers().getBalance(sender.getCommandSenderEntity().getUniqueID());
 			List<Guild> glist = GuildSaver.get(sender.getEntityWorld()).GUILDS;
 			UUID g = Reference.NIL;
 			for (int i = 0; i < glist.size(); i++) {
@@ -43,7 +43,7 @@ public class AccountCommands extends CommandBase {
 					if (glist.get(i).members.get(sender.getCommandSenderEntity().getUniqueID()) >= 0) g = glist.get(i).guildID;
 				}
 			}
-			double acctG = AccountSaver.get(sender.getEntityWorld()).GUILDS.getBalance(g);
+			double acctG = AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(g);
 			String strG = g.equals(Reference.NIL) ? " [No Guild]" : " [GUILD $"+String.valueOf(acctG)+"]";
 			message("$"+String.valueOf(acctP)+strG, sender);
 			return;
@@ -60,15 +60,15 @@ public class AccountCommands extends CommandBase {
 					player.inventoryContainer.getSlot(i).putStack(ItemStack.EMPTY);
 				}
 			}
-			AccountSaver.get(sender.getEntityWorld()).PLAYERS.addBalance(sender.getCommandSenderEntity().getUniqueID(), value);
+			AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), value);
 			AccountSaver.get(sender.getEntityWorld()).markDirty();
 			message("$"+String.valueOf(value)+" deposited to account from Moneybags.", sender);
 			break;
 		}
 		case "withdraw": {
-			double balP = AccountSaver.get(sender.getEntityWorld()).PLAYERS.getBalance(sender.getCommandSenderEntity().getUniqueID());
+			double balP = AccountSaver.get(sender.getEntityWorld()).getPlayers().getBalance(sender.getCommandSenderEntity().getUniqueID());
 			if (balP >= Math.abs(Double.valueOf(args[1]))) {
-				AccountSaver.get(sender.getEntityWorld()).PLAYERS.addBalance(sender.getCommandSenderEntity().getUniqueID(), -1 * Math.abs(Double.valueOf(args[1])));
+				AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), -1 * Math.abs(Double.valueOf(args[1])));
 				ItemStack item = new ItemStack(ModItems.MONEYBAG);
 				item.setTagInfo("value", new NBTTagDouble(Math.abs(Double.valueOf(args[1]))));
 				server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);

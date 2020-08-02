@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
+import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
@@ -64,25 +65,22 @@ public class MessageAccountInfoToServer implements IMessage{
 		
 		private void handle(MessageAccountInfoToServer message, MessageContext ctx) {
 			if (message.isDeposit) {
-				if (AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(message.player) >= message.amount) {
-					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(message.player, (-1 *message.amount));
-					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.addBalance(message.acctG.owner, message.amount);
+				if (AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(message.player) >= message.amount) {
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().addBalance(message.player, (-1 *message.amount));
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds().addBalance(message.acctG.owner, message.amount);
 				}
 			}
 			else if (!message.isDeposit) {
-				if (AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(message.acctG.owner) >= message.amount) {
-					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.addBalance(message.acctG.owner, (-1 *message.amount));
-					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(message.player, message.amount);
+				if (AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds().getBalance(message.acctG.owner) >= message.amount) {
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds().addBalance(message.acctG.owner, (-1 *message.amount));
+					AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().addBalance(message.player, message.amount);
 				}
 			}
 			AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 			int acctIndex = -1;
-			List<Account> acctGlist = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.accountList;
-			for (int i = 0; i < acctGlist.size(); i++) {
-				if (acctGlist.get(i).owner.equals(message.acctG.owner)) {acctIndex = i;}
-			}			
-			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-			Main.NET.sendTo(new MessageAccountToGui(acctGlist.get(acctIndex), balP), ctx.getServerHandler().player);
+			AccountGroup acctGlist = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds();		
+			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
+			Main.NET.sendTo(new MessageAccountToGui(new Account(message.acctG.owner, acctGlist.getBalance(message.acctG.owner)), balP), ctx.getServerHandler().player);
 		}
 	}
 }

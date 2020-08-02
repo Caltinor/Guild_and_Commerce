@@ -341,19 +341,19 @@ public class MessageAdminToServer implements IMessage {
 		private void handle(MessageAdminToServer message, MessageContext ctx) {
 			switch (message.messageIndex) {
 			case 0: { //acct change
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				AcctGroup.setBalance(message.id1, message.dbl1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 1: { //account list request
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 2: { //account remove
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				AcctGroup.removeAccount(message.id1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld());
 				sendAccountListToGui(message, ctx, AcctGroup);

@@ -89,7 +89,7 @@ public class Main {
 		MarketSaver.get(event.getServer().getEntityWorld());
 		AccountSaver.get(event.getServer().getEntityWorld());
 		List<Guild> glist = GuildSaver.get(event.getServer().getEntityWorld()).GUILDS;
-		for (int i = 0; i < glist.size(); i++) AccountSaver.get(event.getServer().getEntityWorld()).GUILDS.addAccount(glist.get(i).guildID, Main.ModConfig.GUILD_STARTING_FUNDS);
+		for (int i = 0; i < glist.size(); i++) AccountSaver.get(event.getServer().getEntityWorld()).getGuilds().addAccount(glist.get(i).guildID, Main.ModConfig.GUILD_STARTING_FUNDS);
 		AccountSaver.get(event.getServer().getEntityWorld()).markDirty();
 		CoreUtils.setWorld(event.getServer().getEntityWorld());
 	}

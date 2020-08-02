@@ -15,20 +15,24 @@ import net.minecraft.nbt.NBTTagList;
 public class AccountGroup {
 	public List<Account> accountList;
 	public String groupName;
-	public boolean isPlayer;
 	private final AccountSaver manager;
 	
-	public AccountGroup (AccountSaver manager, String name, boolean isPlayerList) {
+	public AccountGroup (AccountSaver manager, String name) {
 		groupName = name;
 		accountList = new ArrayList<Account>();
 		accountList.add(new Account(Reference.NIL, 0));
-		isPlayer = isPlayerList;
 		this.manager = manager;
 	}
 	
-	public NBTTagCompound writeToNBT (NBTTagCompound nbt, int index) {
-		nbt.setUniqueId("owner", accountList.get(index).owner);
-		nbt.setDouble("balance", accountList.get(index).balance);
+	public NBTTagCompound writeToNBT (NBTTagCompound nbt) {
+		NBTTagList list = new NBTTagList();
+		for (int i = 0; i < accountList.size(); i++) {
+			NBTTagCompound snbt = new NBTTagCompound();
+			snbt.setUniqueId("owner", accountList.get(i).owner);
+			snbt.setDouble("balance", accountList.get(i).balance);
+			list.appendTag(snbt);
+		}
+		nbt.setTag(groupName, list);
 		return nbt;
 	}
 	public void readFromNBT(NBTTagList nbt) {
@@ -39,8 +43,11 @@ public class AccountGroup {
 	}
 	
 	public String addAccount (UUID owner, double amount) {
-		if (Main.useGrandEconomy) return "Grand Economy Used";
 		if (accountExists(owner)) return "An account already exists for this entity";
+		else if (Main.useGrandEconomy) {
+			Main.interop.setBalance(owner, amount, true);
+			return "Grand Economy Used";
+		}
 		else {
 			accountList.add(new Account(owner, amount));
 			manager.markDirty();
@@ -59,13 +66,14 @@ public class AccountGroup {
 	}
 	
 	public boolean accountExists(UUID player) {
-		for (int i = 0; i < accountList.size(); i++) {if (accountList.get(i).owner.equals(player)) return true;}
+		if (Main.useGrandEconomy) {if (Main.interop.getBalance(player, true) != 0) return true;}
+		else if (getBalance(player) != 0) {return true;}
 		return false;
 	}
 	
 	public double getBalance (UUID player) {
 		if (Main.useGrandEconomy) {
-			return Main.interop.getBalance(player, isPlayer);			
+			return Main.interop.getBalance(player, true);			
 		}
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(player)) {return accountList.get(i).balance;}
@@ -75,7 +83,7 @@ public class AccountGroup {
 	
 	public void setBalance (UUID player, double amount) {
 		if (Main.useGrandEconomy) {
-			Main.interop.setBalance(player, amount, isPlayer);
+			Main.interop.setBalance(player, amount, true);
 			return;
 		}
 		for (int i = 0; i < accountList.size(); i++) {
@@ -88,8 +96,12 @@ public class AccountGroup {
 	}
 	
 	public void addBalance (UUID player, double amount) {
-		if (Main.useGrandEconomy) {
-			Main.interop.addToBalance(player, amount, isPlayer);
+		if (Main.useGrandEconomy && amount >= 0) {
+			Main.interop.addToBalance(player, amount, true);
+			return;
+		}
+		if (Main.useGrandEconomy && amount < 0) {
+			Main.interop.takeFromBalance(player, Math.abs(amount), true);
 			return;
 		}
 		for (int i = 0; i < accountList.size(); i++) {
@@ -103,8 +115,8 @@ public class AccountGroup {
 	
 	public boolean transferPlayers (UUID fromPlayer, UUID toPlayer, double amount) {
 		if (Main.useGrandEconomy) {
-			if (Main.interop.takeFromBalance(fromPlayer, amount, isPlayer)) {
-				Main.interop.addToBalance(toPlayer, amount, isPlayer);
+			if (Main.interop.takeFromBalance(fromPlayer, amount, true)) {
+				Main.interop.addToBalance(toPlayer, amount, true);
 			}
 		}
 		if (getBalance(fromPlayer) >= amount) {

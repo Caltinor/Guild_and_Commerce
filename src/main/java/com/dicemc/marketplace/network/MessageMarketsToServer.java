@@ -94,25 +94,25 @@ public class MessageMarketsToServer implements IMessage{
 			case LOCAL: {
 				UUID locality = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null).getOwner();
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(true, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
 			}
 			case GLOBAL: {
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(true, 1, market.vendList, Reference.NIL, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
 			}
 			case AUCTION: {
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(true, 2, market.vendList, Reference.NIL, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
 			}
 			case SERVER: {
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(true, 4, market.vendList, Reference.NIL, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
 			}
@@ -161,7 +161,7 @@ public class MessageMarketsToServer implements IMessage{
 						resp = "Item No Longer Listed";
 						break;
 					}
-					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
 				}
@@ -171,7 +171,7 @@ public class MessageMarketsToServer implements IMessage{
 						resp = market.buyItem(message.index, ctx.getServerHandler().player.getUniqueID(), ctx.getServerHandler().player.getServer());
 					}
 					else resp = "Item No Longer Listed";
-					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 1, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
 				}
@@ -181,7 +181,7 @@ public class MessageMarketsToServer implements IMessage{
 						resp = market.placeBid(message.index, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					}
 					else resp = "This bid has closed";
-					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 2, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
 				}
@@ -191,7 +191,7 @@ public class MessageMarketsToServer implements IMessage{
 						resp = market.buyItem(message.index, ctx.getServerHandler().player.getUniqueID(), ctx.getServerHandler().player.getServer());
 					}
 					else resp = "Item No Longer Listed";
-					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 4, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
 				}
@@ -298,7 +298,7 @@ public class MessageMarketsToServer implements IMessage{
 						isRemoved = true;
 					}
 					else if (!srcItem.vendorGiveItem) {
-						AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), market.vendList.get(message.index).price * market.vendList.get(message.index).vendStock);
+						AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().addBalance(ctx.getServerHandler().player.getUniqueID(), market.vendList.get(message.index).price * market.vendList.get(message.index).vendStock);
 						market.vendList.remove(message.index);
 						AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 						MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
@@ -318,7 +318,7 @@ public class MessageMarketsToServer implements IMessage{
 							isRemoved = true;
 						}
 						else if (!srcItem.vendorGiveItem) {
-							AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.addBalance(ctx.getServerHandler().player.getUniqueID(), market.vendList.get(message.index).price * market.vendList.get(message.index).vendStock);
+							AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().addBalance(ctx.getServerHandler().player.getUniqueID(), market.vendList.get(message.index).price * market.vendList.get(message.index).vendStock);
 							market.vendList.remove(message.index);
 							AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 							MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
@@ -401,12 +401,12 @@ public class MessageMarketsToServer implements IMessage{
 			for (int i = 0; i < queueItems.size(); i++) {
 				personalList.put(Marketplace.unrepeatedUUID(personalList),new MarketItem(true, queueItems.get(i), ctx.getServerHandler().player.getUniqueID(), -1, 1, Reference.NIL, Reference.NIL));
 			}
-			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 			Main.NET.sendTo(new MessageMarketsToGui(true, 3, personalList, locality, 0D, 0D, balP, emptyID.toString()), ctx.getServerHandler().player);
 		}
 		
 		public boolean playerExistsOnServer(UUID player, World world) {
-			List<Account> plist = AccountSaver.get(world).PLAYERS.accountList;
+			List<Account> plist = AccountSaver.get(world).getPlayers().accountList;
 			for (int i = 1; i < plist.size(); i++) {
 				if (plist.get(i).owner.equals(player)) return true;
 			}
