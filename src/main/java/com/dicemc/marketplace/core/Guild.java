@@ -23,6 +23,7 @@ public class Guild {
 	public String guildName;
 	public final UUID guildID;
 	public boolean openToJoin;
+	public boolean isAdmin;
 	public double guildTax;
 	public List<ChunkPos> coreLand = new ArrayList<ChunkPos>();
 	public List<ChunkPos> outpostLand = new ArrayList<ChunkPos>();
@@ -38,6 +39,7 @@ public class Guild {
 		permLevels.put(3, "Member");
 		openToJoin = false;
 		guildTax = 0;
+		isAdmin = false;
 		permissions.put("setname", 3);
 		permissions.put("setopen", 3);
 		permissions.put("settax", 3);
@@ -66,6 +68,7 @@ public class Guild {
 		guildName = nbt.getString("guildname");
 		guildTax = nbt.getDouble("tax");
 		openToJoin = nbt.getBoolean("open");
+		isAdmin = nbt.getBoolean("isadmin");
 		permLevels.put(0, nbt.getString("perm0"));
 		permLevels.put(1, nbt.getString("perm1"));
 		permLevels.put(2, nbt.getString("perm2"));
@@ -163,6 +166,7 @@ public class Guild {
 			nbt.setUniqueId("guildID", guildID);
 			nbt.setString("guildname", guildName);
 			nbt.setBoolean("open", openToJoin);
+			nbt.setBoolean("isadmin", isAdmin);
 			nbt.setDouble("tax", guildTax);
 			nbt.setString("perm0", permLevels.getOrDefault(0, "Leader"));
 			nbt.setString("perm1", permLevels.getOrDefault(1, "Dignitary"));

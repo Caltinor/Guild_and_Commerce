@@ -1,5 +1,6 @@
 package com.dicemc.marketplace.events;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,8 +46,7 @@ public class PlayerEventHandler {
 	
 	@SubscribeEvent
 	public static void onPlayerLogin (PlayerLoggedInEvent event) {
-		System.out.println(AccountSaver.get(event.player.world).PLAYERS.addAccount(event.player.getUniqueID(), Main.ModConfig.STARTING_FUNDS));
-		System.out.println("Player ID: "+ event.player.getUniqueID().toString());
+		System.out.println(AccountSaver.get(event.player.world).getPlayers().addAccount(event.player.getUniqueID(), Main.ModConfig.STARTING_FUNDS));
 	}
 	
 	@SubscribeEvent
@@ -69,11 +69,10 @@ public class PlayerEventHandler {
 				for (Map.Entry<UUID, MarketItem> entry : vendlist.entrySet()) {
 					if (entry.getValue().bidEnd < System.currentTimeMillis()) {
 						MarketSaver.get(world).getAuction().addToQueue(entry.getValue().highestBidder, entry.getValue().item);
-						AccountSaver.get(world).PLAYERS.addBalance(entry.getValue().vendor, entry.getValue().price);
+						AccountSaver.get(world).getPlayers().addBalance(entry.getValue().vendor, entry.getValue().price);
 						vendlist.remove(entry.getKey());
 						AccountSaver.get(world).markDirty();
 						MarketSaver.get(world).markDirty();
-						System.out.println("Auction Expired and was processed.");
 					}
 				}
 				tickCounter = 0;
@@ -85,27 +84,43 @@ public class PlayerEventHandler {
 					//Player Tax Portion
 					if (g.guildTax > 0) {
 						for (UUID m : g.members.keySet()) {
-							double bal = AccountSaver.get(world).PLAYERS.getBalance(m);
+							double bal = AccountSaver.get(world).getPlayers().getBalance(m);
 							if ((bal*g.guildTax) <= bal) {
-								AccountSaver.get(world).PLAYERS.addBalance(m, (-1*(bal*g.guildTax)));
-								AccountSaver.get(world).GUILDS.addBalance(g.guildID, (bal*g.guildTax));
+								AccountSaver.get(world).getPlayers().addBalance(m, (-1*(bal*g.guildTax)));
+								AccountSaver.get(world).getGuilds().addBalance(g.guildID, (bal*g.guildTax));
 							}
 						}
 						AccountSaver.get(world).markDirty();
 					}					
 					//Guild Tax portion
-					if (g.members.size() > 0) {
-						double bal = AccountSaver.get(world).GUILDS.getBalance(g.guildID);
-						if (bal < (g.guildWorth(world)/2)*-1) {
+					if (!g.isAdmin) {
+						double bal = AccountSaver.get(world).getGuilds().getBalance(g.guildID);
+						double owe = AccountSaver.get(world).debt.getOrDefault(g.guildID, 0D);
+						if (bal > owe && owe > 0D) {
+							AccountSaver.get(world).getGuilds().addBalance(g.guildID, -1 * owe);
+							AccountSaver.get(world).debt.remove(g.guildID);
+							bal -= owe;
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has paid off all debt"));}
+						}
+						else if (bal < owe && owe > 0D && bal > 0) {
+							AccountSaver.get(world).getGuilds().addBalance(g.guildID, -1* owe);
+							AccountSaver.get(world).debt.put(g.guildID, owe - bal);
+							owe -= bal;
+							bal = 0D;
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> debt reduce to $" + String.valueOf(owe)));}
+						}
+						if (bal < (g.taxableWorth(world)*Main.ModConfig.GLOBAL_TAX_RATE)) {
+							AccountSaver.get(world).debt.put(g.guildID, owe+(g.taxableWorth(world)*Main.ModConfig.GLOBAL_TAX_RATE));
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has incurred a debt of $"+ String.valueOf(owe)));}
+						}
+						else AccountSaver.get(world).getGuilds().addBalance(g.guildID, (g.taxableWorth(world)*-1*Main.ModConfig.GLOBAL_TAX_RATE));
+						if (owe > (g.guildWorth(world)/2)) {
 							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has been deleted due to bankruptcy"));}
 							glist.remove(GuildSaver.get(world).guildIndexFromName(g.guildName));
 						}
-						AccountSaver.get(world).GUILDS.addBalance(g.guildID, (g.taxableWorth(world)*-1*Main.ModConfig.GLOBAL_TAX_RATE));
 						AccountSaver.get(world).markDirty();
 					}
-					System.out.println(g.guildName + " taxes have been processed.");
 				}
-				System.out.println("Taxes have been applied");
 				for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Taxes have been applied."));}
 				taxCounter = 0;
 			}

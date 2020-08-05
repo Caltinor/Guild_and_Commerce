@@ -111,10 +111,11 @@ public class MessageAdminToServer implements IMessage {
 		id1 = marketItemID;
 	}
 	
-	public MessageAdminToServer(UUID guildID, String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+	public MessageAdminToServer(UUID guildID, String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms, boolean isAdmin) {
 		messageIndex = 11;
 		id1 = guildID;
 		bool1 = open;
+		bool2 = isAdmin;
 		dbl1 = tax;
 		str1 = name;
 		str2 = perm0;
@@ -203,6 +204,7 @@ public class MessageAdminToServer implements IMessage {
 		case 11: {
 			id1 = pbuf.readUniqueId();
 			bool1 = pbuf.readBoolean();
+			bool2 = pbuf.readBoolean();
 			dbl1 = pbuf.readDouble();
 			str1 = ByteBufUtils.readUTF8String(buf);
 			str2 = ByteBufUtils.readUTF8String(buf);
@@ -289,6 +291,7 @@ public class MessageAdminToServer implements IMessage {
 		case 11: {
 			pbuf.writeUniqueId(id1);
 			pbuf.writeBoolean(bool1);
+			pbuf.writeBoolean(bool2);
 			pbuf.writeDouble(dbl1);
 			ByteBufUtils.writeUTF8String(buf, str1);
 			ByteBufUtils.writeUTF8String(buf, str2);
@@ -341,19 +344,19 @@ public class MessageAdminToServer implements IMessage {
 		private void handle(MessageAdminToServer message, MessageContext ctx) {
 			switch (message.messageIndex) {
 			case 0: { //acct change
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				AcctGroup.setBalance(message.id1, message.dbl1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 1: { //account list request
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				sendAccountListToGui(message, ctx, AcctGroup);
 				break;
 			}
 			case 2: { //account remove
-				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS;
+				AccountGroup AcctGroup = message.bool1 ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds() : AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 				AcctGroup.removeAccount(message.id1);
 				AccountSaver.get(ctx.getServerHandler().player.getEntityWorld());
 				sendAccountListToGui(message, ctx, AcctGroup);
@@ -416,7 +419,7 @@ public class MessageAdminToServer implements IMessage {
 				int gid = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gid);
 				Main.NET.sendTo(new MessageAdminToGui(guild.guildName, guild.openToJoin, guild.guildTax, guild.permLevels.getOrDefault(0, "0-loadFail"),
-						guild.permLevels.getOrDefault(1, "1-loadFail"),guild.permLevels.getOrDefault(2, "2-loadFail"),guild.permLevels.getOrDefault(3, "3-loadFail"), guild.permissions), ctx.getServerHandler().player);
+						guild.permLevels.getOrDefault(1, "1-loadFail"),guild.permLevels.getOrDefault(2, "2-loadFail"),guild.permLevels.getOrDefault(3, "3-loadFail"), guild.permissions, guild.isAdmin), ctx.getServerHandler().player);
 				break;
 			}
 			case 11: { //saves guild information from guild main to the actual guild object
@@ -425,6 +428,7 @@ public class MessageAdminToServer implements IMessage {
 				guild.guildName = message.str1;
 				guild.guildTax = message.dbl1;
 				guild.openToJoin = message.bool1;
+				guild.isAdmin = message.bool2;
 				guild.permLevels.put(0, message.str2);
 				guild.permLevels.put(1, message.str3);
 				guild.permLevels.put(2, message.str4);

@@ -13,6 +13,9 @@ import com.dicemc.marketplace.util.commands.AccountCommands;
 import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.commands.GuildCommands;
 import com.dicemc.marketplace.util.commands.TempClaimCommands;
+import com.dicemc.marketplace.util.compat.GrandEconomyCompat;
+import com.dicemc.marketplace.util.compat.GrandEconomyDummy;
+import com.dicemc.marketplace.util.compat.GrandEconomyInterop;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
@@ -31,6 +34,7 @@ import net.minecraftforge.common.config.Config.RequiresMcRestart;
 import net.minecraftforge.common.config.Config.RequiresWorldRestart;
 import net.minecraftforge.common.config.Config.Type;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -46,6 +50,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 @Mod(modid=Reference.MOD_ID, name=Reference.NAME, version=Reference.VERSION)
 public class Main {
 	public static SimpleNetworkWrapper NET;
+	public static boolean useGrandEconomy = false;
+	public static GrandEconomyInterop interop;
 	
 	@Instance
 	public static Main instance;
@@ -67,6 +73,11 @@ public class Main {
 	
 	@EventHandler
 	public static void PostInit(FMLPostInitializationEvent event) {
+		if (Loader.isModLoaded("grandeconomy")) {
+			useGrandEconomy = true;
+			interop = new GrandEconomyCompat();
+		}
+		else interop = new GrandEconomyDummy();
 	}
 	
 	@EventHandler
@@ -78,7 +89,7 @@ public class Main {
 		MarketSaver.get(event.getServer().getEntityWorld());
 		AccountSaver.get(event.getServer().getEntityWorld());
 		List<Guild> glist = GuildSaver.get(event.getServer().getEntityWorld()).GUILDS;
-		for (int i = 0; i < glist.size(); i++) AccountSaver.get(event.getServer().getEntityWorld()).GUILDS.addAccount(glist.get(i).guildID, Main.ModConfig.GUILD_STARTING_FUNDS);
+		for (int i = 0; i < glist.size(); i++) AccountSaver.get(event.getServer().getEntityWorld()).getGuilds().addAccount(glist.get(i).guildID, Main.ModConfig.GUILD_STARTING_FUNDS);
 		AccountSaver.get(event.getServer().getEntityWorld()).markDirty();
 		CoreUtils.setWorld(event.getServer().getEntityWorld());
 	}

@@ -79,8 +79,8 @@ public class MessageGuiRequest implements IMessage{
 		
 		private void handle(MessageGuiRequest message, MessageContext ctx) {
 			List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
-			List<Account> acctG = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.accountList;
-			List<Account> acctP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.accountList;
+			AccountGroup acctG = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds();
+			AccountGroup acctP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 			int gindex = -1;
 			for (int i = 0; i < glist.size(); i++) {
 				for (Map.Entry<UUID, Integer> entries : glist.get(i).members.entrySet()) {
@@ -89,20 +89,12 @@ public class MessageGuiRequest implements IMessage{
 					}
 				}
 			}
-			int acctIndex = -1;
-			int pacctIndex = -1;
 			double worthT = 0;
 			double worthG = 0;
 			Map<UUID, String> mbrNames = new HashMap<UUID, String>();
 			if (gindex >= 0) {
 				worthT = glist.get(gindex).taxableWorth(ctx.getServerHandler().player.getEntityWorld());
-				worthG = glist.get(gindex).guildWorth(ctx.getServerHandler().player.getEntityWorld());								
-				for (int i = 0; i < acctG.size(); i++) {
-					if (acctG.get(i).owner.equals(glist.get(gindex).guildID)) acctIndex = i;
-				}								
-				for (int i = 0; i < acctP.size(); i++) {
-					if (acctP.get(i).owner.equals(ctx.getServerHandler().player.getUniqueID())) pacctIndex = i;
-				}				
+				worthG = glist.get(gindex).guildWorth(ctx.getServerHandler().player.getEntityWorld());											
 				for (UUID u : glist.get(gindex).members.keySet()) {
 					mbrNames.put(u, ctx.getServerHandler().player.getServer().getPlayerProfileCache().getProfileByUUID(u).getName());
 				}
@@ -150,8 +142,8 @@ public class MessageGuiRequest implements IMessage{
 					}
 				}
 				Guild myGuild = (gindex >=0 ) ? glist.get(gindex) : new Guild(Reference.NIL);
-				double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.getBalance(myGuild.guildID) : 0;
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds().getBalance(myGuild.guildID) : 0;
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageChunkToGui(false, myGuild, list, mapColors, "", balP, balG), ctx.getServerHandler().player);
 				break;
 			}			
@@ -168,22 +160,22 @@ public class MessageGuiRequest implements IMessage{
 						double price = cap.getForSale() ? -1* cap.getPrice() : cap.getPrice();
 						chunkValues.put(c, price);
 					}
-					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
-					Main.NET.sendTo(new MessageGuildToGui(1, glist.get(gindex), acctG.get(acctIndex), worthT, worthG, mbrNames, chunkValues, balP, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
+					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
+					Main.NET.sendTo(new MessageGuildToGui(1, glist.get(gindex), new Account(glist.get(gindex).guildID, acctG.getBalance(glist.get(gindex).guildID)), worthT, worthG, mbrNames, chunkValues, balP, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
 				}
 				else {openGuiCreate(message, ctx, glist);}
 				break;
 			}
 			case 2: {				
 				if (gindex >= 0) {
-					Main.NET.sendTo(new MessageGuildToGui(2, glist.get(gindex), acctG.get(acctIndex), worthT, worthG, mbrNames, new HashMap<ChunkPos, Double>(), 0D, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
+					Main.NET.sendTo(new MessageGuildToGui(2, glist.get(gindex), new Account(glist.get(gindex).guildID, acctG.getBalance(glist.get(gindex).guildID)), worthT, worthG, mbrNames, new HashMap<ChunkPos, Double>(), 0D, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
 				}
 				else {openGuiCreate(message, ctx, glist);}
 				break;
 			}
 			case 3: {				
 				if (gindex >= 0) {
-					Main.NET.sendTo(new MessageGuildToGui(3, glist.get(gindex), acctG.get(acctIndex), worthT, worthG, mbrNames, new HashMap<ChunkPos, Double>(), 0D, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
+					Main.NET.sendTo(new MessageGuildToGui(3, glist.get(gindex), new Account(glist.get(gindex).guildID, acctG.getBalance(glist.get(gindex).guildID)), worthT, worthG, mbrNames, new HashMap<ChunkPos, Double>(), 0D, ctx.getServerHandler().player.getUniqueID()), ctx.getServerHandler().player);
 				}
 				else {openGuiCreate(message, ctx, glist);}
 				break;
@@ -194,7 +186,7 @@ public class MessageGuiRequest implements IMessage{
 				ctx.getServerHandler().player.closeScreen();
 				UUID locality = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null).getOwner();
 				Marketplace market = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal();
-				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageMarketsToGui(false, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, ""), ctx.getServerHandler().player);
 				break;
 			}
@@ -211,7 +203,7 @@ public class MessageGuiRequest implements IMessage{
 				if (glist.get(i).members.getOrDefault(ctx.getServerHandler().player.getUniqueID(), 4) == -1) list.put(glist.get(i).guildID, TextFormatting.RED+"INVITE: "+glist.get(i).guildName);
 				else if (glist.get(i).openToJoin) list.put(glist.get(i).guildID, TextFormatting.BLUE+"OPEN:   "+glist.get(i).guildName);
 			}
-			double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+			double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 			Main.NET.sendTo(new MessageCreateInfoToGui(list, balance), ctx.getServerHandler().player);
 		}
 	}

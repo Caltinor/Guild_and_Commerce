@@ -69,7 +69,7 @@ public class GuildCommands extends CommandBase{
 					message("Taxable Value: $"+String.valueOf(glist.get(gid).taxableWorth(sender.getEntityWorld())), sender);
 					message("Chunks Claimed:"+TextFormatting.BLUE+" Core:"+TextFormatting.WHITE+String.valueOf(glist.get(gid).coreLand.size())+TextFormatting.RED+" Outpost:"+TextFormatting.WHITE+String.valueOf(glist.get(gid).outpostLand.size()), sender);
 					message("Tax: "+String.valueOf(glist.get(gid).guildTax*100)+"%,"+TextFormatting.AQUA+" Open-to-Join: "+String.valueOf(glist.get(gid).openToJoin), sender);
-					message(TextFormatting.DARK_GREEN+"Balance: $"+String.valueOf(AccountSaver.get(sender.getEntityWorld()).GUILDS.getBalance(glist.get(gid).guildID)), sender);
+					message(TextFormatting.DARK_GREEN+"Balance: $"+String.valueOf(AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(glist.get(gid).guildID)), sender);
 					message("Member List: ["+String.valueOf(membercount)+"]", sender);
 					message(TextFormatting.AQUA+glist.get(gid).permLevels.get(0)+":", sender);
 						List<String> list = glist.get(gid).listMembers(0, server);
@@ -127,9 +127,9 @@ public class GuildCommands extends CommandBase{
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 1 ? 0 : old);
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 2 ? 0 : old);
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 3 ? 0 : old);
-				if (glist.get(gindex).members.size() == 0) {
+				if (glist.get(gindex).members.size() == 0 && !glist.get(gindex).isAdmin) {
 					GuildSaver.get(sender.getEntityWorld()).GUILDS.remove(gindex);
-					AccountSaver.get(sender.getEntityWorld()).GUILDS.removeAccount(uuidHolder);
+					AccountSaver.get(sender.getEntityWorld()).getGuilds().removeAccount(uuidHolder);
 				}
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
 				message("You have left the "+nameholder+" guild.", sender);

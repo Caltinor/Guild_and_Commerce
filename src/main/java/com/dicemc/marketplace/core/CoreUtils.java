@@ -39,8 +39,8 @@ public class CoreUtils {
 	public static String tempClaim(UUID owner, int chunkX, int chunkZ) {
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL)) {
-			if (AccountSaver.get(world).PLAYERS.getBalance(owner) >= (cap.getPrice()*Main.ModConfig.TEMPCLAIM_RATE)) {
-				AccountSaver.get(world).PLAYERS.addBalance(owner, (-1*Main.ModConfig.TEMPCLAIM_RATE*cap.getPrice()));
+			if (AccountSaver.get(world).getPlayers().getBalance(owner) >= (cap.getPrice()*Main.ModConfig.TEMPCLAIM_RATE)) {
+				AccountSaver.get(world).getPlayers().addBalance(owner, (-1*Main.ModConfig.TEMPCLAIM_RATE*cap.getPrice()));
 				cap.setTempTime(System.currentTimeMillis()+Main.ModConfig.TEMPCLAIM_DURATION);
 				cap.includePlayer(owner);
 				cap.setOwner(owner);
@@ -56,8 +56,8 @@ public class CoreUtils {
 	public static String renewClaim(UUID owner,int chunkX, int chunkZ) {
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		double cost = (0.1*cap.getPrice())+(.01*(cap.getPlayers().size()-1));
-		if (AccountSaver.get(world).PLAYERS.getBalance(owner) >= cost) {
-			AccountSaver.get(world).PLAYERS.addBalance(owner, (-1*cost));
+		if (AccountSaver.get(world).getPlayers().getBalance(owner) >= cost) {
+			AccountSaver.get(world).getPlayers().addBalance(owner, (-1*cost));
 			cap.setTempTime(cap.getTempTime()+Main.ModConfig.TEMPCLAIM_DURATION);
 			return "Claim extended until "+String.valueOf(new Timestamp(cap.getTempTime()))+" for $"+String.valueOf(cost);
 		}
@@ -74,7 +74,7 @@ public class CoreUtils {
 			}
 		}
 		if (gindex >= 0 ) {
-			if (AccountSaver.get(world).GUILDS.getBalance(glist.get(gindex).guildID) < 0) restricted = true;
+			if (AccountSaver.get(world).getGuilds().getBalance(glist.get(gindex).guildID) < 0) restricted = true;
 		}
 		if (gindex >= 0) {
 			if (!restricted) {
@@ -103,15 +103,15 @@ public class CoreUtils {
 				}
 				if (bordersGuildLand) {
 					if (GuildSaver.get(world).guildNamefromUUID(cap.getOwner()).equalsIgnoreCase("Guild N/A") || cap.getForSale()) {
-						if (AccountSaver.get(world).GUILDS.getBalance(owningGuild) >= cap.getPrice()) {
+						if (AccountSaver.get(world).getGuilds().getBalance(owningGuild) >= cap.getPrice()) {
 							if (!cap.getOwner().equals(Reference.NIL) && GuildSaver.get(world).guildNamefromUUID(cap.getOwner()).equalsIgnoreCase("Guild N/A")) {
-								AccountSaver.get(world).PLAYERS.addBalance(cap.getOwner(), cap.getPrice()*.1);
+								AccountSaver.get(world).getPlayers().addBalance(cap.getOwner(), cap.getPrice()*.1);
 								cap.setPlayers(new ArrayList<UUID>());
 								cap.fromNBTWhitelist(new NBTTagList());
 								cap.setPublic(false);
 							}
 							if (cap.getForSale()) {
-								AccountSaver.get(world).GUILDS.addBalance(cap.getOwner(), cap.getPrice());
+								AccountSaver.get(world).getGuilds().addBalance(cap.getOwner(), cap.getPrice());
 								int sellerIndex = GuildSaver.get(world).guildIndexFromName(GuildSaver.get(world).guildNamefromUUID(cap.getOwner()));
 								GuildSaver.get(world).GUILDS.get(sellerIndex).removeLand(ck.getPos());
 								landShiftChecker(sellerIndex);
@@ -120,7 +120,7 @@ public class CoreUtils {
 								cap.setPlayers(new ArrayList<UUID>());
 								cap.setPublic(false);
 							}
-							AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* cap.getPrice()));
+							AccountSaver.get(world).getGuilds().addBalance(owningGuild, (-1* cap.getPrice()));
 							cap.setOwner(owningGuild);
 							cap.setForSale(false);
 							cap.setExplosionsOn(false);
@@ -156,7 +156,7 @@ public class CoreUtils {
 			}
 		}
 		if (gindex >= 0 ) {
-			if (AccountSaver.get(world).GUILDS.getBalance(glist.get(gindex).guildID) < 0) restricted = true;
+			if (AccountSaver.get(world).getGuilds().getBalance(glist.get(gindex).guildID) < 0) restricted = true;
 		}
 		if (gindex >= 0) {
 			if (!restricted) {
@@ -164,17 +164,17 @@ public class CoreUtils {
 				Chunk ck = world.getChunkFromChunkCoords(chunkX, chunkZ);
 				ChunkCapability cap = ck.getCapability(ChunkProvider.CHUNK_CAP, null);
 				if (GuildSaver.get(world).guildNamefromUUID(cap.getOwner()).equalsIgnoreCase("Guild N/A") || cap.getForSale()) {
-					if (AccountSaver.get(world).GUILDS.getBalance(owningGuild) >= cap.getPrice()+2000) {
+					if (AccountSaver.get(world).getGuilds().getBalance(owningGuild) >= cap.getPrice()+2000) {
 						if (!cap.getOwner().equals(Reference.NIL)) {
-							AccountSaver.get(world).PLAYERS.addBalance(cap.getOwner(), cap.getPrice()*.1);
+							AccountSaver.get(world).getPlayers().addBalance(cap.getOwner(), cap.getPrice()*.1);
 						}
 						if (cap.getForSale()) {
-							AccountSaver.get(world).GUILDS.addBalance(cap.getOwner(), cap.getPrice());
+							AccountSaver.get(world).getGuilds().addBalance(cap.getOwner(), cap.getPrice());
 							int sellerIndex = GuildSaver.get(world).guildIndexFromName(GuildSaver.get(world).guildNamefromUUID(cap.getOwner()));
 							GuildSaver.get(world).GUILDS.get(sellerIndex).removeLand(ck.getPos());
 							landShiftChecker(sellerIndex);
 						}
-						AccountSaver.get(world).GUILDS.addBalance(owningGuild, (-1* (cap.getPrice()+Main.ModConfig.OUTPOST_CREATE_COST)));
+						AccountSaver.get(world).getGuilds().addBalance(owningGuild, (-1* (cap.getPrice()+Main.ModConfig.OUTPOST_CREATE_COST)));
 						cap.setOwner(owningGuild);
 						cap.setOutpost(true);
 						GuildSaver.get(world).GUILDS.get(gindex).outpostLand.add(ck.getPos());
@@ -203,7 +203,7 @@ public class CoreUtils {
 			}
 		}
 		if (gindex >= 0 ) {
-			if (AccountSaver.get(world).GUILDS.getBalance(glist.get(gindex).guildID) < 0) restricted = true;
+			if (AccountSaver.get(world).getGuilds().getBalance(glist.get(gindex).guildID) < 0) restricted = true;
 		}
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		cap.setForSale(true);
@@ -227,7 +227,7 @@ public class CoreUtils {
 		String resp = "";
 		if (cap.getOwner().equals(glist.get(gindex).guildID)) {
 			if (!cap.getForSale()) {
-				AccountSaver.get(world).GUILDS.addBalance(glist.get(gindex).guildID, cap.getPrice()*Main.ModConfig.LAND_ABANDON_REFUND_RATE);
+				AccountSaver.get(world).getGuilds().addBalance(glist.get(gindex).guildID, cap.getPrice()*Main.ModConfig.LAND_ABANDON_REFUND_RATE);
 				resp = "Guild has been refunded $"+String.valueOf(cap.getPrice()*.75);
 			}
 			GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner())).removeLand(ck.getPos());
@@ -246,12 +246,12 @@ public class CoreUtils {
 	}
 
 	public static String createGuild(UUID creator, String name) {
-		AccountSaver.get(world).PLAYERS.addBalance(creator, -1*Main.ModConfig.GUILD_CREATE_COST);
-		AccountSaver.get(world).markDirty();
+		if (GuildSaver.get(world).guildIndexFromName(name) >= 0) {return "A Guild by that name already exists";}
+		AccountSaver.get(world).getPlayers().addBalance(creator, -1 * Main.ModConfig.GUILD_CREATE_COST);
 		GuildSaver.get(world).GUILDS.add(new Guild(name));
 		GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromName(name)).addMember(creator, 0);
 		GuildSaver.get(world).markDirty();
-		AccountSaver.get(world).GUILDS.addAccount(GuildSaver.get(world).guildUUIDfromName(name), Main.ModConfig.GUILD_STARTING_FUNDS);
+		AccountSaver.get(world).getGuilds().addAccount(GuildSaver.get(world).guildUUIDfromName(name), Main.ModConfig.GUILD_STARTING_FUNDS);
 		AccountSaver.get(world).markDirty();
 		return "Created new guild: " + name;
 	}

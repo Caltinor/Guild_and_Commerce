@@ -83,7 +83,7 @@ public class MessageCreateInfoToServer implements IMessage{
 					if (glist.get(i).members.getOrDefault(ctx.getServerHandler().player.getUniqueID(), 4) == -1) list.put(glist.get(i).guildID, TextFormatting.RED+"INVITE: "+glist.get(i).guildName);
 					else if (glist.get(i).openToJoin) list.put(glist.get(i).guildID, TextFormatting.BLUE+"OPEN:   "+glist.get(i).guildName);
 				}
-				double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).PLAYERS.getBalance(ctx.getServerHandler().player.getUniqueID());
+				double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageCreateInfoToGui(list, balance), ctx.getServerHandler().player);
 				break;
 			}

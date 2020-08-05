@@ -134,7 +134,7 @@ public class Commands extends CommandBase{
 			switch(args[1]) {
 			//base arguments <player/guild>
 			case "player": {
-				AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).PLAYERS;
+				AccountGroup acctPlayers = AccountSaver.get(server.getEntityWorld()).getPlayers();
 				switch(args[2]) {
 				//base arguments <balance/set/add>
 				case "set": {
@@ -154,7 +154,7 @@ public class Commands extends CommandBase{
 				break;
 			}
 			case "guild": {
-				AccountGroup acctGuilds = AccountSaver.get(server.getEntityWorld()).GUILDS;
+				AccountGroup acctGuilds = AccountSaver.get(server.getEntityWorld()).getGuilds();
 				switch(args[2]) {
 				//base arguments <balance/set/add>
 				case "set": {
@@ -183,8 +183,9 @@ public class Commands extends CommandBase{
 			//base arguments <create/set/list/claim>
 			case "create": {
 				GuildSaver.get(sender.getEntityWorld()).GUILDS.add(new Guild(args[2]));
+				GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromName(args[2])).isAdmin = true;
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
-				AccountSaver.get(sender.getEntityWorld()).GUILDS.addAccount(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[2]), Main.ModConfig.GUILD_STARTING_FUNDS);
+				AccountSaver.get(sender.getEntityWorld()).getGuilds().addAccount(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[2]), Main.ModConfig.GUILD_STARTING_FUNDS);
 				AccountSaver.get(sender.getEntityWorld()).markDirty();
 				message("Guild "+args[2]+" created.", sender);
 				break;
