@@ -183,6 +183,7 @@ public class Commands extends CommandBase{
 			//base arguments <create/set/list/claim>
 			case "create": {
 				GuildSaver.get(sender.getEntityWorld()).GUILDS.add(new Guild(args[2]));
+				GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromName(args[2])).isAdmin = true;
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
 				AccountSaver.get(sender.getEntityWorld()).getGuilds().addAccount(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[2]), Main.ModConfig.GUILD_STARTING_FUNDS);
 				AccountSaver.get(sender.getEntityWorld()).markDirty();

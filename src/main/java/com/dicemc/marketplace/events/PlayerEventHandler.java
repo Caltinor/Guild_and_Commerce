@@ -93,7 +93,7 @@ public class PlayerEventHandler {
 						AccountSaver.get(world).markDirty();
 					}					
 					//Guild Tax portion
-					if (g.members.size() > 0) {
+					if (!g.isAdmin) {
 						double bal = AccountSaver.get(world).getGuilds().getBalance(g.guildID);
 						double owe = AccountSaver.get(world).debt.getOrDefault(g.guildID, 0D);
 						if (bal > owe && owe > 0D) {

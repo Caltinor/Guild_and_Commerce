@@ -55,7 +55,7 @@ public class CommonProxy {
 	
 	public void updateAdminSyncGuildList(Map<UUID, String> nameList) {}
 	
-	public void updateAdminSyncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {}
+	public void updateAdminSyncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms, boolean isAdmin) {}
 	
 	public void updateAdminSyncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {}
 	

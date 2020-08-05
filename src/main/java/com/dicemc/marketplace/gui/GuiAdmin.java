@@ -60,7 +60,7 @@ public class GuiAdmin extends GuiScreen{
 	private GuiButton selectGuild, deleteGuild;
 	private GuiListNameList guildList;
 	//guild main menu objects
-	private GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild;
+	private GuiButton setOpen, set0, set1, set2, set3, openLand, openMembers, saveGuild, adminToggle;
 	private GuiTextField nameBox, taxBox, perm0, perm1, perm2, perm3;
 	private GuiListAdminPerms listGuildPerms;
 	//guild land menu objects
@@ -99,7 +99,7 @@ public class GuiAdmin extends GuiScreen{
 	
 	public void syncGuildList(Map<UUID, String> nameList) {this.nameList = nameList; guildList.refreshList();}
 	
-	public void syncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+	public void syncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms, boolean isAdmin) {
 		guiGuild.guildName = name;
 		guiGuild.openToJoin = open;
 		guiGuild.guildTax = tax;
@@ -108,6 +108,7 @@ public class GuiAdmin extends GuiScreen{
 		guiGuild.permLevels.put(2, perm2);
 		guiGuild.permLevels.put(3, perm3);
 		guiGuild.permissions = guildPerms;
+		guiGuild.isAdmin = isAdmin;
 		updateVisibility();
 		listGuildPerms.refreshList();
 	}
@@ -199,13 +200,15 @@ public class GuiAdmin extends GuiScreen{
 		set3 = new GuiButton(34, setOpen.x+60, set0.y, 20, 20, "3");
 		openLand = new GuiButton(35, this.width - 80, 5, 75, 20, "Land Menu");
 		openMembers = new GuiButton(36,openLand.x, 30, 75, 20, "Member Menu");
+		adminToggle = new GuiButton(39,openLand.x, set0.y, 75, 20, "Admin: No");
 		this.buttonList.add(setOpen);
 		this.buttonList.add(set0);
 		this.buttonList.add(set1);
 		this.buttonList.add(set2);
 		this.buttonList.add(set3);
 		this.buttonList.add(openLand);
-		this.buttonList.add(openMembers);			
+		this.buttonList.add(openMembers);
+		this.buttonList.add(adminToggle);
 		perm0 = new GuiTextField(301, this.fontRenderer, nameBox.x, 70, this.width/4, 20);
 		perm1 = new GuiTextField(302, this.fontRenderer, nameBox.x, perm0.y + perm0.height + 5, perm0.width, 20);
 		perm2 = new GuiTextField(303, this.fontRenderer, nameBox.x, perm1.y + perm1.height + 5, perm1.width, 20);
@@ -343,6 +346,8 @@ public class GuiAdmin extends GuiScreen{
 		//guild main objects
 		setOpen.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
+		adminToggle.visible = activeMenu == AdminGuiType.GUILD_MAIN;
+		adminToggle.displayString = guiGuild.isAdmin ? "Admin: Yes" : "Admin: No";
 		set0.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		set1.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		set2.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
@@ -544,6 +549,10 @@ public class GuiAdmin extends GuiScreen{
 			guiGuild.openToJoin = guiGuild.openToJoin ? false : true;
 			setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
 		}
+		if (button == adminToggle) {
+			guiGuild.isAdmin = guiGuild.isAdmin ? false : true;
+			adminToggle.displayString = guiGuild.isAdmin ? "Admin: Yes" : "Admin: No";
+		}
 		if (button == set0 && listGuildPerms.selectedIdx >= 0) {
 			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 0);
 			listGuildPerms.refreshList();
@@ -563,7 +572,7 @@ public class GuiAdmin extends GuiScreen{
 		if (button == saveGuild) {
 			double amount = 0D;
 			try {amount = Math.abs(Double.valueOf(taxBox.getText()));} catch (NumberFormatException e) {}
-			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions));
+			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions, guiGuild.isAdmin));
 		}
 		if (button == openLand) {
 			activeMenu = AdminGuiType.GUILD_LAND;

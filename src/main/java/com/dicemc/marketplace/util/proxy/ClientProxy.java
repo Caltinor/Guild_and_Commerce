@@ -95,9 +95,9 @@ public class ClientProxy extends CommonProxy {
 		screen.syncGuildList(nameList);
 	}
 	
-	public void updateAdminSyncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+	public void updateAdminSyncGuildData(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms, boolean isAdmin) {
 		GuiAdmin screen = (GuiAdmin) Minecraft.getMinecraft().currentScreen;
-		screen.syncGuildData(name, open, tax, perm0, perm1, perm2, perm3, guildPerms);
+		screen.syncGuildData(name, open, tax, perm0, perm1, perm2, perm3, guildPerms, isAdmin);
 	}
 	
 	public void updateAdminSyncGuildLand(List<ChunkPos> posCore, List<ChunkPos> posOutpost, Map<ChunkPos, Double> chunkValues) {

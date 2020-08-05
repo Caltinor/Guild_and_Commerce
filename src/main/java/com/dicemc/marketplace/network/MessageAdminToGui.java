@@ -55,7 +55,7 @@ public class MessageAdminToGui implements IMessage{
 		this.accountList = accountList;
 	}
 	
-	public MessageAdminToGui(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms) {
+	public MessageAdminToGui(String name, boolean open, double tax, String perm0, String perm1, String perm2, String perm3, Map<String, Integer> guildPerms, boolean isAdmin) {
 		messageIndex = 2;
 		str1 = name;
 		str2 = perm0;
@@ -63,6 +63,7 @@ public class MessageAdminToGui implements IMessage{
 		str4 = perm2;
 		str5 = perm3;
 		bool1 = open;
+		bool2 = isAdmin;
 		dbl1 = tax;
 		this.guildPerms = guildPerms;
 	}
@@ -131,6 +132,7 @@ public class MessageAdminToGui implements IMessage{
 			str4 = ByteBufUtils.readUTF8String(buf);
 			str5 = ByteBufUtils.readUTF8String(buf);
 			bool1 = pbuf.readBoolean();
+			bool2 = pbuf.readBoolean();
 			dbl1 = pbuf.readDouble();
 			try {
 			Map<String, Integer> map = new HashMap<String, Integer>();
@@ -240,6 +242,7 @@ public class MessageAdminToGui implements IMessage{
 			ByteBufUtils.writeUTF8String(buf, str4);
 			ByteBufUtils.writeUTF8String(buf, str5);
 			pbuf.writeBoolean(bool1);
+			pbuf.writeBoolean(bool2);
 			pbuf.writeDouble(dbl1);
 			NBTTagCompound nbt = new NBTTagCompound();
 			NBTTagList list = new NBTTagList();
@@ -385,7 +388,7 @@ public class MessageAdminToGui implements IMessage{
 				break;
 			}
 			case 2: {
-				Main.proxy.updateAdminSyncGuildData(message.str1, message.bool1, message.dbl1, message.str2, message.str3, message.str4, message.str5, message.guildPerms);
+				Main.proxy.updateAdminSyncGuildData(message.str1, message.bool1, message.dbl1, message.str2, message.str3, message.str4, message.str5, message.guildPerms, message.bool2);
 				break;
 			}
 			case 3: {

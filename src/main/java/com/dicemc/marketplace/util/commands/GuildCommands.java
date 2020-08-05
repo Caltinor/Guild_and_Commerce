@@ -127,7 +127,7 @@ public class GuildCommands extends CommandBase{
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 1 ? 0 : old);
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 2 ? 0 : old);
 				if (glist.get(gindex).listMembers(0, server).size() <= 1) GuildSaver.get(sender.getEntityWorld()).GUILDS.get(gindex).members.replaceAll((key, old) -> old == 3 ? 0 : old);
-				if (glist.get(gindex).members.size() == 0) {
+				if (glist.get(gindex).members.size() == 0 && !glist.get(gindex).isAdmin) {
 					GuildSaver.get(sender.getEntityWorld()).GUILDS.remove(gindex);
 					AccountSaver.get(sender.getEntityWorld()).getGuilds().removeAccount(uuidHolder);
 				}
