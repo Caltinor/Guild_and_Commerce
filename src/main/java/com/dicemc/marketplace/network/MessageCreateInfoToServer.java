@@ -84,7 +84,7 @@ public class MessageCreateInfoToServer implements IMessage{
 					else if (glist.get(i).openToJoin) list.put(glist.get(i).guildID, TextFormatting.BLUE+"OPEN:   "+glist.get(i).guildName);
 				}
 				double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
-				Main.NET.sendTo(new MessageCreateInfoToGui(list, balance), ctx.getServerHandler().player);
+				Main.NET.sendTo(new MessageCreateInfoToGui(list, balance, Main.ModConfig.GUILD_CREATE_COST), ctx.getServerHandler().player);
 				break;
 			}
 			default:
