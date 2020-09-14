@@ -120,7 +120,7 @@ public class GuiGuildPerms extends GuiScreen {
 	    public void refreshList()
 	    {
 	    	entries.clear();
-	    	guild = permsManager.guild;
+	    	guild = permsManager.guild;	    	
 	        Map<String, Integer> permissions = guild.permissions;
 
 	        for (Map.Entry<String, Integer> entry : permissions.entrySet()){
@@ -170,7 +170,7 @@ public class GuiGuildPerms extends GuiScreen {
 		}
 		
 		private String permName(int key) {
-			String str = "";
+			String str = "Missing Rank";
 			switch (key) {
 			case 0: {
 				str = TextFormatting.DARK_GREEN+ containingListSel.guild.permLevels.get(key);
@@ -208,7 +208,7 @@ public class GuiGuildPerms extends GuiScreen {
 			case "managesublet": {		return "Can Manage Subletting";}
 			default: 
 			}
-			return "";
+			return "Missing Definition";
 		}
 
 		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
