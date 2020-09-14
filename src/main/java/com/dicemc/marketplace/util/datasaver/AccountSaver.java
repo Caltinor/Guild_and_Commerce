@@ -30,9 +30,9 @@ public class AccountSaver extends WorldSavedData {
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
-		PLAYERS.readFromNBT(nbt.getTagList(PLAYERS.groupName, Constants.NBT.TAG_COMPOUND));
-		GUILDS.readFromNBT(nbt.getTagList(GUILDS.groupName, Constants.NBT.TAG_COMPOUND));
-		NBTTagList list = nbt.getTagList("debt", Constants.NBT.TAG_COMPOUND);
+		PLAYERS.readFromNBT(nbt.getCompoundTag(PLAYERS.groupName).getTagList(PLAYERS.groupName, Constants.NBT.TAG_COMPOUND));
+		GUILDS.readFromNBT(nbt.getCompoundTag(GUILDS.groupName).getTagList(GUILDS.groupName, Constants.NBT.TAG_COMPOUND));
+		NBTTagList list = nbt.getCompoundTag("debt").getTagList("debt", Constants.NBT.TAG_COMPOUND);
 		for (int i = 0; i < list.tagCount(); i++) { debt.put(list.getCompoundTagAt(i).getUniqueId("UUID"), list.getCompoundTagAt(i).getDouble("amount")); }
 	}
 
@@ -40,6 +40,7 @@ public class AccountSaver extends WorldSavedData {
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
 		compound.setTag(PLAYERS.groupName, PLAYERS.writeToNBT(new NBTTagCompound()));
 		compound.setTag(GUILDS.groupName, GUILDS.writeToNBT(new NBTTagCompound()));
+		NBTTagCompound nbt = new NBTTagCompound();
 		NBTTagList list = new NBTTagList();
 		if (debt.size() > 0) {
 			for (Map.Entry<UUID, Double> entry : debt.entrySet()) {
@@ -49,7 +50,8 @@ public class AccountSaver extends WorldSavedData {
 				list.appendTag(snbt);
 			}
 		}
-		compound.setTag("debt", list);
+		nbt.setTag("debt", list);
+		compound.setTag("debt", nbt);
 		return compound;
 	}
 

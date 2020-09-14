@@ -32,10 +32,12 @@ public class AccountGroup {
 			snbt.setDouble("balance", accountList.get(i).balance);
 			list.appendTag(snbt);
 		}
+		System.out.println("write "+list.tagCount());
 		nbt.setTag(groupName, list);
 		return nbt;
 	}
 	public void readFromNBT(NBTTagList nbt) {
+		System.out.println("read "+nbt.tagCount());
 		accountList.clear();
 		for (int i = 0; i < nbt.tagCount(); i++) {
 			accountList.add(new Account(nbt.getCompoundTagAt(i).getUniqueId("owner"), nbt.getCompoundTagAt(i).getDouble("balance")));
@@ -67,7 +69,7 @@ public class AccountGroup {
 	
 	public boolean accountExists(UUID player) {
 		if (Main.useGrandEconomy) {if (Main.interop.getBalance(player, true) != 0) return true;}
-		else if (getBalance(player) != 0) {return true;}
+		else if (getBalance(player) != -1337) {return true;}
 		return false;
 	}
 	
@@ -78,7 +80,7 @@ public class AccountGroup {
 		for (int i = 0; i < accountList.size(); i++) {
 			if (accountList.get(i).owner.equals(player)) {return accountList.get(i).balance;}
 		}
-		return 0;
+		return -1337;
 	}
 	
 	public void setBalance (UUID player, double amount) {
