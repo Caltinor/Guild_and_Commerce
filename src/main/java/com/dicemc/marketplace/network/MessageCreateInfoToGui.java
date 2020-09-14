@@ -20,13 +20,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageCreateInfoToGui implements IMessage{
 	public Map<UUID, String> list;
-	public double balance;
+	public double balance, guildPrice;
 	
 	public MessageCreateInfoToGui() {}
 	
-	public MessageCreateInfoToGui(Map<UUID, String> list, double balance) {
+	public MessageCreateInfoToGui(Map<UUID, String> list, double balance, double guildPrice) {
 		this.list = list;
 		this.balance = balance;
+		this.guildPrice = guildPrice;
 	}
 	
 	public NBTTagCompound mapToNBT(Map<UUID, String> map) {
@@ -55,7 +56,8 @@ public class MessageCreateInfoToGui implements IMessage{
 	public void fromBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
 		try {list = mapFromNBT(pbuf.readCompoundTag());
-		balance = pbuf.readDouble();} catch (IOException e) {}		
+		balance = pbuf.readDouble();
+		guildPrice = pbuf.readDouble();} catch (IOException e) {}		
 	}
 
 	@Override
@@ -63,6 +65,7 @@ public class MessageCreateInfoToGui implements IMessage{
 		PacketBuffer pbuf = new PacketBuffer(buf);
 		pbuf.writeCompoundTag(mapToNBT(list));
 		pbuf.writeDouble(balance);
+		pbuf.writeDouble(guildPrice);
 	}
 	public static class PacketCreateInfoToGui implements IMessageHandler<MessageCreateInfoToGui, IMessage> {
 		@Override
@@ -72,7 +75,7 @@ public class MessageCreateInfoToGui implements IMessage{
 		}  
 		
 		private void handle(MessageCreateInfoToGui message, MessageContext ctx) {		
-			Main.proxy.openCreateGui(message.list, message.balance);
+			Main.proxy.openCreateGui(message.list, message.balance, message.guildPrice);
 		}
 	}
 }

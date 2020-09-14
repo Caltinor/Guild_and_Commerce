@@ -37,7 +37,7 @@ public class CommonProxy {
 	
 	public void openPermsGui(Guild guild) {}
 	
-	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP) {}
+	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP, double guildPrice) {}
 	
 	public void openAdminGui() {}
 	

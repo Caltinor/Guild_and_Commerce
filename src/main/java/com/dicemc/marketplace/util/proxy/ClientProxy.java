@@ -52,8 +52,8 @@ public class ClientProxy extends CommonProxy {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiGuildPerms(guild));
 	}
 	
-	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP) {
-		Minecraft.getMinecraft().displayGuiScreen(new GuiGuildCreate(invitedGuilds, balP));
+	public void openCreateGui(Map<UUID, String> invitedGuilds, double balP, double guildPrice) {
+		Minecraft.getMinecraft().displayGuiScreen(new GuiGuildCreate(invitedGuilds, balP, guildPrice));
 	}
 	
 	public void openAdminGui() {

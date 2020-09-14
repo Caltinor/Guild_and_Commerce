@@ -25,7 +25,7 @@ import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildCreate extends GuiScreen {
 	private Map<UUID, String> invitedGuilds;
-	private double balance;
+	private double balance, guildPrice;
 	//Components
 	private GuiTextField guildName;
 	private GuiListGuildInvite inviteList;
@@ -33,9 +33,10 @@ public class GuiGuildCreate extends GuiScreen {
 	private GuiButton joinButton, rejectButton;
 
 	
-	public GuiGuildCreate(Map<UUID, String> invitedGuilds, double balP) {
+	public GuiGuildCreate(Map<UUID, String> invitedGuilds, double balP, double guildPrice) {
 		this.invitedGuilds = invitedGuilds;
 		this.balance = balP;
+		this.guildPrice = guildPrice;
 	}
 	
 	public void initGui() {
@@ -104,7 +105,7 @@ public class GuiGuildCreate extends GuiScreen {
     {
         this.drawDefaultBackground();
         this.drawCenteredString(this.fontRenderer, TextFormatting.GOLD+"To access guild options, accept an invite from the list or create your own Guild.", this.width/2, 3, 16777215);
-        this.drawString(this.fontRenderer, "New Guild Cost $"+String.valueOf(Main.ModConfig.GUILD_CREATE_COST), guildName.x, guildName.y - 26, 16777215);
+        this.drawString(this.fontRenderer, "New Guild Cost $"+String.valueOf(guildPrice), guildName.x, guildName.y - 26, 16777215);
         this.drawString(this.fontRenderer, "Name:", guildName.x, guildName.y - 13, 16777215);
         this.drawString(this.fontRenderer, "Guild Invites", inviteList.x, inviteList.y - 13, 16777215);
         inviteList.drawScreen(mouseX, mouseY, partialTicks);
