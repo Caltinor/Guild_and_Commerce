@@ -21,6 +21,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildCreate extends GuiScreen {
@@ -45,7 +46,7 @@ public class GuiGuildCreate extends GuiScreen {
 		createButton = new GuiButton(10, guildName.x +((this.width/4 - this.width/5)/2), guildName.y + 25, this.width/5, 20, "Create Guild");
 		joinButton = new GuiButton(11, inviteList.x, inviteList.y+inviteList.height+5, inviteList.width/2-1, 20, "Join");
 		rejectButton = new GuiButton(12, joinButton.x+joinButton.width+2, joinButton.y, joinButton.width, 20, "Reject");
-		this.buttonList.add(new GuiButton(13, guildName.x, joinButton.y, this.width/4, 20, "Back"));
+		this.buttonList.add(new GuiButton(13, guildName.x, joinButton.y, this.width/4, 20, new TextComponentTranslation("gui.back").getFormattedText()));
 		this.buttonList.add(createButton);
 		this.buttonList.add(joinButton);
 		this.buttonList.add(rejectButton);

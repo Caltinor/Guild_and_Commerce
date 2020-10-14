@@ -24,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -100,28 +101,28 @@ public class PlayerEventHandler {
 							AccountSaver.get(world).getGuilds().addBalance(g.guildID, -1 * owe);
 							AccountSaver.get(world).debt.remove(g.guildID);
 							bal -= owe;
-							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has paid off all debt"));}
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.tax.debt.paid", g.guildName));}
 						}
 						else if (bal < owe && owe > 0D && bal > 0) {
 							AccountSaver.get(world).getGuilds().addBalance(g.guildID, -1* owe);
 							AccountSaver.get(world).debt.put(g.guildID, owe - bal);
 							owe -= bal;
 							bal = 0D;
-							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> debt reduce to $" + String.valueOf(owe)));}
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.tax.debt.less", g.guildName, String.valueOf(owe)));}
 						}
 						if (bal < (g.taxableWorth(world)*Main.ModConfig.GLOBAL_TAX_RATE)) {
 							AccountSaver.get(world).debt.put(g.guildID, owe+(g.taxableWorth(world)*Main.ModConfig.GLOBAL_TAX_RATE));
-							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has incurred a debt of $"+ String.valueOf(owe)));}
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.tax.debt.more", g.guildName, String.valueOf(owe)));}
 						}
 						else AccountSaver.get(world).getGuilds().addBalance(g.guildID, (g.taxableWorth(world)*-1*Main.ModConfig.GLOBAL_TAX_RATE));
 						if (owe > (g.guildWorth(world)/2)) {
-							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Guild <"+g.guildName+"> has been deleted due to bankruptcy"));}
+							for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.tax.debt.bankrupt", g.guildName));}
 							glist.remove(GuildSaver.get(world).guildIndexFromName(g.guildName));
 						}
 						AccountSaver.get(world).markDirty();
 					}
 				}
-				for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentString("Taxes have been applied."));}
+				for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.taxes.notice"));}
 				taxCounter = 0;
 			}
 		}

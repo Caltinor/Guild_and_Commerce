@@ -19,19 +19,23 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
 
 public class GuildCommands extends CommandBase{
+	TextComponentTranslation tctGetUsage = new TextComponentTranslation("cmd.guild.getusage");
 
 	@Override
 	public String getName() { return "guild"; }
 
 	@Override
-	public String getUsage(ICommandSender sender) { return "/guild <action>";}
+	public String getUsage(ICommandSender sender) { return tctGetUsage.getFormattedText();}
 
-	private void message(String str, ICommandSender sender) {sender.sendMessage(new TextComponentString(str));}
+	private void message(ITextComponent str, ICommandSender sender) {sender.sendMessage(str);}
 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
@@ -43,8 +47,8 @@ public class GuildCommands extends CommandBase{
 		List<Guild> glist = GuildSaver.get(sender.getEntityWorld()).GUILDS;
 		int gindex = -1;
 		if (args.length == 0) {
-			message("/guild info <guild name>", sender);
-			message("/guild leave (if you are the only leader, this will promote all below you.  if you are the last member the guild is deleted.", sender);
+			message(new TextComponentTranslation("cmd.guild.help1"), sender);
+			message(new TextComponentTranslation("cmd.guild.help2"), sender);
 			return;
 		}
 		switch(args[0]) {
@@ -62,29 +66,23 @@ public class GuildCommands extends CommandBase{
 						if (glist.get(i).guildID.equals(landID)) gid = i; }
 				}
 				if (gid >= 0) {
-					message(TextFormatting.GOLD+"==="+glist.get(gid).guildName+"===", sender);
+					Style style = new Style();
+					message(new TextComponentString(TextFormatting.GOLD+"==="+glist.get(gid).guildName+"==="), sender);
 					int membercount = 0;
 					for (Map.Entry<UUID, Integer> entry : glist.get(gid).members.entrySet()) membercount += entry.getValue() != -1 ? 1: 0;
-					message("Guild Value: $"+String.valueOf(glist.get(gid).guildWorth(sender.getEntityWorld())), sender);
-					message("Taxable Value: $"+String.valueOf(glist.get(gid).taxableWorth(sender.getEntityWorld())), sender);
-					message("Chunks Claimed:"+TextFormatting.BLUE+" Core:"+TextFormatting.WHITE+String.valueOf(glist.get(gid).coreLand.size())+TextFormatting.RED+" Outpost:"+TextFormatting.WHITE+String.valueOf(glist.get(gid).outpostLand.size()), sender);
-					message("Tax: "+String.valueOf(glist.get(gid).guildTax*100)+"%,"+TextFormatting.AQUA+" Open-to-Join: "+String.valueOf(glist.get(gid).openToJoin), sender);
-					message(TextFormatting.DARK_GREEN+"Balance: $"+String.valueOf(AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(glist.get(gid).guildID)), sender);
-					message("Member List: ["+String.valueOf(membercount)+"]", sender);
-					message(TextFormatting.AQUA+glist.get(gid).permLevels.get(0)+":", sender);
-						List<String> list = glist.get(gid).listMembers(0, server);
-						try {for (String name : list) message(name, sender);} catch(NullPointerException e){}
-					message(TextFormatting.AQUA+glist.get(gid).permLevels.get(1)+":", sender);
-						list = glist.get(gid).listMembers(1, server);
-						try {for (String name : list) message(name, sender);} catch(NullPointerException e){} 
-					message(TextFormatting.AQUA+glist.get(gid).permLevels.get(2)+":", sender);
-						list = glist.get(gid).listMembers(2, server);
-						try {for (String name : list) message(name, sender);} catch(NullPointerException e){} 
-					message(TextFormatting.AQUA+glist.get(gid).permLevels.get(3)+":", sender);
-						list = glist.get(gid).listMembers(3, server);
-						try {for (String name : list) message(name, sender);} catch(NullPointerException e){} 
+					message(new TextComponentTranslation("cmd.guild.info.line1", String.valueOf(glist.get(gid).guildWorth(sender.getEntityWorld()))), sender);
+					message(new TextComponentTranslation("cmd.guild.info.line1", String.valueOf(glist.get(gid).taxableWorth(sender.getEntityWorld()))), sender);
+					TextComponentTranslation msg = new TextComponentTranslation("cmd.guild.info.line3");
+					TextComponentString a1 = new TextComponentString(TextFormatting.WHITE+String.valueOf(glist.get(gid).coreLand.size()));
+					TextComponentString a2 = new TextComponentString(TextFormatting.WHITE+String.valueOf(glist.get(gid).outpostLand.size()));
+					msg.appendSibling(new TextComponentTranslation("cmd.guild.info.line3a").setStyle(style.setColor(TextFormatting.BLUE)).appendSibling(a1));
+					msg.appendSibling(new TextComponentTranslation("cmd.guild.info.line3b").setStyle(style.setColor(TextFormatting.RED)).appendSibling(a2));
+					message(msg, sender);
+					message(new TextComponentTranslation("cmd.guild.info.line4", String.valueOf(glist.get(gid).guildTax*100), String.valueOf(glist.get(gid).openToJoin)), sender);
+					message(new TextComponentTranslation("cmd.guild.info.line5", String.valueOf(AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(glist.get(gid).guildID))).setStyle(style.setColor(TextFormatting.DARK_GREEN)), sender);
+					message(new TextComponentTranslation("cmd.guild.info.line6", String.valueOf(membercount)), sender);
 				}
-				else message("Unable to find guild information.", sender);
+				else message(new TextComponentTranslation("cmd.guild.info.error"), sender);
 				break;
 			}
 			case "land": {
@@ -115,10 +113,10 @@ public class GuildCommands extends CommandBase{
 						break;
 					}
 				}
-				if (gindex == -1) {message("Must be a member of a guild to leave one.", sender); break;}
+				if (gindex == -1) {message(new TextComponentTranslation("cmd.guild.leave.fail"), sender); break;}
 				for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
 					if (glist.get(gindex).members.getOrDefault(player.getUniqueID(), -1) >=0) {
-						player.sendMessage(new TextComponentString(sender.getName()+" has left the guild"));
+						player.sendMessage(new TextComponentTranslation("cmd.guild.leave.notify", sender.getName()));
 					}
 				}
 				String nameholder = glist.get(gindex).guildName;
@@ -132,10 +130,10 @@ public class GuildCommands extends CommandBase{
 					AccountSaver.get(sender.getEntityWorld()).getGuilds().removeAccount(uuidHolder);
 				}
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
-				message("You have left the "+nameholder+" guild.", sender);
+				message(new TextComponentTranslation("cmd.guild.leave.success", nameholder), sender);
 				break;
 			}
-			default: message("Unknown Argument.", sender);
+			default: message(new TextComponentTranslation("cmd.admin.error"), sender);
 			break;
 		}
 	}

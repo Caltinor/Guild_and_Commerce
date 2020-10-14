@@ -33,6 +33,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -102,9 +103,9 @@ public class GuiGuildManager extends GuiScreen{
 		this.perm1TF.setText(guild.permLevels.get(1));
 		this.perm2TF.setText(guild.permLevels.get(2));
 		this.perm3TF.setText(guild.permLevels.get(3));
-		this.buttonList.add(new GuiButton(10, (this.width / 2)+3, this.height - 28, 75, 20, I18n.format("gui.cancel")));
-		this.buttonList.add(new GuiButton(11, (this.width / 2)- 78, this.height - 28, 75, 20, "Save Changes"));
-		this.buttonList.add(new GuiButton(12, 8, this.guildNameTextField.y + this.guildNameTextField.height + 3, (this.width / 4), 20, "Open: "+String.valueOf(guild.openToJoin)));
+		this.buttonList.add(new GuiButton(10, (this.width / 2)+3, this.height - 28, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		this.buttonList.add(new GuiButton(11, (this.width / 2)- 78, this.height - 28, 75, 20, new TextComponentTranslation("gui.guild.save").getFormattedText()));
+		this.buttonList.add(new GuiButton(12, 8, this.guildNameTextField.y + this.guildNameTextField.height + 3, (this.width / 4), 20, new TextComponentTranslation("gui.guild.open", String.valueOf(guild.openToJoin)).getFormattedText()));
 		this.buttonList.add(new GuiButton(13, (this.width / 3)+ guildFundExchangeTextField.width+ 3, guildFundExchangeTextField.y, 20, 20, "+"));
 		this.buttonList.add(new GuiButton(14, (this.width / 3)+ guildFundExchangeTextField.width+ 23, guildFundExchangeTextField.y, 20, 20, "-"));
 		this.guicoreChunkList = new GuiListGuildChunks(this, guild.coreLand, chunkValues, true, mc, 8, this.height/2, 130, (this.height/2)-30, 10);
@@ -136,7 +137,7 @@ public class GuiGuildManager extends GuiScreen{
 		if (button.id == 12) { //Open to Join Toggle	
 			guild.openToJoin = guild.openToJoin ? false : true;
 			discriminators.put("open", true);
-			button.displayString = guild.openToJoin ? "Open: true" : "Open: false";
+			button.displayString = new TextComponentTranslation("gui.guild.open", String.valueOf(guild.openToJoin)).getFormattedText();
 		}
 		if (button.id == 13) { //Deposit Button
 			double amount = -1D;
@@ -213,20 +214,20 @@ public class GuiGuildManager extends GuiScreen{
         this.guioutpostChunkList.drawScreen(mouseX, mouseY, partialTicks);
         this.guildTaxTextField.drawTextBox();
         this.drawCenteredString(this.fontRenderer, this.screenTitle, this.width / 2, 8, 16777215);
-        this.drawString(this.fontRenderer, "Chunks Claimed:", guicoreChunkList.x, guicoreChunkList.y-24, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.BLUE+"Core:"+TextFormatting.WHITE+String.valueOf(guild.coreLand.size()), guicoreChunkList.x, guicoreChunkList.y - 12, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.RED+" Outpost:"+TextFormatting.WHITE+String.valueOf(guild.outpostLand.size()), guioutpostChunkList.x, guioutpostChunkList.y - 12, 16777215);
-        this.drawString(this.fontRenderer, "Guild Name", 8, 20, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GOLD+(TextFormatting.UNDERLINE+"Guild Account Balance"), (this.width / 3), 20, 16777215);
+        this.drawString(this.fontRenderer, new TextComponentTranslation("gui.guild.chunksclaimed").getFormattedText(), guicoreChunkList.x, guicoreChunkList.y-24, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.BLUE+new TextComponentTranslation("gui.guild.core").getFormattedText()+TextFormatting.WHITE+String.valueOf(guild.coreLand.size()), guicoreChunkList.x, guicoreChunkList.y - 12, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.RED+new TextComponentTranslation("gui.guild.outpost").getFormattedText()+TextFormatting.WHITE+String.valueOf(guild.outpostLand.size()), guioutpostChunkList.x, guioutpostChunkList.y - 12, 16777215);
+        this.drawString(this.fontRenderer, new TextComponentTranslation("gui.guild.guildname").getFormattedText(), 8, 20, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.GOLD+(TextFormatting.UNDERLINE+new TextComponentTranslation("gui.guild.balance").getFormattedText()), (this.width / 3), 20, 16777215);
         this.drawString(this.fontRenderer, "$"+df.format(this.acctGuild.balance), (this.width / 3), 32, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GOLD+"Account:"+TextFormatting.WHITE+" $"+df.format(balP), guildFundExchangeTextField.x, guildFundExchangeTextField.y+ guildFundExchangeTextField.height+5, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GREEN+"Guild Value", (int) (Double.valueOf(this.width) * 0.75), 20, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.GOLD+new TextComponentTranslation("gui.guild.account").getFormattedText()+TextFormatting.WHITE+" $"+df.format(balP), guildFundExchangeTextField.x, guildFundExchangeTextField.y+ guildFundExchangeTextField.height+5, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.GREEN+new TextComponentTranslation("gui.guild.guildvalue").getFormattedText(), (int) (Double.valueOf(this.width) * 0.75), 20, 16777215);
         this.drawString(this.fontRenderer, "$"+df.format(worthGuild), (int) (Double.valueOf(this.width) * 0.75), 30, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GREEN+"Taxable Value", (int) (Double.valueOf(this.width) * 0.75), 45, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.GREEN+new TextComponentTranslation("gui.guild.taxablevalue").getFormattedText(), (int) (Double.valueOf(this.width) * 0.75), 45, 16777215);
         this.drawString(this.fontRenderer, "$"+df.format(worthTax), (int) (Double.valueOf(this.width) * 0.75), 55, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GREEN+"Tax Rate", this.guildTaxTextField.x, this.guildTaxTextField.y-10, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.GREEN+new TextComponentTranslation("gui.guild.taxrate").getFormattedText(), this.guildTaxTextField.x, this.guildTaxTextField.y-10, 16777215);
         this.drawString(this.fontRenderer, df.format(this.guild.guildTax*100)+"%", this.guildTaxTextField.x+this.guildTaxTextField.width+5, this.guildTaxTextField.y+5, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.DARK_PURPLE+"Rank Names", perm0TF.x, perm0TF.y- 10, 16777215);
+        this.drawString(this.fontRenderer, TextFormatting.DARK_PURPLE+new TextComponentTranslation("gui.guild.ranknames").getFormattedText(), perm0TF.x, perm0TF.y- 10, 16777215);
         this.drawString(this.fontRenderer, "0", perm0TF.x - 10, perm0TF.y+6, 16777215);
         this.drawString(this.fontRenderer, "1", perm1TF.x - 10, perm1TF.y+6, 16777215);
         this.drawString(this.fontRenderer, "2", perm2TF.x - 10, perm2TF.y+6, 16777215);

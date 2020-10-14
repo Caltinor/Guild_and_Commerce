@@ -23,6 +23,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildMemberManager extends GuiScreen{
@@ -63,11 +64,11 @@ public class GuiGuildMemberManager extends GuiScreen{
 		memberList = new GuiListGuildMembers(this, mc, false, 3, 30, this.width/3, this.height-60, 10);
 		inviteList = new GuiListGuildMembers(this, mc, true, this.width-(this.width/3)-3, 30, this.width/3, this.height-60, 10);
 		inviteText = new GuiTextField(1, this.fontRenderer, (this.width / 2)-this.width/8, this.height-85, this.width/4, 20);
-		this.buttonList.add(new GuiButton(10, (this.width / 2)-38, this.height - 28, 75, 20, "Back"));
-		guiProm = new GuiButton(50, inviteText.x, 30, inviteText.width, inviteText.height, "Promote");
-		guiDemo = new GuiButton(51, inviteText.x, 55, inviteText.width, inviteText.height, "Demote");
-		guiKick = new GuiButton(52, inviteText.x, 80, inviteText.width, inviteText.height, "Kick");
-		this.buttonList.add(new GuiButton(11, inviteText.x, inviteText.y+inviteText.height+5, inviteText.width, 20, "Invite"));
+		this.buttonList.add(new GuiButton(10, (this.width / 2)-38, this.height - 28, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		guiProm = new GuiButton(50, inviteText.x, 30, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.promote").getFormattedText());
+		guiDemo = new GuiButton(51, inviteText.x, 55, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.demote").getFormattedText());
+		guiKick = new GuiButton(52, inviteText.x, 80, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.kick").getFormattedText());
+		this.buttonList.add(new GuiButton(11, inviteText.x, inviteText.y+inviteText.height+5, inviteText.width, 20, new TextComponentTranslation("gui.members.invite").getFormattedText()));
 		this.buttonList.add(guiProm);
 		this.buttonList.add(guiDemo);
 		this.buttonList.add(guiKick);
@@ -131,7 +132,7 @@ public class GuiGuildMemberManager extends GuiScreen{
         	guiProm.enabled = false;
         	guiDemo.enabled = false;
         }
-        guiKick.displayString = inviteListClicked ? "Remove Invite" : "Kick Member";
+        guiKick.displayString = inviteListClicked ? new TextComponentTranslation("gui.members.removeinvite").getFormattedText() : new TextComponentTranslation("gui.members.kickmember").getFormattedText();
         if (inviteListClicked) memberList.selectedElement = -1;
         if (!inviteListClicked) inviteList.selectedElement = -1;
         memberList.mouseClicked(mouseX, mouseY, mouseButton);
@@ -234,23 +235,23 @@ public class GuiGuildMemberManager extends GuiScreen{
 			String rankFormat = "";
 	        switch(permLvl) {
 	        case 0: {
-	        	rankFormat = TextFormatting.DARK_GREEN + perms.getOrDefault(0, "Leader");
+	        	rankFormat = TextFormatting.DARK_GREEN + perms.getOrDefault(0, new TextComponentTranslation("core.guild.rank0").getFormattedText());
 	        	break;
 	        }
 	        case 1: {
-	        	rankFormat = TextFormatting.DARK_PURPLE + perms.getOrDefault(1, "Dignitary");
+	        	rankFormat = TextFormatting.DARK_PURPLE + perms.getOrDefault(1, new TextComponentTranslation("core.guild.rank1").getFormattedText());
 	        	break;
 	        }
 	        case 2: {
-	        	rankFormat = TextFormatting.BLUE + perms.getOrDefault(2, "Trustee");
+	        	rankFormat = TextFormatting.BLUE + perms.getOrDefault(2, new TextComponentTranslation("core.guild.rank2").getFormattedText());
 	        	break;
 	        }
 	        case 3: {
-	        	rankFormat = perms.getOrDefault(3, "Member");
+	        	rankFormat = perms.getOrDefault(3, new TextComponentTranslation("core.guild.rank3").getFormattedText());
 	        	break;
 	        }
 	        case -1: {
-	        	rankFormat = TextFormatting.DARK_RED + "Invited";
+	        	rankFormat = TextFormatting.DARK_RED + new TextComponentTranslation("core.guild.ranki").getFormattedText();
 	        	break;
 	        }
 	        default:

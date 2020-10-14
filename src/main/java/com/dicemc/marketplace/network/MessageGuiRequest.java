@@ -144,7 +144,7 @@ public class MessageGuiRequest implements IMessage{
 				Guild myGuild = (gindex >=0 ) ? glist.get(gindex) : new Guild(Reference.NIL);
 				double balG = myGuild.guildID != Reference.NIL ? AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds().getBalance(myGuild.guildID) : 0;
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
-				Main.NET.sendTo(new MessageChunkToGui(false, myGuild, list, mapColors, "", balP, balG), ctx.getServerHandler().player);
+				Main.NET.sendTo(new MessageChunkToGui(false, myGuild, list, mapColors, "", balP, balG, Main.ModConfig.TEMPCLAIM_RATE), ctx.getServerHandler().player);
 				break;
 			}			
 			case 1: {				

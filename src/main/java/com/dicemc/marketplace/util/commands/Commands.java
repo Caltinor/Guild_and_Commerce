@@ -35,21 +35,33 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
 
 public class Commands extends CommandBase{
+	TextComponentTranslation tctGetUsage = new TextComponentTranslation("cmd.admin.getusage");
+	TextComponentTranslation tctHelp1 = new TextComponentTranslation("cmd.admin.help1");
+	TextComponentTranslation tctHelp2 = new TextComponentTranslation("cmd.admin.help2");
+	TextComponentTranslation tctHelp3 = new TextComponentTranslation("cmd.admin.help3");
+	TextComponentTranslation tctHelp4 = new TextComponentTranslation("cmd.admin.help4");
+	TextComponentTranslation tctHelp5 = new TextComponentTranslation("cmd.admin.help5");
+	TextComponentTranslation tctHelp6 = new TextComponentTranslation("cmd.admin.help6");
+	TextComponentTranslation tctAcctErrorPlyr = new TextComponentTranslation("cmd.admin.account.error.player");
+	TextComponentTranslation tctAcctErrorGuild = new TextComponentTranslation("cmd.admin.account.error.guild");
+	TextComponentTranslation tctAcctErrorType = new TextComponentTranslation("cmd.admin.account.error.type");
+	TextComponentTranslation tctGuildError = new TextComponentTranslation("cmd.admin.guild.error");
+	TextComponentTranslation tctError = new TextComponentTranslation("cmd.admin.error");
 
 	@Override
 	public String getName() { return "gncadmin"; }
 
 	@Override
-	public String getUsage(ICommandSender sender) { return "/gncadmin <account/market/guild>"; }
+	public String getUsage(ICommandSender sender) { return tctGetUsage.getFormattedText(); }
 	
-	private void message(String str, ICommandSender sender) {
-		sender.sendMessage(new TextComponentString(str));
-	}
+	private void message(ITextComponent str, ICommandSender sender) { sender.sendMessage(str); }
 	
 	public static UUID playerUUIDfromString (MinecraftServer server, String username) {
 		return (EntityPlayerMP.getUUID(server.getPlayerProfileCache().getGameProfileForUsername(username)) != null) ? EntityPlayerMP.getUUID(server.getPlayerProfileCache().getGameProfileForUsername(username)) : null;
@@ -75,12 +87,12 @@ public class Commands extends CommandBase{
 		ItemStack item;
 		EntityPlayerMP plyr;
 		if (args.length == 0) {
-			message("/gncadmin gui   (opens admin gui)", sender);
-			message("/gncadmin whitelist  (displays the current chunk whitelist)", sender);
-			message("/gncadmin moneybag <amount>  (gives the admin a moneybag)", sender);
-			message("/gncadmin landreset  (sets chunk to default settings)", sender);
-			message("/gncadmin account <player/guild> <set/add> <name> <amount>", sender);
-			message("/gncadmin guild <create/claim> <name>", sender);
+			message(tctHelp1, sender);
+			message(tctHelp2, sender);
+			message(tctHelp3, sender);
+			message(tctHelp4, sender);
+			message(tctHelp5, sender);
+			message(tctHelp6, sender);
 			return;
 		}
 		switch(args[0]) {
@@ -94,7 +106,9 @@ public class Commands extends CommandBase{
 			ChunkCapability cap = sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 			for (int i = 0; i < cap.getWhitelist().size(); i++) {
 				WhitelistItem wl = cap.getWhitelist().get(i);
-				String msg = "["+wl.getBlock()+"] ["+wl.getEntity()+"]Break:"+String.valueOf(wl.getCanBreak()+"Interact:"+String.valueOf(wl.getCanInteract()));
+				String a3 = String.valueOf(wl.getCanBreak());
+				String a4 = String.valueOf(wl.getCanInteract());
+				TextComponentTranslation msg = new TextComponentTranslation("cmd.admin.whitelist", wl.getBlock(), wl.getEntity(), a3, a4);
 				message(msg, sender);
 			}
 			break;
@@ -103,7 +117,9 @@ public class Commands extends CommandBase{
 			item = new ItemStack(ModItems.MONEYBAG);
 			item.setTagInfo("value", new NBTTagDouble(Math.abs(Double.valueOf(args[1]))));
 			server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);
-			message("$"+args[1]+" Moneybag placed in inventory.", sender);
+			TextComponentString msg = new TextComponentString("$"+args[1]);
+			msg.appendSibling(new TextComponentTranslation("cmd.account.withdrawsuccess"));
+			message(msg, sender);
 			break;
 		}
 		case "landreset": {
@@ -140,16 +156,16 @@ public class Commands extends CommandBase{
 				case "set": {
 					acctPlayers.setBalance(playerUUIDfromString(server, args[3]), Double.valueOf(args[4]));
 					AccountSaver.get(sender.getEntityWorld()).markDirty();
-					message(args[3]+" account set to $"+args[4], sender);
+					message(new TextComponentTranslation("cmd.admin.account.set", args[3], args[4]), sender);
 					break;
 				}
 				case "add": {
 					acctPlayers.addBalance(playerUUIDfromString(server, args[3]), Double.valueOf(args[4]));
 					AccountSaver.get(sender.getEntityWorld()).markDirty();
-					message("$"+args[4]+" added to "+args[3]+"'s account.", sender);
+					message(new TextComponentTranslation("cmd.admin.account.change", args[3], args[4]), sender);
 					break;
 				}
-				default: message("Invalid player account action.", sender);
+				default: message(tctAcctErrorPlyr, sender);
 				}			
 				break;
 			}
@@ -160,20 +176,20 @@ public class Commands extends CommandBase{
 				case "set": {
 					acctGuilds.setBalance(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[3]), Double.valueOf(args[4]));
 					AccountSaver.get(sender.getEntityWorld()).markDirty();
-					message(args[3]+" account set to $"+args[4], sender);
+					message(new TextComponentTranslation("cmd.admin.account.set", args[3], args[4]), sender);
 					break;
 				}
 				case "add": {
 					acctGuilds.addBalance(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[3]), Double.valueOf(args[4]));
 					AccountSaver.get(sender.getEntityWorld()).markDirty();
-					message(args[3]+" account changed by $"+args[4], sender);
+					message(new TextComponentTranslation("cmd.admin.account.change", args[3], args[4]), sender);
 					break;
 				}
-				default: message("Invalid guild account action.", sender);
+				default: message(tctAcctErrorGuild, sender);
 				}
 				break;
 			}
-			default: message("Invalid account type.", sender);
+			default: message(tctAcctErrorType, sender);
 			}
 			break;
 		}
@@ -187,7 +203,7 @@ public class Commands extends CommandBase{
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
 				AccountSaver.get(sender.getEntityWorld()).getGuilds().addAccount(GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[2]), Main.ModConfig.GUILD_STARTING_FUNDS);
 				AccountSaver.get(sender.getEntityWorld()).markDirty();
-				message("Guild "+args[2]+" created.", sender);
+				message(new TextComponentTranslation("cmd.admin.guild.create", args[2]), sender);
 				break;
 			}
 			case "claim": {
@@ -199,14 +215,16 @@ public class Commands extends CommandBase{
 				GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).coreLand.add(new ChunkPos(cX, cZ));
 				GuildSaver.get(sender.getEntityWorld()).markDirty();
 				sender.getCommandSenderEntity().getEntityWorld().getChunkFromChunkCoords(cX, cZ).markDirty();
-				message("Claimed Chunk ("+String.valueOf(cX)+","+String.valueOf(cZ)+") for "+GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).guildName , sender);
+				String a1 = String.valueOf(cX)+","+String.valueOf(cZ);
+				String a2 = GuildSaver.get(sender.getEntityWorld()).GUILDS.get(GuildSaver.get(sender.getEntityWorld()).guildIndexFromUUID(owningGuild)).guildName;
+				message(new TextComponentTranslation("cmd.admin.guild.claim", a1, a2), sender);
 				break;
 			}
-			default: message("Guild option not recognized.", sender);
+			default: message(tctGuildError, sender);
 			}
 			break;
 		}
-		default: message("Invalid Argument.", sender);
+		default: message(tctError, sender);
 		}
 	}
 

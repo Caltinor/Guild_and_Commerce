@@ -19,6 +19,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiGuildPerms extends GuiScreen {
@@ -52,7 +54,7 @@ public class GuiGuildPerms extends GuiScreen {
 		set1 = new GuiButton(11, permList.x+permList.width+3, this.height/2 - 22, 100, 20, guild.permLevels.get(1));
 		set2 = new GuiButton(12, permList.x+permList.width+3, this.height/2 + 2, 100, 20, guild.permLevels.get(2));
 		set3 = new GuiButton(13, permList.x+permList.width+3, this.height/2 + 24, 100, 20, guild.permLevels.get(3));
-		this.buttonList.add(new GuiButton(16, this.width - 78, 3, 75, 20, "Back"));
+		this.buttonList.add(new GuiButton(16, this.width - 78, 3, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
 		this.buttonList.add(set0);
 		this.buttonList.add(set1);
 		this.buttonList.add(set2);
@@ -99,7 +101,7 @@ public class GuiGuildPerms extends GuiScreen {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks)
     {
         this.drawDefaultBackground();
-        this.drawCenteredString(this.fontRenderer, TextFormatting.GOLD+"Guild Permissions", this.width/2, 3, 16777215);
+        this.drawCenteredString(this.fontRenderer, new TextComponentTranslation("gui.perms.header").setStyle(new Style().setColor(TextFormatting.GOLD)).getFormattedText(), this.width/2, 3, 16777215);
         permList.drawScreen(mouseX, mouseY, partialTicks);
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
@@ -193,22 +195,7 @@ public class GuiGuildPerms extends GuiScreen {
 			return str;
 		}
 		
-		private String permDescription(String title) {
-			switch (title) {
-			case "setopen": { 			return "Can Toggle Open-To-Join"; }
-			case "setname": { 			return "Can Change Guild Name"; }
-			case "settax": {			return "Can Set Guild Tax Rate"; }
-			case "setperms":{ 			return "Can Change Permission Levels"; }
-			case "setinvite":{			return "Can Send Guild Invites"; }
-			case "setkick":{			return "Can Kick Guild Members"; }
-			case "setclaim": {			return "Can Claim New Land";}
-			case "setsell": {			return "Can Sell Guild Land";}
-			case "setwithdraw":{		return "Can Withdraw from Guild Account";}
-			case "setpromotedemote":{	return "Can Change Member Ranks"; }
-			case "managesublet": {		return "Can Manage Subletting";}
-			default: 
-			}
-			return "Missing Definition";
+		private String permDescription(String title) { return new TextComponentTranslation("gui.perms."+title).getFormattedText(); 
 		}
 
 		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {

@@ -16,16 +16,28 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 
 public class AccountCommands extends CommandBase {
+	TextComponentTranslation tctGetusage = new TextComponentTranslation("cmd.account.getusage");
+	TextComponentTranslation tctBalNoGuild = new TextComponentTranslation("cmd.account.balancenoguild");
+	TextComponentTranslation tctBalHasGuild = new TextComponentTranslation("cmd.account.balancehasguild");
+	TextComponentTranslation tctDepSuc = new TextComponentTranslation("cmd.account.depositsuccess");
+	TextComponentTranslation tctWithSuc = new TextComponentTranslation("cmd.account.withdrawsuccess");
+	TextComponentTranslation tctHelp1 = new TextComponentTranslation("cmd.account.help1");
+	TextComponentTranslation tctHelp2 = new TextComponentTranslation("cmd.account.help2");
+	TextComponentTranslation tctHelp3 = new TextComponentTranslation("cmd.account.help3");
+	TextComponentTranslation tctGenArgNR = new TextComponentTranslation("cmd.general.argnotrecognized");
+	
 	@Override
 	public String getName() { return "account"; }
 
 	@Override
-	public String getUsage(ICommandSender sender) { return "/account <action>";}
+	public String getUsage(ICommandSender sender) {	return tctGetusage.getFormattedText(); }
 	
-	private void message(String str, ICommandSender sender) {sender.sendMessage(new TextComponentString(str));}
+	private void message(ITextComponent str, ICommandSender sender) {sender.sendMessage(str);}
 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
@@ -44,8 +56,9 @@ public class AccountCommands extends CommandBase {
 				}
 			}
 			double acctG = AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(g);
-			String strG = g.equals(Reference.NIL) ? " [No Guild]" : " [GUILD $"+String.valueOf(acctG)+"]";
-			message("$"+String.valueOf(acctP)+strG, sender);
+			TextComponentString msg = new TextComponentString("$"+String.valueOf(acctP));
+			msg.appendSibling(g.equals(Reference.NIL) ? tctBalNoGuild : tctBalHasGuild.appendText(String.valueOf(acctG)+"]"));
+			message(msg, sender);
 			return;
 		}
 		switch(args[0]) {
@@ -55,14 +68,15 @@ public class AccountCommands extends CommandBase {
 			double value = 0;
 			for (int i = 0; i < player.inventoryContainer.inventorySlots.size(); i++) {
 				if (player.inventoryContainer.getSlot(i).getStack().getItem().equals(ModItems.MONEYBAG)) {
-					System.out.println("Moneybag detected");
 					value += (player.inventoryContainer.getSlot(i).getStack().getTagCompound().getDouble("value") * player.inventoryContainer.getSlot(i).getStack().getCount());
 					player.inventoryContainer.getSlot(i).putStack(ItemStack.EMPTY);
 				}
 			}
 			AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), value);
 			AccountSaver.get(sender.getEntityWorld()).markDirty();
-			message("$"+String.valueOf(value)+" deposited to account from Moneybags.", sender);
+			TextComponentString msg = new TextComponentString("$"+String.valueOf(value));
+			msg.appendSibling(tctDepSuc);
+			message(msg, sender);
 			break;
 		}
 		case "withdraw": {
@@ -73,16 +87,18 @@ public class AccountCommands extends CommandBase {
 				item.setTagInfo("value", new NBTTagDouble(Math.abs(Double.valueOf(args[1]))));
 				server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);
 			}
-			message("$"+args[1]+" Moneybag placed in inventory.", sender);
+			TextComponentString msg = new TextComponentString("$"+args[1]);
+			msg.appendSibling(tctWithSuc);
+			message(msg, sender);
 			break;
 		}
 		case "help": {
-			message("/account  (shows yours and your guild's balances)", sender);
-			message("/account deposit (deposits all moneybags in your inventory to your account", sender);
-			message("/account withdraw <amount> (puts money from your account into your inventory in a moneybag)", sender);
+			message(tctHelp1, sender);
+			message(tctHelp2, sender);
+			message(tctHelp3, sender);
 			break;
 		}
-		default: message("Argument not recognized", sender);
+		default: message(tctGenArgNR, sender);
 		break;
 		}
 	}

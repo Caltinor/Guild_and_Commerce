@@ -25,12 +25,12 @@ public class MessageChunkToGui implements IMessage{
 	public List<ChunkSummary> chunkSummary;
 	public List<Integer> mapColors;
 	public String response;
-	public double acctPlayer, acctGuild;
+	public double acctPlayer, acctGuild, tcr;
 	public boolean isUpdate;
 	
 	public MessageChunkToGui() {}
 	
-	public MessageChunkToGui(boolean isUpdate, Guild guild, List<ChunkSummary> chunkSummary, List<Integer> mapColors, String response, double acctP, double acctG) {
+	public MessageChunkToGui(boolean isUpdate, Guild guild, List<ChunkSummary> chunkSummary, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {
 		this.guild = guild;
 		this.isUpdate = isUpdate;
 		this.chunkSummary = chunkSummary;
@@ -38,6 +38,7 @@ public class MessageChunkToGui implements IMessage{
 		this.response = response;
 		this.acctPlayer = acctP;
 		this.acctGuild = acctG;
+		this.tcr = tempClaimRate;
 	}
 	
 	@Override
@@ -56,6 +57,7 @@ public class MessageChunkToGui implements IMessage{
 		response = ByteBufUtils.readUTF8String(buf);
 		acctPlayer = pbuf.readDouble();
 		acctGuild = pbuf.readDouble();
+		tcr = pbuf.readDouble();
 		isUpdate = pbuf.readBoolean();
 		try { guild = new Guild(pbuf.readCompoundTag()); } catch (IOException e) {}
 	}
@@ -74,6 +76,7 @@ public class MessageChunkToGui implements IMessage{
 		ByteBufUtils.writeUTF8String(buf, response);
 		pbuf.writeDouble(acctPlayer);
 		pbuf.writeDouble(acctGuild);
+		pbuf.writeDouble(tcr);
 		pbuf.writeBoolean(isUpdate);
 		pbuf.writeCompoundTag(guild.toNBT());
 	}
@@ -85,8 +88,8 @@ public class MessageChunkToGui implements IMessage{
 		}  
 		
 		private void handle(MessageChunkToGui message, MessageContext ctx) {
-			if (!message.isUpdate) Main.proxy.openChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
-			if (message.isUpdate) Main.proxy.updateChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild);
+			if (!message.isUpdate) Main.proxy.openChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild, message.tcr);
+			if (message.isUpdate) Main.proxy.updateChunkGui(message.guild, message.chunkSummary, message.mapColors, message.response, message.acctPlayer, message.acctGuild, message.tcr);
 		}
 	}
 }

@@ -24,6 +24,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.Mod;
@@ -46,11 +47,11 @@ public class CoreUtils {
 				cap.setOwner(owner);
 				cap.setExplosionsOn(false);
 				AccountSaver.get(world).markDirty();
-				return "Chunk Claimed";
+				return new TextComponentTranslation("core.utils.tempclaim.success").getFormattedText();
 			}
-			else return "Insufficient Funds to make Temporary Claim.";
+			else return new TextComponentTranslation("core.utils.tempclaim.failfunds").getFormattedText();
 		}
-		else return "This land is already claimed.";
+		else return new TextComponentTranslation("core.utils.tempclaim.failowned").getFormattedText();
 	}
 	
 	public static String renewClaim(UUID owner,int chunkX, int chunkZ) {
@@ -59,9 +60,9 @@ public class CoreUtils {
 		if (AccountSaver.get(world).getPlayers().getBalance(owner) >= cost) {
 			AccountSaver.get(world).getPlayers().addBalance(owner, (-1*cost));
 			cap.setTempTime(cap.getTempTime()+Main.ModConfig.TEMPCLAIM_DURATION);
-			return "Claim extended until "+String.valueOf(new Timestamp(cap.getTempTime()))+" for $"+String.valueOf(cost);
+			return new TextComponentTranslation("core.utils.renewclaim.success", String.valueOf(new Timestamp(cap.getTempTime())), String.valueOf(cost)).getFormattedText();
 		}
-		else return"Insuficient funds to renew claim.";
+		else return new TextComponentTranslation("core.utils.renewclaim.failfunds").getFormattedText();
 	}
 	
 	public static String guildClaim(UUID owner,int chunkX, int chunkZ) {
@@ -124,6 +125,7 @@ public class CoreUtils {
 							cap.setOwner(owningGuild);
 							cap.setForSale(false);
 							cap.setExplosionsOn(false);
+							cap.setTempTime(System.currentTimeMillis());
 							if (bordersOutpost) {
 								cap.setOutpost(true);
 								GuildSaver.get(world).GUILDS.get(gindex).outpostLand.add(ck.getPos());
@@ -132,17 +134,17 @@ public class CoreUtils {
 							world.getChunkFromChunkCoords(chunkX, chunkZ).markDirty();
 							GuildSaver.get(world).markDirty();
 							AccountSaver.get(world).markDirty();
-							return "Claimed Chunk ("+String.valueOf(chunkX)+","+String.valueOf(chunkZ)+") for "+GuildSaver.get(world).GUILDS.get(gindex).guildName;
+							return new TextComponentTranslation("core.utils.claim.success", String.valueOf(chunkX)+","+String.valueOf(chunkZ), GuildSaver.get(world).GUILDS.get(gindex).guildName).getFormattedText();
 						}
-						else return "Insufficient funds in guild account.";
+						else return new TextComponentTranslation("core.utils.claim.failfunds").getFormattedText();
 					}
-					else return "This chunk is already owned by: "+ Commands.playerNamefromUUID(world.getMinecraftServer(), cap.getOwner())+", and is not for sale.";
+					else return new TextComponentTranslation("core.utils.claim.failowned", Commands.playerNamefromUUID(world.getMinecraftServer(), cap.getOwner())).getFormattedText();
 				}
-				else return "Additional claims must border existing guild territory.";
+				else return new TextComponentTranslation("core.utils.claim.failborder").getFormattedText();
 			}
-			else return "Your guild is currently restricted due to taxes.  Action denied";
+			else return new TextComponentTranslation("core.utils.claim.faildebt").getFormattedText();
 		}
-		else return "You must be in a guild to use this command.  try /tempclaim";
+		else return new TextComponentTranslation("core.utils.claim.failnoguild").getFormattedText();
 	}
 
 	public static String guildOutopost(UUID owner,int chunkX, int chunkZ) {
@@ -177,19 +179,20 @@ public class CoreUtils {
 						AccountSaver.get(world).getGuilds().addBalance(owningGuild, (-1* (cap.getPrice()+Main.ModConfig.OUTPOST_CREATE_COST)));
 						cap.setOwner(owningGuild);
 						cap.setOutpost(true);
+						cap.setTempTime(System.currentTimeMillis());
 						GuildSaver.get(world).GUILDS.get(gindex).outpostLand.add(ck.getPos());
 						world.getChunkFromChunkCoords(chunkX, chunkZ).markDirty();
 						GuildSaver.get(world).markDirty();
 						AccountSaver.get(world).markDirty();
-						return "Established Outpost at ("+String.valueOf(chunkX)+","+String.valueOf(chunkZ)+") for "+GuildSaver.get(world).GUILDS.get(gindex).guildName;
+						return new TextComponentTranslation("core.utils.outpost.success", String.valueOf(chunkX)+","+String.valueOf(chunkZ), GuildSaver.get(world).GUILDS.get(gindex).guildName).getFormattedText();
 					}
-					else return "Insufficient funds in guild account.";
+					else return new TextComponentTranslation("core.utils.claim.failfunds").getFormattedText();
 				}
-				else return "This chunk is already owned by: "+ Commands.playerNamefromUUID(world.getMinecraftServer(), cap.getOwner())+", and is not for sale.";
+				else return new TextComponentTranslation("core.utils.claim.failowned", Commands.playerNamefromUUID(world.getMinecraftServer(), cap.getOwner())).getFormattedText();
 			}
-			else return "Your guild is currently restricted due to taxes.  Action denied.";
+			else return new TextComponentTranslation("core.utils.claim.faildebt").getFormattedText();
 		}
-		else return "You must be in a guild to use this command.  try /tempclaim";
+		else return new TextComponentTranslation("core.utils.claim.failnoguild").getFormattedText();
 	}
 
 	public static String sellClaim(UUID owner,int chunkX, int chunkZ, String price) {
@@ -209,7 +212,7 @@ public class CoreUtils {
 		cap.setForSale(true);
 		cap.setPrice(Math.abs(Double.valueOf(price)));
 		world.getChunkFromChunkCoords(chunkX, chunkZ).markDirty();
-		return "Chunk has been listed for $"+String.valueOf(Math.abs(Double.valueOf(price)));
+		return new TextComponentTranslation("core.utils.sell", String.valueOf(Math.abs(Double.valueOf(price)))).getFormattedText();
 	}
 	
 	public static String abandonClaim(UUID owner,int chunkX, int chunkZ) {
@@ -228,7 +231,7 @@ public class CoreUtils {
 		if (cap.getOwner().equals(glist.get(gindex).guildID)) {
 			if (!cap.getForSale()) {
 				AccountSaver.get(world).getGuilds().addBalance(glist.get(gindex).guildID, cap.getPrice()*Main.ModConfig.LAND_ABANDON_REFUND_RATE);
-				resp = "Guild has been refunded $"+String.valueOf(cap.getPrice()*.75);
+				resp = new TextComponentTranslation("core.utils.abandonrefund", String.valueOf(cap.getPrice()*.75)).getFormattedText();
 			}
 			GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner())).removeLand(ck.getPos());
 			landShiftChecker(GuildSaver.get(world).guildIndexFromUUID(cap.getOwner()));
@@ -240,20 +243,20 @@ public class CoreUtils {
 			cap.setPlayers(new ArrayList<UUID>());			
 			GuildSaver.get(world).markDirty();
 			ck.markDirty();
-			resp = "Chunk has been abandoned. "+resp;
+			resp = new TextComponentTranslation("core.utils.abandon").getFormattedText()+" "+resp;
 		}
 		return resp;
 	}
 
 	public static String createGuild(UUID creator, String name) {
-		if (GuildSaver.get(world).guildIndexFromName(name) >= 0) {return "A Guild by that name already exists";}
+		if (GuildSaver.get(world).guildIndexFromName(name) >= 0) {return new TextComponentTranslation("core.utils.create.fail").getFormattedText();}
 		AccountSaver.get(world).getPlayers().addBalance(creator, -1 * Main.ModConfig.GUILD_CREATE_COST);
 		GuildSaver.get(world).GUILDS.add(new Guild(name));
 		GuildSaver.get(world).GUILDS.get(GuildSaver.get(world).guildIndexFromName(name)).addMember(creator, 0);
 		GuildSaver.get(world).markDirty();
 		AccountSaver.get(world).getGuilds().addAccount(GuildSaver.get(world).guildUUIDfromName(name), Main.ModConfig.GUILD_STARTING_FUNDS);
 		AccountSaver.get(world).markDirty();
-		return "Created new guild: " + name;
+		return new TextComponentTranslation("core.utils.create.success", name).getFormattedText();
 	}
 	
 	public static String joinGuild(UUID guild, UUID joiner) {
@@ -262,9 +265,9 @@ public class CoreUtils {
 		GuildSaver.get(world).markDirty();
 		for (EntityPlayer player : world.getMinecraftServer().getPlayerList().getPlayers()) {
 			if (GuildSaver.get(world).GUILDS.get(gid).members.getOrDefault(player.getUniqueID(), -1) >= 0) {
-				player.sendMessage(new TextComponentString(world.getPlayerEntityByUUID(joiner).getDisplayNameString()+ " has joined the guild"));}
+				player.sendMessage(new TextComponentTranslation("core.utils.join.notify", world.getPlayerEntityByUUID(joiner).getDisplayNameString()));}
 		}
-		return "You have joined "+GuildSaver.get(world).GUILDS.get(gid).guildName+"!";
+		return new TextComponentTranslation("core.utils.join.success", GuildSaver.get(world).GUILDS.get(gid).guildName).getFormattedText();
 	}
 	
 	public static String guildNamefromUUID (MinecraftServer server, UUID guild) {	

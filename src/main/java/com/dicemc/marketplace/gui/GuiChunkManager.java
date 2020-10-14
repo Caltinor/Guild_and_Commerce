@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -47,6 +49,8 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.client.GuiScrollingList;
@@ -57,10 +61,14 @@ public class GuiChunkManager extends GuiScreen{
 	private Guild myGuild;
 	private List<ChunkSummary> chunkList;
 	private List<Integer> mapColors;
-	private GuiButton button1, button2, button3, overlayToggle, subletMenu, addMember, removeMember, backButton, wl0, wl1, wl2, wl3;
-	private GuiButton button4;
+	private IDButton<eButton1> button1;
+	private IDButton<eButton2> button2;
+	private IDButton<eButton3> button3;
+	private IDButton<eButton4> button4;
+	private IDButton<eOverlayToggle> overlayToggle;
+	private GuiButton subletMenu, addMember, removeMember, backButton, wl0, wl1, wl2, wl3;
 	private GuiTextField sellprice, memberAdd;
-	private double acctPlayer, acctGuild;
+	private double acctPlayer, acctGuild, tempClaimRate;
 	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 	private GuiListChunkMembers chunkMbrList;
 	private GuiListWhitelist wlList;
@@ -78,6 +86,45 @@ public class GuiChunkManager extends GuiScreen{
 	private int mapX, mapY, mapD;
 	private String topString;
 	private EntityPlayer player = Minecraft.getMinecraft().player;
+	
+	private enum eButton1 {
+		TEMP_CLAIM(new TextComponentTranslation("gui.chunk.tempclaim").getFormattedText()),
+		EXTEND_TIME(new TextComponentTranslation("gui.chunk.extendtime").getFormattedText()),
+		SET_BREAK(new TextComponentTranslation("gui.chunk.setbreak").getFormattedText()),
+		RENT_CHUNK(new TextComponentTranslation("gui.chunk.rent").getFormattedText());		
+		public final String displayString;		
+		eButton1(String displayString) {this.displayString = displayString;}
+	}	
+	private enum eButton2 {
+		GUILD_CLAIM(new TextComponentTranslation("gui.chunk.guildclaim").getFormattedText()),
+		UPDATE_PRICE(new TextComponentTranslation("gui.chunk.updateprice").getFormattedText()),
+		SELL_CLAIM(new TextComponentTranslation("gui.chunk.sellclaim").getFormattedText()),
+		SET_INTERACT(new TextComponentTranslation("gui.chunk.setinteract").getFormattedText()),
+		RENT_EXTEND(new TextComponentTranslation("gui.chunk.extendtime").getFormattedText());		
+		public final String displayString;		
+		eButton2(String displayString) {this.displayString = displayString;}
+	}	
+	private enum eButton3 {
+		NEW_OUTPOST(new TextComponentTranslation("gui.chunk.newoutpost").getFormattedText()),
+		ABANDON_CLAIM(new TextComponentTranslation("gui.chunk.abandonclaim").getFormattedText()),
+		SET_INTERVAL(new TextComponentTranslation("gui.chunk.setinterval").getFormattedText());	
+		public final String displayString;		
+		eButton3(String displayString) {this.displayString = displayString;}
+	}
+	private enum eButton4 {
+		PUBLIC_YES(new TextComponentTranslation("gui.chunk.publicyes").getFormattedText()),
+		PUBLIC_NO(new TextComponentTranslation("gui.chunk.publicno").getFormattedText()),
+		SET_PRICE(new TextComponentTranslation("gui.chunk.setprice").getFormattedText());	
+		public final String displayString;		
+		eButton4(String displayString) {this.displayString = displayString;}
+	}
+	private enum eOverlayToggle {
+		OVERLAY_ON(new TextComponentTranslation("gui.chunk.overlayon").getFormattedText()),
+		OVERLAY_OFF(new TextComponentTranslation("gui.chunk.overlayoff").getFormattedText()),
+		DISABLE_SUBLET(new TextComponentTranslation("gui.chunk.disablesublet").getFormattedText());	
+		public final String displayString;		
+		eOverlayToggle(String displayString) {this.displayString = displayString;}
+	}
 
 	private Map<Integer, Color> colorSetup() {
 		Map<Integer, Color> clr = new HashMap<Integer, Color>();
@@ -104,7 +151,7 @@ public class GuiChunkManager extends GuiScreen{
 		}
 	}
 	
-	public void guiUpdate(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
+	public void guiUpdate(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {
 		this.myGuild = myGuild;
 		this.chunkList = list;
 		this.mapColors = mapColors;
@@ -114,13 +161,14 @@ public class GuiChunkManager extends GuiScreen{
 		this.response = response;
 		this.acctPlayer = acctP;
 		this.acctGuild = acctG;
+		this.tempClaimRate = tempClaimRate;
 		setOverlayColors();
 		this.chunkMbrList.refreshList(selectedIdx);
 		this.wlList.refreshList(selectedIdx);
 		this.updateVisibility();
 	}
 	
-	public GuiChunkManager(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
+	public GuiChunkManager(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {
 		this.myGuild = myGuild;
 		chunkList = list;
 		this.mapColors = mapColors;
@@ -129,28 +177,34 @@ public class GuiChunkManager extends GuiScreen{
 		this.canGuildSublet = myGuild.members.getOrDefault(Minecraft.getMinecraft().player.getUniqueID(), 4) <= myGuild.permissions.getOrDefault("managesublet", 3);
 		acctPlayer = acctP;
 		acctGuild = acctG;
+		this.tempClaimRate = tempClaimRate;
 		response = "";
 		isSubletMenu = false;
 		setOverlayColors();
 	}
 	
 	public void initGui() {
-		button1 = new GuiButton(11, 3, 20, 75, 20, "Temp Claim");
-		button2 = new GuiButton(12, button1.x, button1.y+ 23, 75, 20, "Guild Claim");
-		button3 = new GuiButton(13, button1.x, button1.y+ 46, 75, 20, "New Outpost");
-		button4 = new GuiButton(14, button1.x, button1.y+ 69, 75, 20, chunkList.get(12).isPublic ? "Public: Yes" : "Public: No");
-		overlayToggle = new GuiButton(15, 3, this.height - 30, 100, 20, overlayOwners? "Owner Overlay: On" : "Owner Overlay: Off");
+		button1 = new IDButton(11, 3, 20, 75, 20, "");
+		button1.state = eButton1.TEMP_CLAIM;
+		button2 = new IDButton(12, button1.x, button1.y+ 23, 75, 20, "");
+		button2.state = eButton2.GUILD_CLAIM;
+		button3 = new IDButton(13, button1.x, button1.y+ 46, 75, 20, "");
+		button3.state = eButton3.NEW_OUTPOST;
+		overlayToggle = new IDButton(15, 3, this.height - 30, 100, 20, "");
+		overlayToggle.state = eOverlayToggle.OVERLAY_OFF;
+		button4 = new IDButton(14, button1.x, button1.y+ 69, 75, 20, "");
+		button4.state = chunkList.get(12).isPublic ? eButton4.PUBLIC_YES : eButton4.PUBLIC_NO;
 		chunkMbrList = new GuiListChunkMembers(this, selectedIdx, mc.getMinecraft(), button1.x+button1.width+175, 30, this.width/3, (this.height-60)/2, 10);
 		sellprice = new GuiTextField(1, this.fontRenderer, button1.x, button4.y+button4.height+12, 75, 20);
 		memberAdd = new GuiTextField(2, this.fontRenderer, chunkMbrList.x, chunkMbrList.y+chunkMbrList.height+3, 100, 20);
-		subletMenu = new GuiButton(16, button1.x, sellprice.y+sellprice.height+3, 75, 20, "Sublet Menu");
-		addMember = new GuiButton(17, memberAdd.x+memberAdd.width+1, memberAdd.y, this.width - (memberAdd.x+memberAdd.width+1), 20, "Add Member");
-		removeMember = new GuiButton(18, addMember.x, addMember.y+addMember.height+3, addMember.width, 20, "Remove");
+		subletMenu = new GuiButton(16, button1.x, sellprice.y+sellprice.height+3, 75, 20, new TextComponentTranslation("gui.chunk.subletmenu").getFormattedText());
+		addMember = new GuiButton(17, memberAdd.x+memberAdd.width+1, memberAdd.y, this.width - (memberAdd.x+memberAdd.width+1), 20, new TextComponentTranslation("gui.chunk.addmember").getFormattedText());
+		removeMember = new GuiButton(18, addMember.x, addMember.y+addMember.height+3, addMember.width, 20, new TextComponentTranslation("gui.chunk.removemember").getFormattedText());
 		mapX = button1.x+button1.width+3;
 		mapY = 16;
 		mapD = 167;
 		wlList = new GuiListWhitelist(this, mc.getMinecraft(), mapX, chunkMbrList.y, chunkMbrList.x-mapX-5, this.height-60, 11);
-		backButton = new GuiButton(10, this.width/2 - 38, this.height- 30, 75, 20, "Back");
+		backButton = new GuiButton(10, this.width/2 - 38, this.height- 30, 75, 20, new TextComponentTranslation("gui.back").getFormattedText());
 		wl0 = new GuiButton(20, chunkMbrList.x, removeMember.y+removeMember.height+5, 20, 20, "0");
 		wl1 = new GuiButton(21, wl0.x+wl0.width, wl0.y, 20, 20, "1");
 		wl2 = new GuiButton(22, wl1.x+wl1.width, wl0.y, 20, 20, "2");
@@ -174,115 +228,89 @@ public class GuiChunkManager extends GuiScreen{
 	
 	private List<String> hTextPopulate(ChunkSummary sum) {
 		List<String> hoveredText = new ArrayList<String>();
-		hoveredText.add("Owner: "+ sum.owner);
-		if (!sum.ownerIsGuild && !sum.ownerID.equals(Reference.NIL)) hoveredText.add(TextFormatting.BLUE+" Until "+ String.valueOf(new Timestamp(sum.tempclaimEnd)));
-		hoveredText.add((sum.ownerIsGuild ? (sum.isForSale ? "Guild Buy Price: $" : "Value to Guild: $") : "Guild Buy Price: $")+df.format(sum.price)+(sum.isForSale ? TextFormatting.RED+" <FOR SALE>" :""));
+		hoveredText.add(new TextComponentTranslation("gui.chunk.hover.owner", sum.owner).getFormattedText());
+		if (!sum.ownerIsGuild && !sum.ownerID.equals(Reference.NIL)) hoveredText.add(TextFormatting.BLUE+ new TextComponentTranslation("gui.chunk.hover.until", String.valueOf(new Timestamp(sum.tempclaimEnd))).getFormattedText());
+		hoveredText.add((sum.ownerIsGuild ? (sum.isForSale ? new TextComponentTranslation("gui.chunk.hover.guildbuyprice").getFormattedText() : new TextComponentTranslation("gui.chunk.hover.valuetoguild").getFormattedText()) 
+				: new TextComponentTranslation("gui.chunk.hover.guildbuyprice").getFormattedText())+df.format(sum.price)+(sum.isForSale ? TextFormatting.RED+ new TextComponentTranslation("gui.chunk.hover.forsale").getFormattedText() :""));
 		double ePrice = sum.permittedPlayers.size() > 0 ? (sum.price*0.05*(sum.permittedPlayers.size()-1)) : 0D;
-		if (sum.ownerID.equals(Reference.NIL) && sum.leasePrice < 0) hoveredText.add("Temp Price: $"+df.format(ePrice+(sum.price*Main.ModConfig.TEMPCLAIM_RATE)));
-		if (sum.ownerIsGuild && sum.leasePrice >= 0) hoveredText.add("Lease Price: $"+df.format(sum.leasePrice));
-		hoveredText.add("Public: "+(sum.isPublic ? "Yes" : "No"));
-		hoveredText.add("Outpost: "+(sum.isOutpost ? "Yes" : "No"));		
+		if (sum.ownerID.equals(Reference.NIL) && sum.leasePrice < 0) hoveredText.add(new TextComponentTranslation("gui.chunk.hover.tempprice", df.format(ePrice+(sum.price*tempClaimRate))).getFormattedText());
+		if (sum.ownerIsGuild && sum.leasePrice >= 0) hoveredText.add(new TextComponentTranslation("gui.chunk.hover.leaseprice", df.format(sum.leasePrice)).getFormattedText());
+		hoveredText.add(sum.isPublic ? new TextComponentTranslation("gui.chunk.publicyes").getFormattedText() : new TextComponentTranslation("gui.chunk.publicno").getFormattedText());
+		hoveredText.add(sum.isOutpost ? new TextComponentTranslation("gui.chunk.outpostyes").getFormattedText() : new TextComponentTranslation("gui.chunk.outpostno").getFormattedText());		
 		return hoveredText;
 	}
 	
-	private void updateVisibility () {
-		backButton.enabled = true;
-		backButton.displayString = "Back";
-		button2.enabled = false;
-		button3.enabled = false;
-		button1.enabled = false;
-		addMember.visible = false;
-		removeMember.visible = false;
+	private void updateVisibility () {		
+		backButton.enabled = !isSubletMenu || canGuildSublet;
+		wl0.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
+		wl1.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
+		wl2.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
+		wl3.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
 		memberAdd.setVisible(false);
 		sellprice.setVisible(false);
-		wl0.visible = false;
-		wl1.visible = false;
-		wl2.visible = false;
-		wl3.visible = false;
-		sellpricelabel = "";
-		button1.displayString = "Temp Claim";
-		button2.displayString = "Guild Claim";
-		button3.displayString = "New Outpost";
+		addMember.visible = false;
+		removeMember.visible = false;
+		sellpricelabel = "";		
+		button1.setState(false, eButton1.TEMP_CLAIM);
+		button2.setState(false, eButton2.GUILD_CLAIM);
+		button3.setState(false, eButton3.NEW_OUTPOST);
+		button4.setState(false, chunkList.get(selectedIdx).isPublic ? eButton4.PUBLIC_YES : eButton4.PUBLIC_NO);		
 		overlayToggle.enabled = false;
-		overlayToggle.displayString = overlayOwners ? "Owner Overlay: On" : "Owner Overlay: Off";
-		button4.enabled = false;
-		button4.displayString = chunkList.get(selectedIdx).isPublic ? "Public: Yes" : "Public: No";
+		
 		if (!isSubletMenu) {
-			overlayToggle.enabled = true;
-			topString = TextFormatting.GREEN+"Account: $"+df.format(acctPlayer) + (myGuild.guildID.equals(Reference.NIL) ? "" : TextFormatting.GOLD+" [Guild: $"+df.format(acctGuild)+"]");
+			overlayToggle.setState(true, overlayOwners ? eOverlayToggle.OVERLAY_ON : eOverlayToggle.OVERLAY_OFF);
+			topString = new TextComponentTranslation("gui.chunk.topstring.main", df.format(acctPlayer), 
+					(myGuild.guildID.equals(Reference.NIL) ? new TextComponentTranslation("gui.chunk.topstring.main1", df.format(acctGuild)).setStyle(new Style().setColor(TextFormatting.GOLD)).getFormattedText() : ""))
+					.setStyle(new Style().setColor(TextFormatting.GREEN)).getFormattedText();
 			if (chunkList.get(selectedIdx).ownerID.equals(Reference.NIL)) {
-				if ((chunkList.get(selectedIdx).price*.1) <= acctPlayer) button1.enabled = true;
+				if ((chunkList.get(selectedIdx).price*.1) <= acctPlayer) button1.setState(true, eButton1.TEMP_CLAIM);
 				if (canGuildClaim && chunkList.get(selectedIdx).price <= acctGuild) {
-					button2.enabled = true;
-					button3.enabled = true;
-				}
-				else if (!canGuildClaim) {
-					button2.enabled = false;
-					button3.enabled = false;				
+					button2.setState(true, eButton2.GUILD_CLAIM);
+					button3.setState(true, eButton3.NEW_OUTPOST);
 				}
 			}
 			else if (!chunkList.get(selectedIdx).ownerID.equals(Reference.NIL)) {
-				button1.enabled = false;
 				if (!chunkList.get(selectedIdx).ownerIsGuild) {
 					if (canGuildClaim && chunkList.get(selectedIdx).price <= acctGuild) {
-						button2.enabled = true;
-						button3.enabled = true;
+						button2.setState(true, eButton2.GUILD_CLAIM);
+						button3.setState(true, eButton3.NEW_OUTPOST);
 					}
 					else if (!canGuildClaim) {
-						button2.enabled = false;
-						button3.enabled = false;				
+						button2.setState(false, eButton2.GUILD_CLAIM);
+						button3.setState(false, eButton3.NEW_OUTPOST);				
 					}
 					boolean ispermitted = false;
 					for (int i = 0; i < chunkList.get(selectedIdx).permittedPlayers.size(); i++) if (chunkList.get(selectedIdx).permittedPlayers.get(i).equals(player.getName())) {ispermitted = true; break;}
 					if (chunkList.get(selectedIdx).ownerID.equals(player.getUniqueID()) || ispermitted) {
-						button1.enabled = true;
-						button1.displayString = "Extend Time";
-						button4.enabled = true;
+						button1.setState(true, eButton1.EXTEND_TIME);
+						button4.setState(true, chunkList.get(selectedIdx).isPublic ? eButton4.PUBLIC_YES : eButton4.PUBLIC_NO);
 					}
 				}
 				else if(chunkList.get(selectedIdx).ownerIsGuild) {
-					button2.enabled = false;
-					button3.enabled = false;
-					button4.enabled = false;
-					if (chunkList.get(selectedIdx).isForSale && canGuildClaim && chunkList.get(selectedIdx).price <= acctGuild && !chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID)) {
-						button2.enabled = true;
-						button2.displayString = "Guild Claim";
-						button3.enabled = true;
-						button3.displayString = "New Outpost";
+					if (chunkList.get(selectedIdx).isForSale && chunkList.get(selectedIdx).price <= acctGuild && !chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID)) {
+						button2.setState(canGuildClaim, eButton2.GUILD_CLAIM);
+						button3.setState(canGuildClaim, eButton3.NEW_OUTPOST);
 					}
-					else if (canGuildSell && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID)) {
-						button2.enabled = true;
-						button2.displayString = chunkList.get(selectedIdx).isForSale ? "Update Price" :"Sell Claim";
+					else if (chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID)) {
+						button2.setState(canGuildSell, eButton2.SELL_CLAIM);
+						button3.setState(canGuildSell, eButton3.ABANDON_CLAIM);
+						button4.setState(canGuildSublet  && !chunkList.get(selectedIdx).isForSale, chunkList.get(selectedIdx).isPublic ? eButton4.PUBLIC_YES : eButton4.PUBLIC_NO);
 						sellprice.setVisible(true);
-						sellpricelabel = "Sale Price";
-						button3.enabled = true;
-						button3.displayString = "Abandon Claim";
-						button4.enabled = true;
+						sellpricelabel = new TextComponentTranslation("gui.chunk.label.saleprice").getFormattedText();						
 					}
 				}
 			}
 		}
 		if (isSubletMenu) {
-			button1.displayString = "Set Break";
-			button2.displayString = "Set Interact";
-			button3.displayString = "Set Interval";
-			button4.displayString = "Set Price";
-			overlayToggle.displayString = "Disable Sublet";
-			sellpricelabel = "price/interval";
+			overlayToggle.setState(false, eOverlayToggle.DISABLE_SUBLET);
+			sellpricelabel = new TextComponentTranslation("gui.chunk.label.priceinterval").getFormattedText();
 			sellprice.setVisible(true);
-			backButton.displayString = "Clear List";
-			backButton.enabled = false;
 			if (chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID)) {
-				backButton.enabled = canGuildSublet;
-				overlayToggle.enabled = canGuildSublet;
-				button1.enabled = canGuildSublet && chunkList.get(selectedIdx).permittedPlayers.size() == 0;
-				button2.enabled = canGuildSublet && chunkList.get(selectedIdx).permittedPlayers.size() == 0;
-				button3.enabled = canGuildSublet;
-				button4.enabled = canGuildSublet;
-				wl0.visible = true;
-				wl1.visible = true;
-				wl2.visible = true;
-				wl3.visible = true;
+				overlayToggle.setState(canGuildSublet, eOverlayToggle.DISABLE_SUBLET);
+				button1.setState(canGuildSublet && chunkList.get(selectedIdx).permittedPlayers.size() == 0, eButton1.SET_BREAK);
+				button2.setState(canGuildSublet && chunkList.get(selectedIdx).permittedPlayers.size() == 0, eButton2.SET_INTERACT);
+				button3.setState(canGuildSublet, eButton3.SET_INTERVAL);
+				button4.setState(canGuildSublet, eButton4.SET_PRICE);
 				wl0.enabled = chunkList.get(selectedIdx).guildLvlMin == 0 ? false : true;
 				wl1.enabled = chunkList.get(selectedIdx).guildLvlMin == 1 ? false : true;
 				wl2.enabled = chunkList.get(selectedIdx).guildLvlMin == 2 ? false : true;
@@ -293,38 +321,39 @@ public class GuiChunkManager extends GuiScreen{
 				removeMember.visible = true;
 				addMember.enabled = canGuildSublet && chunkList.get(selectedIdx).tempclaimEnd < System.currentTimeMillis();
 				removeMember.enabled = canGuildSublet  && chunkList.get(selectedIdx).tempclaimEnd < System.currentTimeMillis();
-				backButton.enabled = canGuildSublet;
 			}
 			else if (!chunkList.get(selectedIdx).ownerID.equals(Reference.NIL) && chunkList.get(selectedIdx).leasePrice != -1) {
-				button1.enabled = (acctPlayer >= chunkList.get(selectedIdx).leasePrice && chunkList.get(selectedIdx).permittedPlayers.size() == 0);
-				button1.displayString = "Rent";
+				button1.setState((acctPlayer >= chunkList.get(selectedIdx).leasePrice && chunkList.get(selectedIdx).permittedPlayers.size() == 0), eButton1.RENT_CHUNK);
 				boolean isMember = false;
 				for (String member : chunkList.get(selectedIdx).permittedPlayers) {if (member.equalsIgnoreCase(player.getName())) {isMember = true; break;}}
-				button2.enabled = (isMember && acctPlayer >= (chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size()));
-				button2.displayString = "Extend";
+				button2.setState((isMember && acctPlayer >= (chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size())), eButton2.RENT_EXTEND);
 				addMember.visible = isMember;
 				removeMember.visible = isMember;
 				memberAdd.setVisible(isMember);
 				
 			}
 			else if (chunkList.get(selectedIdx).ownerID.equals(player.getUniqueID())) {
-				overlayToggle.enabled = false;
 				memberAdd.setVisible(true);
 				sellprice.setEnabled(false);
 				addMember.visible = true;
 				removeMember.visible = true;
 			}
 			if (chunkList.get(selectedIdx).permittedPlayers.size() == 0) {
-				topString = "Subletting: "+ (chunkList.get(selectedIdx).leasePrice <= -1 ? "No" : "Yes");
-				topString += chunkList.get(selectedIdx).leasePrice >= 0 ? TextFormatting.GREEN+" [Rent Price: $"+df.format(chunkList.get(selectedIdx).leasePrice)+"]" : "";
-				topString += chunkList.get(selectedIdx).leasePrice >= 0 ? TextFormatting.AQUA+" [Rent Interval: "+String.valueOf(chunkList.get(selectedIdx).leaseDuration)+" hours]" : "";
+				String a1 = chunkList.get(selectedIdx).leasePrice >= 0 ? new TextComponentTranslation("gui.chunk.topstring.forrent1", df.format(chunkList.get(selectedIdx).leasePrice)).setStyle(new Style().setColor(TextFormatting.GREEN)).getFormattedText() : "";
+				String a2 = chunkList.get(selectedIdx).leasePrice >= 0 ? new TextComponentTranslation("gui.chunk.topstring.forrent2", String.valueOf(chunkList.get(selectedIdx).leaseDuration)).setStyle(new Style().setColor(TextFormatting.AQUA)).getFormattedText() : "";
+				topString = new TextComponentTranslation("gui.chunk.topstring.forrent", (chunkList.get(selectedIdx).leasePrice <= -1 ? new TextComponentTranslation("gui.no").getFormattedText() : new TextComponentTranslation("gui.yes").getFormattedText()), a1, a2).getFormattedText();
 			}
 			else {
-				topString = "Rented Until: "+ TextFormatting.BLUE+String.valueOf(new Timestamp(chunkList.get(selectedIdx).tempclaimEnd));
-				topString += chunkList.get(selectedIdx).leasePrice >= 0 ? (TextFormatting.GREEN + " [Rate: $" +df.format(chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size())) : "";
-				topString += chunkList.get(selectedIdx).leasePrice >= 0 ? (" for "+String.valueOf(chunkList.get(selectedIdx).leaseDuration)+" hours]") : "";
+				topString = new TextComponentTranslation("gui.chunk.topstring.rented", TextFormatting.BLUE+String.valueOf(new Timestamp(chunkList.get(selectedIdx).tempclaimEnd)), 
+						chunkList.get(selectedIdx).leasePrice >= 0 ? new TextComponentTranslation("gui.chunk.topstring.rented1", df.format(chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size()), String.valueOf(chunkList.get(selectedIdx).leaseDuration)).getFormattedText(): "").getFormattedText();
 			}
 		}
+		backButton.displayString = isSubletMenu ? new TextComponentTranslation("gui.chunk.sublet.clearlist").getFormattedText() : new TextComponentTranslation("gui.back").getFormattedText();
+		button1.displayString = button1.state.displayString;
+		button2.displayString = button2.state.displayString;
+		button3.displayString = button3.state.displayString;
+		button4.displayString = button4.state.displayString;
+		overlayToggle.displayString = overlayToggle.state.displayString;
 	}
 	
 	public ChunkPos fromIndex() {
@@ -345,19 +374,20 @@ public class GuiChunkManager extends GuiScreen{
 		if (this.sellprice.isFocused() && CoreUtils.validNumberKey(keyCode)) this.sellprice.textboxKeyTyped(typedChar, keyCode);
 		if (this.memberAdd.isFocused()) this.memberAdd.textboxKeyTyped(typedChar, keyCode);
 		if (!sellprice.isFocused() && !memberAdd.isFocused()) {
-			if (keyCode == Keyboard.KEY_C) { if (button1.displayString == "Temp Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
-			if (keyCode == Keyboard.KEY_G) { if (button2.displayString == "Guild Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
+			if (keyCode == Keyboard.KEY_C) { if (button1.state == eButton1.TEMP_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
+			if (keyCode == Keyboard.KEY_G) { if (button2.state == eButton2.GUILD_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));}
 			if (keyCode == Keyboard.KEY_S) {
 				isSubletMenu = isSubletMenu ? false : true;
-				subletMenu.displayString = isSubletMenu ? "Chunk Menu" : "Sublet Menu";
+				subletMenu.displayString = isSubletMenu ? new TextComponentTranslation("gui.chunk.chunkmenu").getFormattedText() : new TextComponentTranslation("gui.chunk.subletmenu").getFormattedText();
 				wlList.selectedIdx = -1;
 				wlList.selectedElement = -1;
 				wlList.refreshList(selectedIdx);
 			}
 			if (keyCode == Keyboard.KEY_T) {
-				if (!overlayToggle.displayString.equalsIgnoreCase("Disable Sublet")) {
+				if (((IDButton)overlayToggle).state != eOverlayToggle.DISABLE_SUBLET) {
 					overlayOwners = overlayOwners ? false : true;
-					overlayToggle.displayString = overlayOwners? "Owner Overlay: On" : "Owner Overlay: Off";
+					overlayToggle.state = overlayOwners? eOverlayToggle.OVERLAY_ON : eOverlayToggle.OVERLAY_OFF;
+					updateVisibility();
 				}
 			}
 		}
@@ -372,53 +402,55 @@ public class GuiChunkManager extends GuiScreen{
 			if (isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CLEAR, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 		}
 		if (button == button1) { //Temp Claim Button
-			if (button.displayString == "Temp Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (button.displayString == "Extend Time")	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (button.displayString == "Set Break" && wlList.selectedIdx >= 0) {
+			if (((IDButton)button).state == eButton1.TEMP_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton)button).state == eButton1.EXTEND_TIME)	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton)button).state == eButton1.SET_BREAK && wlList.selectedIdx >= 0) {
 				WhitelistItem wlItem = wlList.getSelectedMember().wlItem;
 				wlItem.setCanBreak(wlItem.getCanBreak() ? false : true);
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CHANGE, fromIndex().x, fromIndex().z, "", wlItem));
 			}
-			else if (button.displayString == "Rent") {
+			else if (((IDButton)button).state == eButton1.RENT_CHUNK) {
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.RENT_START, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			}
 		}
 		if (button == button2) { //Guild Claim Button
-			if (button.displayString == "Guild Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (button.displayString == "Update Price" || button.displayString == "Sell Claim"){
+			if (((IDButton)button).state == eButton2.GUILD_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton)button).state == eButton2.UPDATE_PRICE || ((IDButton)button).state == eButton2.SELL_CLAIM){
 				double sellP = -1D;
 				try {sellP = Math.abs(Double.valueOf(sellprice.getText()));} catch (NumberFormatException e) {}
 				if (sellP != -1) Main.NET.sendToServer( new MessageChunkToServer(CkPktType.SELL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));				
 			}
-			else if (button.displayString == "Set Interact" && wlList.selectedIdx >= 0) {
+			else if (((IDButton)button).state == eButton2.SET_INTERACT && wlList.selectedIdx >= 0) {
 				WhitelistItem wlItem = wlList.getSelectedMember().wlItem;
 				wlItem.setCanInteract(wlItem.getCanInteract() ? false: true);
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CHANGE, fromIndex().x, fromIndex().z, "", wlItem));
 			}
-			else if (button.displayString == "Extend") {
+			else if (((IDButton)button).state == eButton2.RENT_EXTEND) {
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.RENT_EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			}			
 		}
 		if (button == button3) { //Outpost Claim Button
-			if (button.displayString == "New Outpost") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (button.displayString == "Abandon Claim") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (button.displayString == "Set Interval") Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_INTERVAL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
+			if (((IDButton)button).state == eButton3.NEW_OUTPOST) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton)button).state == eButton3.ABANDON_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton)button).state == eButton3.SET_INTERVAL) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_INTERVAL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
 		}
 		if (button == button4) { //Public Toggle Button
 			if (!isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.PUBLIC, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			if (isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_PRICE, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
 		}
-		if (button.id == 15) { //Overlay toggle
-			if (!overlayToggle.displayString.equalsIgnoreCase("Disable Sublet")) {
+		if (button == overlayToggle) { //Overlay toggle
+			if (((IDButton)button).state == eOverlayToggle.DISABLE_SUBLET)
+				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_PRICE, fromIndex().x, fromIndex().z, "-1", new WhitelistItem("")));
+			else {
 				overlayOwners = overlayOwners ? false : true;
-				overlayToggle.displayString = overlayOwners? "Owner Overlay: On" : "Owner Overlay: Off";
-			}
-			else {Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_PRICE, fromIndex().x, fromIndex().z, "-1", new WhitelistItem("")));}
+				overlayToggle.state = overlayOwners? eOverlayToggle.OVERLAY_ON : eOverlayToggle.OVERLAY_OFF;
+				updateVisibility();
+				}
 			
 		}
 		if (button == subletMenu) {
 			isSubletMenu = isSubletMenu ? false : true;
-			subletMenu.displayString = isSubletMenu ? "Chunk Menu" : "Sublet Menu";
+			subletMenu.displayString = isSubletMenu ? new TextComponentTranslation("gui.chunk.chunkmenu").getFormattedText() : new TextComponentTranslation("gui.chunk.subletmenu").getFormattedText();
 			wlList.selectedIdx = -1;
 			wlList.selectedElement = -1;
 			wlList.refreshList(selectedIdx);
@@ -451,7 +483,7 @@ public class GuiChunkManager extends GuiScreen{
         	double yModifier = Math.floor((mouseY-mapY)/ivl)*11;
         	double xModifier = (mouseX-mapX)/ivl;        	
         	selectedIdx = (int) (Math.floor(xModifier) + Math.floor(yModifier));
-        	button4.displayString = chunkList.get(selectedIdx).isPublic ? "Public: Yes" : "Public: No";
+        	button4.displayString = chunkList.get(selectedIdx).isPublic ? new TextComponentTranslation("gui.chunk.publicyes").getFormattedText() : new TextComponentTranslation("gui.chunk.publicno").getFormattedText();
         	chunkMbrList.refreshList(selectedIdx);        	
         }
         sellprice.mouseClicked(mouseX, mouseY, mouseButton);
@@ -471,13 +503,21 @@ public class GuiChunkManager extends GuiScreen{
     public void drawScreen(int mouseX, int mouseY, float partialTicks)  {
     	this.drawDefaultBackground();
     	this.drawString(this.fontRenderer, topString, 3, 3, 16777215);
-    	this.drawString(this.fontRenderer, "Permitted Players", chunkMbrList.x, 20, 16777215);
+    	this.drawString(this.fontRenderer, new TextComponentTranslation("gui.chunk.render.permplayers").getFormattedText(), chunkMbrList.x, 20, 16777215);
     	this.drawString(this.fontRenderer, sellpricelabel, sellprice.x, sellprice.y-10, 16777215);
     	this.chunkMbrList.drawScreen(mouseX, mouseY, partialTicks);
     	sellprice.drawTextBox();
     	if (isSubletMenu) {
-    		this.drawString(this.fontRenderer, "Min Rank to Access", wl0.x, wl0.y-10, 16777215);
-    		this.drawString(this.fontRenderer, "Whitelist: "+TextFormatting.GOLD+"Object "+TextFormatting.RED+"Break "+TextFormatting.BLUE+"Interact", wlList.x, wlList.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.chunk.render.minranktoaccess").getFormattedText(), wl0.x, wl0.y-10, 16777215);
+    		TextComponentTranslation wlObj = new TextComponentTranslation("gui.chunk.render.wlobject");
+    		wlObj.getStyle().setColor(TextFormatting.GOLD);
+    		TextComponentTranslation wlBrk = new TextComponentTranslation("gui.chunk.render.wlbreak");
+    		wlObj.getStyle().setColor(TextFormatting.RED);
+    		TextComponentTranslation wlInt = new TextComponentTranslation("gui.chunk.render.wlinteract");
+    		wlObj.getStyle().setColor(TextFormatting.BLUE);
+    		TextComponentTranslation wltext = new TextComponentTranslation("gui.chunk.render.whitelist", wlObj.appendSibling(wlBrk.appendSibling(wlInt)));
+    		wlObj.getStyle().setColor(TextFormatting.BLUE);
+    		this.drawString(this.fontRenderer, wltext.getFormattedText(), wlList.x, wlList.y-10, 16777215);
     		memberAdd.drawTextBox();
     		wlList.drawScreen(mouseX, mouseY, partialTicks);
     	}
@@ -513,24 +553,7 @@ public class GuiChunkManager extends GuiScreen{
 	        bufferbuilder.pos(boxX			,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(70, 151, 255, 128).endVertex();
 	        tessellator.draw();
 	        //draw the overlay if enabled
-	        if (overlayOwners) {
-	        	for (int i = 0; i < 121; i++) {
-	        		boxX = x+ ((double)((int)i%11)*(ivl*16));
-	                boxY = y+ ((double)((int)i/11)*(ivl*16));
-	                int alpha = 0;
-	                Color clr = Color.WHITE;
-	                if (!chunkList.get(i).ownerID.equals(Reference.NIL)) {
-	                	clr = colorReference.get(overlayColors.get(chunkList.get(i).ownerID));
-	                	alpha = 128;
-	                }
-	                bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-	                bufferbuilder.pos(boxX+(ivl*16)	,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
-	                bufferbuilder.pos(boxX+(ivl*16)	,boxY				, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
-	                bufferbuilder.pos(boxX			,boxY				, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();        
-	                bufferbuilder.pos(boxX			,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
-	                tessellator.draw();
-	        	}
-	        }
+	        if (overlayOwners) drawOverlay(tessellator, bufferbuilder, boxX, boxY, ivl, x, y);
 	        GlStateManager.disableBlend();
 	        GlStateManager.enableTexture2D();
 	        //tooltip code
@@ -647,6 +670,25 @@ public class GuiChunkManager extends GuiScreen{
         }
     }
 
+    private void drawOverlay(Tessellator tess, BufferBuilder bufferbuilder, double boxX, double boxY, double ivl, double x, double y) {
+    	for (int i = 0; i < 121; i++) {
+    		boxX = x+ ((double)((int)i%11)*(ivl*16));
+            boxY = y+ ((double)((int)i/11)*(ivl*16));
+            int alpha = 0;
+            Color clr = Color.WHITE;
+            if (!chunkList.get(i).ownerID.equals(Reference.NIL)) {
+            	clr = colorReference.get(overlayColors.get(chunkList.get(i).ownerID));
+            	alpha = 128;
+            }
+            bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+            bufferbuilder.pos(boxX+(ivl*16)	,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
+            bufferbuilder.pos(boxX+(ivl*16)	,boxY				, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
+            bufferbuilder.pos(boxX			,boxY				, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();        
+            bufferbuilder.pos(boxX			,boxY+(ivl*16)		, 0.0D).tex(1.0D, 1.0D).color(clr.getRed(), clr.getGreen(), clr.getBlue(), alpha).endVertex();
+            tess.draw();
+    	}
+    }
+    
     public static class ChunkSummary {
 		public boolean ownerIsGuild;
 		public UUID ownerID;

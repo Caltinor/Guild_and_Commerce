@@ -39,6 +39,7 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -71,19 +72,19 @@ public class GuiMarketSell extends GuiContainer{
         this.widthTooNarrow = this.width < 379;
         itemGuiList = new GuiListItem(this, itemList, mc, this.guiLeft+this.xSize - 100, this.guiTop, 200, this.ySize, 18);
         //buttons rendered above the inventory box
-        mktGlobal = new GuiButton(11, this.width/2 - 20, this.guiTop -25, 40, 20, "Global");
-        mktLocal = new GuiButton(10, mktGlobal.x - 43, this.guiTop -25, 40, 20, "Local");
-        mktAuction = new GuiButton(12, mktGlobal.x + mktGlobal.width + 3, this.guiTop -25, 40, 20, "Auction");
-        mktServer = new GuiButton(21, mktAuction.x+mktAuction.width+3, this.guiTop - 25, 40, 20, "Server");
-        exitButton = new GuiButton(20, this.width/2 - 30, this.height - 30, 60, 20, "Exit");
+        mktGlobal = new GuiButton(11, this.width/2 - 20, this.guiTop -25, 40, 20, new TextComponentTranslation("gui.market.global").getFormattedText());
+        mktLocal = new GuiButton(10, mktGlobal.x - 43, this.guiTop -25, 40, 20, new TextComponentTranslation("gui.market.local").getFormattedText());
+        mktAuction = new GuiButton(12, mktGlobal.x + mktGlobal.width + 3, this.guiTop -25, 40, 20, new TextComponentTranslation("gui.market.auction").getFormattedText());
+        mktServer = new GuiButton(21, mktAuction.x+mktAuction.width+3, this.guiTop - 25, 40, 20, new TextComponentTranslation("gui.market.server").getFormattedText());
+        exitButton = new GuiButton(20, this.width/2 - 30, this.height - 30, 60, 20, new TextComponentTranslation("gui.back").getFormattedText());
         //other objects
         stockAdd = new GuiButton(14, this.guiLeft+ 21 - 100, this.guiTop+ 50, 15, 20, "+");
         stockSub = new GuiButton(15, stockAdd.x+16, stockAdd.y, 15, 20, "-");
         stock32 = new GuiButton(16, stockAdd.x - 16, stockAdd.y, 15, 20, "32");
         stock64 = new GuiButton(17, stockAdd.x + 32, stockAdd.y, 15, 20, "64");
-        requestToggle = new GuiButton(13, this.guiLeft + this.xSize - 80, stockAdd.y, 50, 20, "Give Item");
+        requestToggle = new GuiButton(13, this.guiLeft + this.xSize - 80, stockAdd.y, 50, 20,  new TextComponentTranslation("gui.giveitem").getFormattedText());
         priceInput = new GuiTextField(18, this.fontRenderer, this.guiLeft+50, this.guiTop+29, 75, 18);
-        postButton = new GuiButton(19, this.guiLeft + (this.xSize/2) - 40, this.guiTop + 5, 80, 20, "Sell Item");
+        postButton = new GuiButton(19, this.guiLeft + (this.xSize/2) - 40, this.guiTop + 5, 80, 20,  new TextComponentTranslation("gui.sellitem").getFormattedText());
         this.buttonList.add(mktLocal);
         this.buttonList.add(mktGlobal);
         this.buttonList.add(mktAuction);
@@ -134,8 +135,8 @@ public class GuiMarketSell extends GuiContainer{
 		if (button == requestToggle && this.inventorySlots.getSlot(0).inventory.isEmpty() && mktAuction.enabled) {
 			isRequest = isRequest ? false : true;
 			if (isRequest) {
-				requestToggle.displayString = "Request";
-				postButton.displayString ="Request Item";
+				requestToggle.displayString = new TextComponentTranslation("gui.request").getFormattedText();
+				postButton.displayString = new TextComponentTranslation("gui.requestitem").getFormattedText();
 				itemGuiList.visible = true;
 				this.guiLeft -= 100;
 				requestToggle.x = this.guiLeft + this.xSize - 80;
@@ -148,8 +149,8 @@ public class GuiMarketSell extends GuiContainer{
 		        stockSub.visible = false;
 		        stock32.visible = false;
 		        stock64.visible = false;
-		        requestToggle.displayString = "Give Item";
-		        postButton.displayString ="Sell Item";
+		        requestToggle.displayString = new TextComponentTranslation("gui.giveitem").getFormattedText();
+		        postButton.displayString = new TextComponentTranslation("gui.sellitem").getFormattedText();
 		        itemGuiList.visible = false;
 		        this.xSize = 176;
 		        this.guiLeft = (this.width - this.xSize) / 2;

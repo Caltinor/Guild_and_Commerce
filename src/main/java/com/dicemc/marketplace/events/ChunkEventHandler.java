@@ -32,7 +32,9 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -122,10 +124,13 @@ public class ChunkEventHandler {
 			}
 			ChunkCapability ocap = event.getEntity().world.getChunkFromChunkCoords(event.getOldChunkX(), event.getOldChunkZ()).getCapability(ChunkProvider.CHUNK_CAP, null);	
 			if (!ocap.getOwner().equals(ncap.getOwner())) {
-				if (!event.getEntity().world.isRemote) event.getEntity().sendMessage(new TextComponentString("Now Entering "+ str + " territory."));
+				if (!event.getEntity().world.isRemote) event.getEntity().sendMessage(new TextComponentTranslation("event.chunk.enter", str));
 				
 			}
-			if (ncap.getForSale() && (event.getNewChunkX() != event.getOldChunkX() || event.getNewChunkZ() != event.getOldChunkZ())) if (!event.getEntity().world.isRemote) event.getEntity().sendMessage(new TextComponentString(TextFormatting.GREEN+"Land for sale at $"+String.valueOf(ncap.getPrice())));
+			if (ncap.getForSale() && (event.getNewChunkX() != event.getOldChunkX() || event.getNewChunkZ() != event.getOldChunkZ())) if (!event.getEntity().world.isRemote) {
+				Style style = new Style();
+				event.getEntity().sendMessage(new TextComponentTranslation("event.chunk.forsale", String.valueOf(ncap.getPrice())).setStyle(style.setColor(TextFormatting.GREEN)));
+			}
 		}
 	}
 	@SubscribeEvent
@@ -142,13 +147,13 @@ public class ChunkEventHandler {
 		switch (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 		case DENIED: {
 			event.setCanceled(true);
-			event.getPlayer().sendStatusMessage(new TextComponentString("You are not permitted to break blocks here."), true);
+			event.getPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.breakdeny"), true);
 			break;
 		}
 		case WHITELIST: {
 			if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
 				event.setCanceled(true);
-				event.getPlayer().sendStatusMessage(new TextComponentString("You are not permitted to break blocks here."), true);
+				event.getPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.breakdeny"), true);
 			}
 			break;
 		}
@@ -194,10 +199,10 @@ public class ChunkEventHandler {
 						&& glist.get(gid).members.getOrDefault(event.getEntityPlayer().getUniqueID(), 4) != -1) {
 					cap.fromNBTWhitelist(event.getEntityPlayer().getHeldItemMainhand().getTagCompound().getTagList("whitelister", Constants.NBT.TAG_COMPOUND));
 					event.setCanceled(true);
-					event.getEntityPlayer().sendStatusMessage(new TextComponentString("Whitelist applied to chunk"), true);
+					event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.wlapply"), true);
 					return;
 				}
-				else event.getEntityPlayer().sendStatusMessage(new TextComponentString("you cannot apply the whitelist here."), true);
+				else event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.wlapply.deny"), true);
 			}
 		}			
 		if (event.getEntityPlayer().isCreative()) return;
@@ -205,12 +210,12 @@ public class ChunkEventHandler {
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
-			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+			event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.breakdeny"), true);
 		}
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistInteractCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
 				event.setUseBlock(Result.DENY);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction not whitelisted."), true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.breakdeny"), true);
 			}
 		}
 	}
@@ -223,12 +228,12 @@ public class ChunkEventHandler {
 		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
 		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
-			event.getPlayer().sendStatusMessage(new TextComponentString("Block Place Denied."), true);
+			event.getPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.placedeny"), true);
 		}
 		if (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
 				event.setCanceled(true);
-				event.getPlayer().sendStatusMessage(new TextComponentString("Block Place Denied."), true);
+				event.getPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.placedeny"), true);
 			}
 		}
 	}
@@ -245,12 +250,12 @@ public class ChunkEventHandler {
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
-			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Interaction Denied."), true);
+			event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.interactdeny"), true);
 		}
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistInteractCheck(event.getTarget(), cap)) {
 				event.setCanceled(true);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.interactdeny"), true);
 			}
 		}
 	}
@@ -267,12 +272,12 @@ public class ChunkEventHandler {
 		if (cap.getOwner().equals(Reference.NIL)) return;
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.DENIED && !event.getEntity().world.isRemote) {
 			event.setCanceled(true);
-			event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Interaction Denied."), true);
+			event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.interactdeny"), true);
 		}
 		if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST && !event.getEntity().world.isRemote) {
 			if (!ProtectionChecker.whitelistInteractCheck(event.getTarget(), cap)) {
 				event.setCanceled(true);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.interactdeny"), true);
 			}
 		}
 	}
@@ -290,12 +295,12 @@ public class ChunkEventHandler {
 			if (cap.getOwner().equals(Reference.NIL)) return;
 			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);
-				event.getEntityPlayer().sendStatusMessage(new TextComponentString("Entity Invulnerable."), true);
+				event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.breakdeny"), true);
 			}
 			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST) {
 				if (!ProtectionChecker.whitelistAttackCheck(event.getTarget(), cap)) {
 					event.setCanceled(true);
-					event.getEntityPlayer().sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+					event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.breakdeny"), true);
 				}
 			}
 		}
@@ -315,12 +320,12 @@ public class ChunkEventHandler {
 			if (cap.getOwner().equals(Reference.NIL)) return;
 			if (ProtectionChecker.ownerMatch(event.getSource().getTrueSource().getUniqueID(), cap, GuildSaver.get(event.getSource().getTrueSource().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);
-				if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentString("Entity Invulnerable."), true);
+				if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.breakdeny"), true);
 			}
 			if (ProtectionChecker.ownerMatch(event.getSource().getTrueSource().getUniqueID(), cap, GuildSaver.get(event.getSource().getTrueSource().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.WHITELIST) {
 				if (!ProtectionChecker.whitelistAttackCheck(event.getSource().getTrueSource(), cap)) {
 					event.setCanceled(true);
-					if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentString("Block Interaction Denied."), true);
+					if (event.getSource().getTrueSource() instanceof EntityPlayer) ((EntityPlayer)event.getSource().getTrueSource()).sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.entity.breakdeny"), true);
 				}
 			}
 		}

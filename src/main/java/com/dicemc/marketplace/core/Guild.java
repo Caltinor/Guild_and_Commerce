@@ -15,6 +15,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.Constants;
@@ -33,10 +34,10 @@ public class Guild {
 	
 	//this constructor is necessary for readFromNBT to properly load the data.
 	private void baseConstr() {
-		permLevels.put(0, "Leader");
-		permLevels.put(1, "Dignitary");
-		permLevels.put(2, "Trustee");
-		permLevels.put(3, "Member");
+		permLevels.put(0, new TextComponentTranslation("core.guild.rank0").getFormattedText());
+		permLevels.put(1, new TextComponentTranslation("core.guild.rank1").getFormattedText());
+		permLevels.put(2, new TextComponentTranslation("core.guild.rank2").getFormattedText());
+		permLevels.put(3, new TextComponentTranslation("core.guild.rank3").getFormattedText());
 		openToJoin = false;
 		guildTax = 0;
 		isAdmin = false;
@@ -168,10 +169,10 @@ public class Guild {
 			nbt.setBoolean("open", openToJoin);
 			nbt.setBoolean("isadmin", isAdmin);
 			nbt.setDouble("tax", guildTax);
-			nbt.setString("perm0", permLevels.getOrDefault(0, "Leader"));
-			nbt.setString("perm1", permLevels.getOrDefault(1, "Dignitary"));
-			nbt.setString("perm2", permLevels.getOrDefault(2, "Trustee"));
-			nbt.setString("perm3", permLevels.getOrDefault(3, "Member"));
+			nbt.setString("perm0", permLevels.getOrDefault(0, new TextComponentTranslation("core.guild.rank0").getFormattedText()));
+			nbt.setString("perm1", permLevels.getOrDefault(1, new TextComponentTranslation("core.guild.rank1").getFormattedText()));
+			nbt.setString("perm2", permLevels.getOrDefault(2, new TextComponentTranslation("core.guild.rank2").getFormattedText()));
+			nbt.setString("perm3", permLevels.getOrDefault(3, new TextComponentTranslation("core.guild.rank3").getFormattedText()));
 			NBTTagList lnbt = new NBTTagList();
 			for (Map.Entry<String, Integer> entry : permissions.entrySet()) {
 				NBTTagCompound snbt = new NBTTagCompound();

@@ -45,6 +45,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
@@ -63,9 +65,9 @@ public class GuiMarketManager extends GuiScreen{
 	private String header = "";
 	private int listType;
 	private int sortType;
-	private String prompt1 = " | RECEIVE |";
-	private String prompt2 = " | GIVE |";
-	private String prompt3 = " | SUPPLY REMAINING |";
+	private String prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+	private String prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+	private String prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 	
 	public void setSlotIdx(int idx) {slotIdx = idx;}
 
@@ -81,7 +83,9 @@ public class GuiMarketManager extends GuiScreen{
 		this.marketList.locality = this.locality;
 		if (listType == 3) this.marketList.locality = UUID.fromString(response);
 		this.marketList.refreshList();
-		header = (this.listType == 3) ? "My Transactions"+ TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]" :"Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
+		TextComponentTranslation tctAcct = new TextComponentTranslation("gui.market.headeraccount", df.format(balP));
+		tctAcct.setStyle(new Style().setColor(TextFormatting.GREEN));
+		header = (this.listType == 3) ? new TextComponentTranslation("gui.market.header2", tctAcct).getFormattedText() : new TextComponentTranslation("gui.market.header1", df.format(feeSell*100), df.format(feeBuy*100), tctAcct).getFormattedText();
 	}
 	
 	public static List<MarketListItem> sortedMarketList(int listType, Map<UUID, MarketItem> inputList, UUID locIn, int sortType, boolean includeOwnSales) {
@@ -266,19 +270,21 @@ public class GuiMarketManager extends GuiScreen{
 		this.feeBuy = feeBuy;
 		this.feeSell = feeSell;
 		this.balP = balP;
-		header = "Sell Fee: "+df.format(feeSell*100)+"%    Buy Fee: "+df.format(feeBuy*100)+"%" + TextFormatting.GREEN+"    [Account: $"+df.format(balP)+"]";
+		TextComponentTranslation tctAcct = new TextComponentTranslation("gui.market.headeraccount", df.format(balP));
+		tctAcct.setStyle(new Style().setColor(TextFormatting.GREEN));
+		header = new TextComponentTranslation("gui.market.header1", df.format(feeSell*100), df.format(feeBuy*100), tctAcct).getFormattedText();
 	}
 	
 	public void initGui() {
-		localToggle = new GuiButton (10, 3, 3, 75, 20, "Local" );
-		globalToggle = new GuiButton (11, 3, localToggle.y + localToggle.height +3, 75, 20, "Global" );
-		auctionToggle = new GuiButton (12, 3, globalToggle.y + globalToggle.height +3, 75, 20, "Auction" );
-		serverToggle = new GuiButton (25, 3, auctionToggle.y+ auctionToggle.height +3, 75, 20, "Server");
-		newSale = new GuiButton(13, 3, serverToggle.y+serverToggle.height+20, 75, 20, "New Posting");
-		buyItem = new GuiButton(16, 3, newSale.y+newSale.height+3, 75, 20, "Buy Selected");
+		localToggle = new GuiButton (10, 3, 3, 75, 20, new TextComponentTranslation("gui.market.local").getFormattedText());
+		globalToggle = new GuiButton (11, 3, localToggle.y + localToggle.height +3, 75, 20, new TextComponentTranslation("gui.market.global").getFormattedText());
+		auctionToggle = new GuiButton (12, 3, globalToggle.y + globalToggle.height +3, 75, 20, new TextComponentTranslation("gui.market.auction").getFormattedText());
+		serverToggle = new GuiButton (25, 3, auctionToggle.y+ auctionToggle.height +3, 75, 20, new TextComponentTranslation("gui.market.server").getFormattedText());
+		newSale = new GuiButton(13, 3, serverToggle.y+serverToggle.height+20, 75, 20, new TextComponentTranslation("gui.market.newposting").getFormattedText());
+		buyItem = new GuiButton(16, 3, newSale.y+newSale.height+3, 75, 20, new TextComponentTranslation("gui.market.buyselected").getFormattedText());
 		bidBox = new GuiTextField(20, this.fontRenderer, 3, buyItem.y+buyItem.height+3, 75, 20);
-		restockSale = new GuiButton(17, 3, bidBox.y, 75, 20, "Restock");
-		playerContent = new GuiButton(14, 3, this.height - 46, 75, 20, "My Sales");		
+		restockSale = new GuiButton(17, 3, bidBox.y, 75, 20, new TextComponentTranslation("gui.market.restock").getFormattedText());
+		playerContent = new GuiButton(14, 3, this.height - 46, 75, 20, new TextComponentTranslation("gui.market.mysales").getFormattedText());		
 		this.buttonList.add(localToggle);
 		this.buttonList.add(globalToggle);
 		this.buttonList.add(auctionToggle);
@@ -287,7 +293,7 @@ public class GuiMarketManager extends GuiScreen{
 		this.buttonList.add(buyItem);
 		this.buttonList.add(playerContent);
 		this.buttonList.add(restockSale);
-		this.buttonList.add(new GuiButton(15, 3, this.height - 23, 75, 20, "Back"));
+		this.buttonList.add(new GuiButton(15, 3, this.height - 23, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
 		marketList = new GuiListMarket(this, sortedMarketList(0, vendList, locality, 0, true), locality, listType, mc, 81, 26, this.width-114, this.height-39, 25);
 		sortPriceAsc = new GuiButton(50, this.width-25, marketList.y, 20, 20, "$>");
 		sortPriceDes = new GuiButton(51, this.width-25, marketList.y+ 25, 20, 20, "$<");
@@ -337,12 +343,12 @@ public class GuiMarketManager extends GuiScreen{
 				auctionToggle.enabled = true;
 				serverToggle.enabled = false;
 				playerContent.enabled = true;
-				buyItem.displayString = "Buy Selected";
+				buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 				restockSale.visible = false;
 				bidBox.setVisible(false);
 				slotIdx = -1;
-				prompt1 = " | RECEIVE |";
-				prompt2 = " | GIVE |";
+				prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+				prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
 				prompt3 = "";
 				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SERVER, 4, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 			}
@@ -352,13 +358,13 @@ public class GuiMarketManager extends GuiScreen{
 				auctionToggle.enabled = true;
 				serverToggle.enabled = true;
 				playerContent.enabled = true;
-				buyItem.displayString = "Buy Selected";
+				buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 				restockSale.visible = false;
 				bidBox.setVisible(false);
 				slotIdx = -1;
-				prompt1 = " | RECEIVE |";
-				prompt2 = " | GIVE |";
-				prompt3 = " | SUPPLY REMAINING |";
+				prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+				prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+				prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.GLOBAL, 1, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 			}
 			if (keyCode == Keyboard.KEY_A) {
@@ -367,11 +373,11 @@ public class GuiMarketManager extends GuiScreen{
 				auctionToggle.enabled = false;
 				serverToggle.enabled = true;
 				playerContent.enabled = true;
-				buyItem.displayString = "Place Bid";
+				buyItem.displayString = new TextComponentTranslation("gui.market.placebid").getFormattedText();
 				restockSale.visible = false;
 				bidBox.setVisible(true);
 				slotIdx = -1;
-				prompt1 = " Select an item to bid for. Enter your bid amount. Press Place Bid.";
+				prompt1 = new TextComponentTranslation("gui.market.prompt4").getFormattedText();
 				prompt2 = "";
 				prompt3 = "";
 				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.AUCTION, 2, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
@@ -382,13 +388,13 @@ public class GuiMarketManager extends GuiScreen{
 				auctionToggle.enabled = true;
 				serverToggle.enabled = true;
 				playerContent.enabled = true;
-				buyItem.displayString = "Buy Selected";
+				buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 				restockSale.visible = false;
 				bidBox.setVisible(false);
 				slotIdx = -1;
-				prompt1 = " | RECEIVE |";
-				prompt2 = " | GIVE |";
-				prompt3 = " | SUPPLY REMAINING |";
+				prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+				prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+				prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.LOCAL, 0, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 			}
 			if (keyCode == Keyboard.KEY_D) {
@@ -396,13 +402,13 @@ public class GuiMarketManager extends GuiScreen{
 				globalToggle.enabled = true;
 				auctionToggle.enabled = true;
 				playerContent.enabled = false;
-				buyItem.displayString = "Remove";
+				buyItem.displayString = new TextComponentTranslation("gui.market.remove").getFormattedText();
 				restockSale.visible = true;
 				bidBox.setVisible(false);
 				slotIdx = -1;
-				prompt1 = " | GIVE |";
-				prompt2 = " | RECEIVE |";
-				prompt3 = "| SUPPLY REMAINING |";
+				prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+				prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+				prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 				Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.PERSONAL, 3, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 			}
 			if (keyCode == Keyboard.KEY_B && marketList.selectedElement != -1) {
@@ -431,13 +437,13 @@ public class GuiMarketManager extends GuiScreen{
 			auctionToggle.enabled = true;
 			serverToggle.enabled = true;
 			playerContent.enabled = true;
-			buyItem.displayString = "Buy Selected";
+			buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 			restockSale.visible = false;
 			bidBox.setVisible(false);
 			slotIdx = -1;
-			prompt1 = " | RECEIVE |";
-			prompt2 = " | GIVE |";
-			prompt3 = " | SUPPLY REMAINING |";
+			prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+			prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+			prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.LOCAL, 0, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
 		if (button == globalToggle) {
@@ -446,13 +452,13 @@ public class GuiMarketManager extends GuiScreen{
 			auctionToggle.enabled = true;
 			serverToggle.enabled = true;
 			playerContent.enabled = true;
-			buyItem.displayString = "Buy Selected";
+			buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 			restockSale.visible = false;
 			bidBox.setVisible(false);
 			slotIdx = -1;
-			prompt1 = " | RECEIVE |";
-			prompt2 = " | GIVE |";
-			prompt3 = " | SUPPLY REMAINING |";
+			prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+			prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+			prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.GLOBAL, 1, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
 		if (button == auctionToggle) {
@@ -461,11 +467,11 @@ public class GuiMarketManager extends GuiScreen{
 			auctionToggle.enabled = false;
 			serverToggle.enabled = true;
 			playerContent.enabled = true;
-			buyItem.displayString = "Place Bid";
+			buyItem.displayString = new TextComponentTranslation("gui.market.placebid").getFormattedText();
 			restockSale.visible = false;
 			bidBox.setVisible(true);
 			slotIdx = -1;
-			prompt1 = " Select an item to bid for. Enter your bid amount. Press Place Bid.";
+			prompt1 = new TextComponentTranslation("gui.market.prompt4").getFormattedText();
 			prompt2 = "";
 			prompt3 = "";
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.AUCTION, 2, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
@@ -476,12 +482,12 @@ public class GuiMarketManager extends GuiScreen{
 			auctionToggle.enabled = true;
 			serverToggle.enabled = false;
 			playerContent.enabled = true;
-			buyItem.displayString = "Buy Selected";
+			buyItem.displayString = new TextComponentTranslation("gui.market.buyselected").getFormattedText();
 			restockSale.visible = false;
 			bidBox.setVisible(false);
 			slotIdx = -1;
-			prompt1 = " | RECEIVE |";
-			prompt2 = " | GIVE |";
+			prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+			prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
 			prompt3 = "";
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.SERVER, 4, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
@@ -490,13 +496,13 @@ public class GuiMarketManager extends GuiScreen{
 			globalToggle.enabled = true;
 			auctionToggle.enabled = true;
 			playerContent.enabled = false;
-			buyItem.displayString = "Remove";
+			buyItem.displayString = new TextComponentTranslation("gui.market.remove").getFormattedText();
 			restockSale.visible = true;
 			bidBox.setVisible(false);
 			slotIdx = -1;
-			prompt1 = " | GIVE |";
-			prompt2 = " | RECEIVE |";
-			prompt3 = "| SUPPLY REMAINING |";
+			prompt1 = new TextComponentTranslation("gui.market.prompt1").getFormattedText();
+			prompt2 = new TextComponentTranslation("gui.market.prompt2").getFormattedText();
+			prompt3 = new TextComponentTranslation("gui.market.prompt3").getFormattedText();
 			Main.NET.sendToServer(new MessageMarketsToServer(MktPktType.PERSONAL, 3, mc.player.getUniqueID(), ItemStack.EMPTY, 0D, true));
 		}
 		if (button == buyItem && marketList.selectedElement != -1) {
@@ -574,7 +580,7 @@ public class GuiMarketManager extends GuiScreen{
     {
         this.drawDefaultBackground();
         this.drawString(this.fontRenderer, header, marketList.x, 3, 16777215);
-        this.drawString(this.fontRenderer, TextFormatting.GOLD+"Status Message: "+response, marketList.x, this.height-10, 16777215);        
+        this.drawString(this.fontRenderer, new TextComponentTranslation("gui.market.status",response).setStyle(new Style().setColor(TextFormatting.GOLD)).getFormattedText(), marketList.x, this.height-10, 16777215);        
         this.drawString(this.fontRenderer, TextFormatting.DARK_GREEN+prompt1, marketList.x, 16, 16777215);
         this.drawString(this.fontRenderer, TextFormatting.DARK_GREEN+prompt2, marketList.x+100, 16, 16777215);
         this.drawString(this.fontRenderer, TextFormatting.DARK_GREEN+prompt3, marketList.x+200, 16, 16777215);
@@ -661,36 +667,38 @@ public class GuiMarketManager extends GuiScreen{
 			if (containingListSel.listType < 2 || containingListSel.listType == 4) {
 				line1 = posting.item.vendorGiveItem? "" : TextFormatting.GOLD+"$"+df.format(posting.item.price);
 				line3 = posting.item.vendorGiveItem? TextFormatting.GOLD+"$"+df.format(posting.item.price) : "";	
-				line4 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "Unlimited" : String.valueOf(posting.item.vendStock)) + " Remaining";
-				if (containingListSel.listType == 0) line5 += posting.item.locality.equals(locality) ? "" : TextFormatting.RED+" [NOT LOCAL SALE]";
+				line4 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? new TextComponentTranslation("gui.market.stock.unlimited").getFormattedText() : new TextComponentTranslation("gui.market.stock.remaining", String.valueOf(posting.item.vendStock)).getFormattedText());
+				if (containingListSel.listType == 0) line5 += posting.item.locality.equals(locality) ? "" : TextFormatting.RED+ new TextComponentTranslation("gui.market.notlocal").getFormattedText();
 			}
 			if (containingListSel.listType == 2) {
-				line1 = "Current Bid:   "+TextFormatting.GOLD+"$" + df.format(posting.item.price);
-				line1 += (posting.item.highestBidder.equals(mc.player.getUniqueID())) ? TextFormatting.RED+" [YOUR BID]" : (posting.item.highestBidder.equals(Reference.NIL)) ? TextFormatting.WHITE+" [No Bids]" : TextFormatting.WHITE+" [Active Auction]";
-				line2 = TextFormatting.WHITE+"Auction Ends: ";
+				line1 = new TextComponentTranslation("gui.market.currentbid", TextFormatting.GOLD+"$" + df.format(posting.item.price)).getFormattedText();
+				line1 += (posting.item.highestBidder.equals(mc.player.getUniqueID())) ? new TextComponentTranslation("gui.market.yourbid").setStyle(new Style().setColor(TextFormatting.RED)).getFormattedText()  
+						: (posting.item.highestBidder.equals(Reference.NIL)) ? new TextComponentTranslation("gui.market.nobids").setStyle(new Style().setColor(TextFormatting.WHITE)).getFormattedText() 
+								: new TextComponentTranslation("gui.market.activeauction").setStyle(new Style().setColor(TextFormatting.WHITE)).getFormattedText();
+				line2 = new TextComponentTranslation("gui.market.auctionends").setStyle(new Style().setColor(TextFormatting.WHITE)).getFormattedText();
 				line2 += (posting.item.bidEnd < 3600000) ? TextFormatting.RED+"" : (posting.item.bidEnd < 86400000) ? TextFormatting.YELLOW+"" : TextFormatting.GREEN+"";
 				line2 += String.valueOf(new Timestamp(posting.item.bidEnd));
 			}
 			if (containingListSel.listType == 3) {
 				if (posting.item.price == -1) {
-					line1 = "Queued Item";
-					line2 = TextFormatting.GRAY+"(select remove to place in inventory)";
+					line1 = new TextComponentTranslation("gui.market.queueditem").getFormattedText();
+					line2 = new TextComponentTranslation("gui.market.queuetakeprompt").setStyle(new Style().setColor(TextFormatting.GRAY)).getFormattedText();
 				}
 				else if (!posting.item.locality.equals(locality)) {
-					line5 = "Local Listing";
+					line5 = new TextComponentTranslation("gui.market.listinglocal").getFormattedText();
 					line3 = posting.item.vendorGiveItem ? TextFormatting.GOLD+"$"+String.valueOf(posting.item.price) : "";
 					line1 = posting.item.vendorGiveItem ? "" : TextFormatting.GOLD+"$"+String.valueOf(posting.item.price);
-					line4 = TextFormatting.LIGHT_PURPLE+String.valueOf(posting.item.vendStock)+" Remaining";
+					line4 = new TextComponentTranslation("gui.market.stock.remaining", String.valueOf(posting.item.vendStock)).setStyle(new Style().setColor(TextFormatting.LIGHT_PURPLE)).getFormattedText();
 				}
 				else if (posting.item.locality.equals(locality) && posting.item.highestBidder.equals(locality)) {
-					line5 = TextFormatting.BLUE+"Global Listing";
+					line5 = new TextComponentTranslation("gui.market.listingglobal").setStyle(new Style().setColor(TextFormatting.BLUE)).getFormattedText();
 					line3 = posting.item.vendorGiveItem ? TextFormatting.GOLD+"$"+String.valueOf(posting.item.price) : "";
 					line1 = posting.item.vendorGiveItem ? "" : TextFormatting.GOLD+"$"+String.valueOf(posting.item.price);
-					line4 = TextFormatting.LIGHT_PURPLE+String.valueOf(posting.item.vendStock)+" Remaining";
+					line4 = new TextComponentTranslation("gui.market.stock.remaining", String.valueOf(posting.item.vendStock)).setStyle(new Style().setColor(TextFormatting.LIGHT_PURPLE)).getFormattedText();
 				}
 				else if (posting.item.locality.equals(locality) && !posting.item.highestBidder.equals(locality)) {
-					line4 = TextFormatting.YELLOW+"Auction Listing";
-					line3 = posting.item.highestBidder.equals(Reference.NIL) ? "" : TextFormatting.RED+"[ACTIVE BIDDING]";
+					line4 = new TextComponentTranslation("gui.market.listingauction").setStyle(new Style().setColor(TextFormatting.YELLOW)).getFormattedText();
+					line3 = posting.item.highestBidder.equals(Reference.NIL) ? "" : new TextComponentTranslation("gui.market.activebidding").setStyle(new Style().setColor(TextFormatting.RED)).getFormattedText();
 					line1 = TextFormatting.GOLD+"$"+String.valueOf(posting.item.price);
 				}				
 				else {
@@ -715,7 +723,7 @@ public class GuiMarketManager extends GuiScreen{
 	        int costX = !posting.item.vendorGiveItem ? x+3: x+103;
 	        itemRender.renderItemAndEffectIntoGUI(posting.item.item, itemX, y);
 	        itemRender.renderItemOverlayIntoGUI(font, posting.item.item, itemX, y, null);
-	        if (containingListSel.listType != 2 && !line1.equalsIgnoreCase("Queued Item") && !line4.equalsIgnoreCase(TextFormatting.YELLOW+"Auction Listing")) {
+	        if (containingListSel.listType != 2 && !line1.equalsIgnoreCase(new TextComponentTranslation("gui.market.queueditem").getFormattedText()) && !line4.equalsIgnoreCase(new TextComponentTranslation("gui.market.listingAuction").setStyle(new Style().setColor(TextFormatting.YELLOW)).getFormattedText())) {
 		        itemRender.renderItemAndEffectIntoGUI(new ItemStack(ModItems.MONEYBAG), costX, y);
 		        itemRender.renderItemOverlayIntoGUI(font, new ItemStack(ModItems.MONEYBAG), costX, y, null);
 	        }
