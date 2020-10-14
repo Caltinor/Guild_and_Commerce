@@ -32,12 +32,10 @@ public class AccountGroup {
 			snbt.setDouble("balance", accountList.get(i).balance);
 			list.appendTag(snbt);
 		}
-		System.out.println("write "+list.tagCount());
 		nbt.setTag(groupName, list);
 		return nbt;
 	}
 	public void readFromNBT(NBTTagList nbt) {
-		System.out.println("read "+nbt.tagCount());
 		accountList.clear();
 		for (int i = 0; i < nbt.tagCount(); i++) {
 			accountList.add(new Account(nbt.getCompoundTagAt(i).getUniqueId("owner"), nbt.getCompoundTagAt(i).getDouble("balance")));
