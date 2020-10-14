@@ -29,7 +29,7 @@ public class CommonProxy {
 	
 	public void openMarketGui(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response, UUID locality) {}
 	
-	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {}
+	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {}
 	
 	public void openGuildGui(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {}
 	
@@ -43,7 +43,7 @@ public class CommonProxy {
 	
 	public void updateMarketGui(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response) {}
 	
-	public void updateChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {}
+	public void updateChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {}
 	
 	public void updateGuildGuiAccounts(Account acctG, double balP) {}
 	

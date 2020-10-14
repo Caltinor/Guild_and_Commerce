@@ -36,8 +36,8 @@ public class ClientProxy extends CommonProxy {
 		Minecraft.getMinecraft().displayGuiScreen(new GuiMarketManager(listType, vendList, feeBuy, feeSell, balP, response, locality));
 	}
 	
-	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
-		Minecraft.getMinecraft().displayGuiScreen(new GuiChunkManager(myGuild, list, mapColors, response, acctP, acctG));
+	public void openChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {
+		Minecraft.getMinecraft().displayGuiScreen(new GuiChunkManager(myGuild, list, mapColors, response, acctP, acctG, tempClaimRate));
 	}
 	
 	public void openGuildGui(Guild guild, Account acctGuild, double worthT, double worthG, Map<ChunkPos, Double> chunkValues, double balancePlayer) {
@@ -65,9 +65,9 @@ public class ClientProxy extends CommonProxy {
 		screen.syncMarket(listType, vendList, feeBuy, feeSell, balP, response);
 	} 
 	
-	public void updateChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG) {
+	public void updateChunkGui(Guild myGuild, List<ChunkSummary> list, List<Integer> mapColors, String response, double acctP, double acctG, double tempClaimRate) {
 		GuiChunkManager screen = (GuiChunkManager) Minecraft.getMinecraft().currentScreen;
-		screen.guiUpdate(myGuild, list, mapColors, response, acctP, acctG);
+		screen.guiUpdate(myGuild, list, mapColors, response, acctP, acctG, tempClaimRate);
 	}
 	
 	public void updateGuildGuiAccounts(Account acctG, double balP) {
