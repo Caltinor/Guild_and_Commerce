@@ -43,6 +43,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 public class GuiAdmin extends GuiScreen{
@@ -153,22 +154,22 @@ public class GuiAdmin extends GuiScreen{
 	}
 	
 	public void initGui() {
-		toggleAccount = new GuiButton(1, 3, 3, 75, 20, "Accounts");
-		toggleGuild = new GuiButton(2, 3, toggleAccount.y + 23, 75, 20, "Guild");
-		toggleMarket = new GuiButton(3, 3, toggleGuild.y + 23, 75, 20, "Markets");
-		exitButton = new GuiButton(4, 3, this.height - 30, 75, 20, "Exit");
+		toggleAccount = new GuiButton(1, 3, 3, 75, 20, new TextComponentTranslation("gui.admin.accounts").getFormattedText());
+		toggleGuild = new GuiButton(2, 3, toggleAccount.y + 23, 75, 20, new TextComponentTranslation("gui.admin.guilds").getFormattedText());
+		toggleMarket = new GuiButton(3, 3, toggleGuild.y + 23, 75, 20, new TextComponentTranslation("gui.admin.markets").getFormattedText());
+		exitButton = new GuiButton(4, 3, this.height - 30, 75, 20, new TextComponentTranslation("gui.exit").getFormattedText());
 		this.buttonList.add(toggleAccount);
 		this.buttonList.add(toggleGuild);
 		this.buttonList.add(toggleMarket);
 		this.buttonList.add(exitButton);
 		//account menu specific objects
 		guiListAccounts = new GuiListAccount(this, mc, accountList, 83, 30, (this.width - 86)/2, this.height - 33, 10);
-		toggleAccountPlayer = new GuiButton(10, guiListAccounts.x + guiListAccounts.width + 3, 3, guiListAccounts.width/2 - 2, 20, "Players");
-		toggleAccountGuild = new GuiButton(11, toggleAccountPlayer.x + toggleAccountPlayer.width + 3, 3, guiListAccounts.width/2 - 2, 20, "Guilds");
+		toggleAccountPlayer = new GuiButton(10, guiListAccounts.x + guiListAccounts.width + 3, 3, guiListAccounts.width/2 - 2, 20, new TextComponentTranslation("gui.admin.players").getFormattedText());
+		toggleAccountGuild = new GuiButton(11, toggleAccountPlayer.x + toggleAccountPlayer.width + 3, 3, guiListAccounts.width/2 - 2, 20, new TextComponentTranslation("gui.admin.guilds").getFormattedText());
 		balanceBox = new GuiTextField(12, this.fontRenderer, guiListAccounts.x + guiListAccounts.width + 3, this.height/2, guiListAccounts.width - 6, 20);
-		accountSet = new GuiButton(13, balanceBox.x, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, "Set");
-		accountAdd = new GuiButton(14, accountSet.x+ accountSet.width +3, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, "Add");
-		accountRemove = new GuiButton(15, this.width - (this.width/5) - 38, this.height - 30, 120, 20, "Remove Account");
+		accountSet = new GuiButton(13, balanceBox.x, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, new TextComponentTranslation("gui.admin.set").getFormattedText());
+		accountAdd = new GuiButton(14, accountSet.x+ accountSet.width +3, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, new TextComponentTranslation("gui.admin.add").getFormattedText());
+		accountRemove = new GuiButton(15, this.width - (this.width/5) - 38, this.height - 30, 120, 20, new TextComponentTranslation("gui.admin.removeaccount").getFormattedText());
 		this.buttonList.add(toggleAccountPlayer);
 		this.buttonList.add(toggleAccountGuild);
 		this.buttonList.add(accountSet);
@@ -182,8 +183,8 @@ public class GuiAdmin extends GuiScreen{
 		accountAdd.visible = false;
 		accountRemove.visible = false;
 		//Guild Select menu specific objects
-		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, "Select Guild");
-		deleteGuild = new GuiButton(21, this.width - 80, this.height-30, 75, 20, "DELETE GUILD");
+		selectGuild = new GuiButton(20, (this.width - 80)/2 + 42, this.height - 30, 75, 20, new TextComponentTranslation("gui.admin.selectguild").getFormattedText());
+		deleteGuild = new GuiButton(21, this.width - 80, this.height-30, 75, 20, new TextComponentTranslation("gui.admin.deleteguild").getFormattedText());
 		guildList = new GuiListNameList(this, mc, nameList, 83, 30, this.width - 90, this.height - 65, 12);
 		this.buttonList.add(selectGuild);
 		this.buttonList.add(deleteGuild);
@@ -198,9 +199,9 @@ public class GuiAdmin extends GuiScreen{
 		set1 = new GuiButton(32, setOpen.x+20, set0.y, 20, 20, "1");
 		set2 = new GuiButton(33, setOpen.x+40, set0.y, 20, 20, "2");
 		set3 = new GuiButton(34, setOpen.x+60, set0.y, 20, 20, "3");
-		openLand = new GuiButton(35, this.width - 80, 5, 75, 20, "Land Menu");
-		openMembers = new GuiButton(36,openLand.x, 30, 75, 20, "Member Menu");
-		adminToggle = new GuiButton(39,openLand.x, set0.y, 75, 20, "Admin: No");
+		openLand = new GuiButton(35, this.width - 80, 5, 75, 20, new TextComponentTranslation("gui.admin.landmenu").getFormattedText());
+		openMembers = new GuiButton(36,openLand.x, 30, 75, 20, new TextComponentTranslation("gui.admin.membermenu").getFormattedText());
+		adminToggle = new GuiButton(39,openLand.x, set0.y, 75, 20, new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.no")).getFormattedText());
 		this.buttonList.add(setOpen);
 		this.buttonList.add(set0);
 		this.buttonList.add(set1);
@@ -213,7 +214,7 @@ public class GuiAdmin extends GuiScreen{
 		perm1 = new GuiTextField(302, this.fontRenderer, nameBox.x, perm0.y + perm0.height + 5, perm0.width, 20);
 		perm2 = new GuiTextField(303, this.fontRenderer, nameBox.x, perm1.y + perm1.height + 5, perm1.width, 20);
 		perm3 = new GuiTextField(304, this.fontRenderer, nameBox.x, perm2.y + perm2.height + 5, perm2.width, 20);
-		saveGuild = new GuiButton(37, perm3.x, perm3.y+perm3.height+5, perm3.width, 20, "Save Changes");
+		saveGuild = new GuiButton(37, perm3.x, perm3.y+perm3.height+5, perm3.width, 20, new TextComponentTranslation("gui.guild.save").getFormattedText());
 		this.buttonList.add(saveGuild);
 		listGuildPerms = new GuiListAdminPerms(this, mc, perm3.x+perm3.width+5, set0.y+set0.height+3, this.width - (perm3.x+perm3.width+8), this.height-(set0.y+set0.height+3)- 3, 12);
 		setOpen.visible = false;
@@ -238,7 +239,7 @@ public class GuiAdmin extends GuiScreen{
 		landPublic = new GuiButton(41, landValue.x, landValue.y+landValue.height+5, 100, 20, "");
 		landForSale = new GuiButton(42, landValue.x, landPublic.y+landPublic.height+5, 100, 20, "");
 		landOutpost = new GuiButton(43, landValue.x, landForSale.y+landForSale.height+5, 100, 20, "");
-		landSave = new GuiButton(44, landOutpost.x+12, landOutpost.y+landOutpost.height+5, 75, 20, "Save Changes");
+		landSave = new GuiButton(44, landOutpost.x+12, landOutpost.y+landOutpost.height+5, 75, 20, new TextComponentTranslation("gui.guild.save").getFormattedText());
 		this.buttonList.add(landPublic);
 		this.buttonList.add(landForSale);
 		this.buttonList.add(landOutpost);
@@ -253,8 +254,8 @@ public class GuiAdmin extends GuiScreen{
 		//guild members menu specific objects
 		listGuildMembers = new GuiListAdminGuildMembers(this, mc, 83, 15, 130, this.height-20, 10);
 		mbrInviteBox = new GuiTextField(50, this.fontRenderer, listGuildMembers.x+listGuildMembers.width+20, listGuildMembers.y, 100, 20);
-		mbrAdd = new GuiButton(51, mbrInviteBox.x, mbrInviteBox.y+ mbrInviteBox.height +5, 75, 20, "Add Invite");
-		mbrSub = new GuiButton(52, mbrAdd.x, mbrAdd.y+mbrAdd.height+5, 75, 20, "Remove");
+		mbrAdd = new GuiButton(51, mbrInviteBox.x, mbrInviteBox.y+ mbrInviteBox.height +5, 75, 20, new TextComponentTranslation("gui.admin.addinvite").getFormattedText());
+		mbrSub = new GuiButton(52, mbrAdd.x, mbrAdd.y+mbrAdd.height+5, 75, 20, new TextComponentTranslation("gui.market.remove").getFormattedText());
 		mbr0 = new GuiButton(53, mbrAdd.x, mbrSub.y+mbrSub.height+5, 20, 20, "0");
 		mbr1 = new GuiButton(54, mbrAdd.x, mbr0.y+mbr0.height, 20, 20, "1");
 		mbr2 = new GuiButton(55, mbrAdd.x, mbr1.y+mbr1.height, 20, 20, "2");
@@ -275,14 +276,14 @@ public class GuiAdmin extends GuiScreen{
 		mbr3.visible = false;
 		//markets menu specific objects
 		marketList = new GuiListAdminMarket(this, vendList, Reference.NIL, 0, mc, 83, 40, (this.width-80)/2, this.height-45, 25);
-		toggleLocal = new GuiButton(60, 83, 5, 50, 20, "Local");
-		toggleGlobal = new GuiButton(61, toggleLocal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Global");
-		toggleAuction = new GuiButton(62, toggleGlobal.x + toggleLocal.width, 5, toggleLocal.width, 20, "Auction");
-		toggleServer = new GuiButton(63, toggleAuction.x + toggleLocal.width, 5, toggleLocal.width, 20, "Server");
-		addSale = new GuiButton(64, toggleServer.x + toggleServer.width + 5, 5, 75, 20, "Add Posting");
-		editSave = new GuiButton(65, marketList.x + marketList.width + 3, this.height - 30, 75, 20, "Save Changes");
-		saleRemove = new GuiButton(66, editSave.x + editSave.width + 2, editSave.y, editSave.width, 20, "Remove");
-		saleExpire = new GuiButton(67, saleRemove.x, saleRemove.y - 21, editSave.width, 20, "Expire");
+		toggleLocal = new GuiButton(60, 83, 5, 50, 20, new TextComponentTranslation("gui.market.local").getFormattedText());
+		toggleGlobal = new GuiButton(61, toggleLocal.x + toggleLocal.width, 5, toggleLocal.width, 20, new TextComponentTranslation("gui.market.global").getFormattedText());
+		toggleAuction = new GuiButton(62, toggleGlobal.x + toggleLocal.width, 5, toggleLocal.width, 20, new TextComponentTranslation("gui.market.auction").getFormattedText());
+		toggleServer = new GuiButton(63, toggleAuction.x + toggleLocal.width, 5, toggleLocal.width, 20, new TextComponentTranslation("gui.market.server").getFormattedText());
+		addSale = new GuiButton(64, toggleServer.x + toggleServer.width + 5, 5, 75, 20, new TextComponentTranslation("gui.admin.addposting").getFormattedText());
+		editSave = new GuiButton(65, marketList.x + marketList.width + 3, this.height - 30, 75, 20, new TextComponentTranslation("gui.guild.save").getFormattedText());
+		saleRemove = new GuiButton(66, editSave.x + editSave.width + 2, editSave.y, editSave.width, 20, new TextComponentTranslation("gui.market.remove").getFormattedText());
+		saleExpire = new GuiButton(67, saleRemove.x, saleRemove.y - 21, editSave.width, 20, new TextComponentTranslation("gui.admin.expire").getFormattedText());
 		priceBox = new GuiTextField(601, this.fontRenderer, marketList.x + marketList.width + 3, marketList.y + 22, 75, 20);
 		stockBox = new GuiTextField(602, this.fontRenderer, marketList.x + marketList.width + 3, marketList.y + 55, 75, 20);
 		toggleInfinite = new GuiButton(68, stockBox.x+stockBox.width+2, stockBox.y, 70, 20, "");
@@ -345,9 +346,10 @@ public class GuiAdmin extends GuiScreen{
 		guildList.visible = activeMenu == AdminGuiType.GUILD_SELECT;
 		//guild main objects
 		setOpen.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
-		setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
+		setOpen.displayString = guiGuild.openToJoin ? new TextComponentTranslation("gui.admin.public").getFormattedText() : new TextComponentTranslation("gui.admin.private").getFormattedText();
 		adminToggle.visible = activeMenu == AdminGuiType.GUILD_MAIN;
-		adminToggle.displayString = guiGuild.isAdmin ? "Admin: Yes" : "Admin: No";
+		adminToggle.displayString = guiGuild.isAdmin ? new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.yes")).getFormattedText() 
+				: new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.no")).getFormattedText();
 		set0.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		set1.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		set2.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
@@ -360,16 +362,16 @@ public class GuiAdmin extends GuiScreen{
 		taxBox.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
 		taxBox.setText(taxformat.format(guiGuild.guildTax));
 		perm0.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
-		perm0.setText(guiGuild.permLevels.getOrDefault(0, "Leader"));
+		perm0.setText(guiGuild.permLevels.getOrDefault(0, new TextComponentTranslation("core.guild.rank0").getFormattedText()));
 		perm0.setCursorPositionZero();
 		perm1.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
-		perm1.setText(guiGuild.permLevels.getOrDefault(1, "Dignitary"));
+		perm1.setText(guiGuild.permLevels.getOrDefault(1, new TextComponentTranslation("core.guild.rank1").getFormattedText()));
 		perm1.setCursorPositionZero();
 		perm2.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
-		perm2.setText(guiGuild.permLevels.getOrDefault(2, "Trustee"));
+		perm2.setText(guiGuild.permLevels.getOrDefault(2, new TextComponentTranslation("core.guild.rank2").getFormattedText()));
 		perm2.setCursorPositionZero();
 		perm3.setVisible(activeMenu == AdminGuiType.GUILD_MAIN ? true : false);
-		perm3.setText(guiGuild.permLevels.getOrDefault(3, "Member"));
+		perm3.setText(guiGuild.permLevels.getOrDefault(3, new TextComponentTranslation("core.guild.rank3").getFormattedText()));
 		perm3.setCursorPositionZero();
 		saveGuild.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
 		listGuildPerms.visible = activeMenu == AdminGuiType.GUILD_MAIN ? true : false;
@@ -379,11 +381,11 @@ public class GuiAdmin extends GuiScreen{
 		landValue.setVisible(activeMenu == AdminGuiType.GUILD_LAND ? true : false);
 		landValue.setText(df.format(value));
 		landPublic.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
-		landPublic.displayString = isPublic ? "Public Land" : "Private Land";
+		landPublic.displayString = (isPublic ? new TextComponentTranslation("gui.admin.public").getFormattedText() : new TextComponentTranslation("gui.admin.private").getFormattedText()) + new TextComponentTranslation("gui.admin.landsuffix").getFormattedText();
 		landForSale.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
-		landForSale.displayString = "For Sale: "+ (isForSale ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		landForSale.displayString = new TextComponentTranslation("gui.admin.forsale").getFormattedText()+" "+ (isForSale ? TextFormatting.RED+new TextComponentTranslation("gui.yes").getFormattedText() : TextFormatting.BLUE+new TextComponentTranslation("gui.no").getFormattedText());
 		landOutpost.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
-		landOutpost.displayString = "Outpost: " + (isOutpost ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+		landOutpost.displayString = new TextComponentTranslation("gui.admin.outpost").getFormattedText()+" " + (isOutpost ? TextFormatting.RED+new TextComponentTranslation("gui.yes").getFormattedText() : TextFormatting.BLUE+new TextComponentTranslation("gui.no").getFormattedText());
 		landSave.visible = activeMenu == AdminGuiType.GUILD_LAND ? true : false;
 		//guild member objects
 		listGuildMembers.visible = activeMenu == AdminGuiType.GUILD_MEMBER ? true : false;
@@ -404,10 +406,10 @@ public class GuiAdmin extends GuiScreen{
 		editSave.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleVendorGive.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket != 2) ? true : false;
 		isVendorGive = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.vendorGiveItem ? true : false) : false);
-		toggleVendorGive.displayString = isVendorGive ? "Giving" : "Requesting";
+		toggleVendorGive.displayString = isVendorGive ? new TextComponentTranslation("gui.admin.giving").getFormattedText() : new TextComponentTranslation("gui.admin.requesting").getFormattedText();
 		toggleInfinite.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket != 2) ? true : false;
 		isInfinite = (marketList.selectedIdx >= 0 ? (marketList.getSelectedMember().posting.item.infinite ? true : false) : false);
-		toggleInfinite.displayString = isInfinite ? "Infinite" : "Remaining";
+		toggleInfinite.displayString = isInfinite ? new TextComponentTranslation("gui.admin.infinite").getFormattedText() : new TextComponentTranslation("gui.admin.remaining").getFormattedText();
 		saleExpire.visible = (activeMenu == AdminGuiType.MARKET && selectedMarket == 2) ? true : false;
 		saleRemove.visible = activeMenu == AdminGuiType.MARKET ? true : false;
 		toggleLocal.enabled = selectedMarket == 0 ? false : true;
@@ -507,11 +509,11 @@ public class GuiAdmin extends GuiScreen{
 		}
 		if (button == toggleVendorGive) {
 			isVendorGive = isVendorGive ? false: true;
-			toggleVendorGive.displayString = isVendorGive ? "Giving" : "Requesting";
+			toggleVendorGive.displayString = isVendorGive ? new TextComponentTranslation("gui.admin.giving").getFormattedText() : new TextComponentTranslation("gui.admin.requesting").getFormattedText();
 		}
 		if (button == toggleInfinite) {
 			isInfinite = isInfinite ? false : true;
-			toggleInfinite.displayString = isInfinite ? "Infinite" : "Remaining";
+			toggleInfinite.displayString = isInfinite ? new TextComponentTranslation("gui.admin.infinite").getFormattedText() : new TextComponentTranslation("gui.admin.remaining").getFormattedText();
 			stockBox.setEnabled(isInfinite ? false : true);
 		}
 		if (button == editSave && marketList.selectedIdx >= 0) {			
@@ -547,11 +549,11 @@ public class GuiAdmin extends GuiScreen{
 		//guild main actions
 		if (button == setOpen) {
 			guiGuild.openToJoin = guiGuild.openToJoin ? false : true;
-			setOpen.displayString = guiGuild.openToJoin ? "Public" : "Private";
+			setOpen.displayString = guiGuild.openToJoin ? new TextComponentTranslation("gui.admin.public").getFormattedText() : new TextComponentTranslation("gui.admin.private").getFormattedText();
 		}
 		if (button == adminToggle) {
 			guiGuild.isAdmin = guiGuild.isAdmin ? false : true;
-			adminToggle.displayString = guiGuild.isAdmin ? "Admin: Yes" : "Admin: No";
+			adminToggle.displayString = guiGuild.isAdmin ? new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.yes")).getFormattedText() : new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.no")).getFormattedText();
 		}
 		if (button == set0 && listGuildPerms.selectedIdx >= 0) {
 			guiGuild.permissions.put(listGuildPerms.getSelectedMember().permIndex, 0);
@@ -570,9 +572,10 @@ public class GuiAdmin extends GuiScreen{
 			listGuildPerms.refreshList();
 		}
 		if (button == saveGuild) {
+			UUID memberID = guildList.getSelectedMember().entityID == null ? Reference.NIL : guildList.getSelectedMember().entityID;
 			double amount = 0D;
 			try {amount = Math.abs(Double.valueOf(taxBox.getText()));} catch (NumberFormatException e) {}
-			Main.NET.sendToServer(new MessageAdminToServer(guildList.getSelectedMember().entityID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions, guiGuild.isAdmin));
+			Main.NET.sendToServer(new MessageAdminToServer(memberID, nameBox.getText(), guiGuild.openToJoin, amount, perm0.getText(), perm1.getText(), perm2.getText(), perm3.getText(), guiGuild.permissions, guiGuild.isAdmin));
 		}
 		if (button == openLand) {
 			activeMenu = AdminGuiType.GUILD_LAND;
@@ -587,15 +590,15 @@ public class GuiAdmin extends GuiScreen{
 		//guild land actions
 		if (button == landPublic) {
 			isPublic = isPublic ? false : true;
-			landPublic.displayString = isPublic ? "Public Land" : "Private Land";
+			landPublic.displayString = (isPublic ? new TextComponentTranslation("gui.admin.public").getFormattedText() : new TextComponentTranslation("gui.admin.private").getFormattedText()) + new TextComponentTranslation("gui.admin.landsuffix").getFormattedText();
 		}
 		if (button == landForSale) {
 			isForSale = isForSale ? false : true;
-			landForSale.displayString = "For Sale: "+ (isForSale ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+			landForSale.displayString = new TextComponentTranslation("gui.admin.forsale").getFormattedText()+" "+ (isForSale ? TextFormatting.RED+new TextComponentTranslation("gui.yes").getFormattedText() : TextFormatting.BLUE+new TextComponentTranslation("gui.no").getFormattedText());
 		}
 		if (button == landOutpost) {
 			isOutpost = isOutpost ? false : true;
-			landOutpost.displayString = "Outpost: " + (isOutpost ? TextFormatting.RED+"Yes" : TextFormatting.BLUE+"No");
+			landOutpost.displayString = new TextComponentTranslation("gui.admin.outpost").getFormattedText()+" " + (isOutpost ? TextFormatting.RED+new TextComponentTranslation("gui.yes").getFormattedText() : TextFormatting.BLUE+new TextComponentTranslation("gui.no").getFormattedText());
 		}
 		if (button == landSave) {
 			double amount = 0D;
@@ -696,25 +699,25 @@ public class GuiAdmin extends GuiScreen{
     	switch (activeMenu) {
     	//draw only the objects for the specfic screen toggled
     	case ACCOUNT: {
-    		this.drawString(this.fontRenderer, TextFormatting.GOLD+"Account Balance:", balanceBox.x, balanceBox.y - 22, 16777215);
+    		this.drawString(this.fontRenderer, TextFormatting.GOLD+new TextComponentTranslation("gui.admin.accountbal").getFormattedText(), balanceBox.x, balanceBox.y - 22, 16777215);
     		double balance = guiListAccounts.selectedIdx >= 0 ? guiListAccounts.getSelectedMember().balance : 0;
     		this.drawString(this.fontRenderer, TextFormatting.GOLD+"$"+df.format(balance), balanceBox.x, balanceBox.y - 11, 16777215);
-    		this.drawString(this.fontRenderer, "Account Owner List", guiListAccounts.x, guiListAccounts.y - 11, 16777215);
-    		this.drawString(this.fontRenderer, TextFormatting.GRAY+"Negative numbers when clicking", balanceBox.x, balanceBox.y+46, 16777215);
-    		this.drawString(this.fontRenderer, TextFormatting.GRAY+"'add' reduce the balance.", balanceBox.x, balanceBox.y+57, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.acctownerlist").getFormattedText(), guiListAccounts.x, guiListAccounts.y - 11, 16777215);
+    		this.drawString(this.fontRenderer, TextFormatting.GRAY+new TextComponentTranslation("gui.admin.tip1").getFormattedText(), balanceBox.x, balanceBox.y+46, 16777215);
+    		this.drawString(this.fontRenderer, TextFormatting.GRAY+new TextComponentTranslation("gui.admin.tip2").getFormattedText(), balanceBox.x, balanceBox.y+57, 16777215);
     		balanceBox.drawTextBox();
     		guiListAccounts.drawScreen(mouseX, mouseY, partialTicks);
     		break;
     	}
     	case GUILD_SELECT: {
-    		this.drawString(this.fontRenderer, TextFormatting.GREEN+"GUILD LIST", selectGuild.x, 15, 16777215);
+    		this.drawString(this.fontRenderer, TextFormatting.GREEN+new TextComponentTranslation("gui.admin.guildlist").getFormattedText(), selectGuild.x, 15, 16777215);
     		guildList.drawScreen(mouseX, mouseY, partialTicks);
     		break;
     	}
     	case GUILD_MAIN: {
-    		this.drawString(this.fontRenderer, "Guild Name", nameBox.x, nameBox.y-10, 16777215);
-    		this.drawString(this.fontRenderer, "Tax Rate", taxBox.x, taxBox.y-10, 16777215);
-    		this.drawString(this.fontRenderer, "Rank Names", perm0.x, perm0.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.guild.guildname").getFormattedText(), nameBox.x, nameBox.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.guild.taxrate").getFormattedText(), taxBox.x, taxBox.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.guild.ranknames").getFormattedText(), perm0.x, perm0.y-10, 16777215);
     		nameBox.drawTextBox();
     		taxBox.drawTextBox();
     		perm0.drawTextBox();
@@ -725,31 +728,31 @@ public class GuiAdmin extends GuiScreen{
     		break;
     	}
     	case GUILD_LAND: {
-    		this.drawString(this.fontRenderer, "Core Land", guicoreChunkList.x, guicoreChunkList.y-10, 16777215);
-    		this.drawString(this.fontRenderer, "Outpost Land", guioutpostChunkList.x, guioutpostChunkList.y-10, 16777215);
-    		this.drawString(this.fontRenderer, "Land Value", landValue.x, landValue.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.coreland").getFormattedText(), guicoreChunkList.x, guicoreChunkList.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.outpostland").getFormattedText(), guioutpostChunkList.x, guioutpostChunkList.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.landvalue").getFormattedText(), landValue.x, landValue.y-10, 16777215);
     		guicoreChunkList.drawScreen(mouseX, mouseY, partialTicks);
     		guioutpostChunkList.drawScreen(mouseX, mouseY, partialTicks);
     		landValue.drawTextBox();
     		break;
     	}
     	case GUILD_MEMBER: {
-    		this.drawString(this.fontRenderer, "Member List", listGuildMembers.x, listGuildMembers.y-10, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.memberlist").getFormattedText(), listGuildMembers.x, listGuildMembers.y-10, 16777215);
     		listGuildMembers.drawScreen(mouseX, mouseY, partialTicks);
     		mbrInviteBox.drawTextBox();
     		break;
     	}
     	case MARKET: {
-    		this.drawString(this.fontRenderer, "Market List", marketList.x, marketList.y - 11, 16777215);
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.marketlist").getFormattedText(), marketList.x, marketList.y - 11, 16777215);
     		int baseX = marketList.x+marketList.width+2;
     		int baseY = marketList.y;
-    		this.drawString(this.fontRenderer, "Vendor: "+vendorName, baseX, baseY, 16777215);
-    		this.drawString(this.fontRenderer, TextFormatting.GOLD+"Price", baseX, baseY+11, 16777215);
-    		if (selectedMarket != 2) this.drawString(this.fontRenderer, TextFormatting.LIGHT_PURPLE+"Supply Remaining", baseX, baseY + 44, 16777215);
-    		String line1 = selectedMarket == 2 ? "Highest Bidder: " : "Locality:";
+    		this.drawString(this.fontRenderer, new TextComponentTranslation("gui.admin.vendor").getFormattedText()+vendorName, baseX, baseY, 16777215);
+    		this.drawString(this.fontRenderer, TextFormatting.GOLD+new TextComponentTranslation("gui.admin.price").getFormattedText(), baseX, baseY+11, 16777215);
+    		if (selectedMarket != 2) this.drawString(this.fontRenderer, TextFormatting.LIGHT_PURPLE+new TextComponentTranslation("gui.admin.supplyremaining").getFormattedText(), baseX, baseY + 44, 16777215);
+    		String line1 = selectedMarket == 2 ? new TextComponentTranslation("gui.admin.highestbidder").getFormattedText() : new TextComponentTranslation("gui.admin.locality").getFormattedText();
     		String line2 = selectedMarket == 2 ? bidderName : locName;
     		long end = marketList.selectedIdx >= 0 ? marketList.getSelectedMember().posting.item.bidEnd : 0;
-    		String line3 = selectedMarket == 2 ? TextFormatting.AQUA+"Bidding Ends: " : "";
+    		String line3 = selectedMarket == 2 ? TextFormatting.AQUA+new TextComponentTranslation("gui.admin.bidend").getFormattedText() : "";
     		String line4 = selectedMarket == 2 ? String.valueOf(new Timestamp(end)) : "";
     		this.drawString(this.fontRenderer, line1, baseX, stockBox.y+stockBox.height+10, 16777215);
     		this.drawString(this.fontRenderer, line2, baseX, stockBox.y+stockBox.height+21, 16777215);
@@ -993,12 +996,12 @@ public class GuiAdmin extends GuiScreen{
 			this.posting = posting;
 			if (containingListSel.listType != 2) {
 				line1 = TextFormatting.GOLD+"$"+df.format(posting.item.price);				
-				line2 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? "INFINITE" : "Supply="+String.valueOf(posting.item.vendStock));	
-				line2 += (posting.item.vendorGiveItem) ? TextFormatting.GREEN+" (Giving)": TextFormatting.BLUE+" (Requesting)";
+				line2 = TextFormatting.LIGHT_PURPLE+(posting.item.infinite ? new TextComponentTranslation("gui.admin.INFINITE").getFormattedText() : new TextComponentTranslation("gui.admin.supply").getFormattedText()+String.valueOf(posting.item.vendStock));	
+				line2 += (posting.item.vendorGiveItem) ? TextFormatting.GREEN+" "+new TextComponentTranslation("gui.admin.giving").getFormattedText(): TextFormatting.BLUE+" "+new TextComponentTranslation("gui.admin.requesting").getFormattedText();
 			}
 			if (containingListSel.listType == 2) {
 				line1 = TextFormatting.GOLD+"$" + df.format(posting.item.price);
-				line1 += (posting.item.highestBidder.equals(Reference.NIL)) ? TextFormatting.WHITE+" [No Bids]" : TextFormatting.RED+" [Active]";
+				line1 += (posting.item.highestBidder.equals(Reference.NIL)) ? TextFormatting.WHITE+new TextComponentTranslation("gui.market.nobids").getFormattedText() : TextFormatting.RED+new TextComponentTranslation("gui.admin.active").getFormattedText();
 				line2 = (posting.item.bidEnd < 3600000) ? TextFormatting.RED+"" : (posting.item.bidEnd < 86400000) ? TextFormatting.YELLOW+"" : TextFormatting.GREEN+"";
 				line2 += String.valueOf(new Timestamp(posting.item.bidEnd));
 			}
@@ -1102,23 +1105,23 @@ public class GuiAdmin extends GuiScreen{
 			String rankFormat = "";
 	        switch(permLvl) {
 	        case 0: {
-	        	rankFormat = TextFormatting.DARK_GREEN + perms.getOrDefault(0, "Leader");
+	        	rankFormat = TextFormatting.DARK_GREEN + perms.getOrDefault(0, new TextComponentTranslation("core.guild.rank0").getFormattedText());
 	        	break;
 	        }
 	        case 1: {
-	        	rankFormat = TextFormatting.DARK_PURPLE + perms.getOrDefault(1, "Dignitary");
+	        	rankFormat = TextFormatting.DARK_PURPLE + perms.getOrDefault(1, new TextComponentTranslation("core.guild.rank1").getFormattedText());
 	        	break;
 	        }
 	        case 2: {
-	        	rankFormat = TextFormatting.BLUE + perms.getOrDefault(2, "Trustee");
+	        	rankFormat = TextFormatting.BLUE + perms.getOrDefault(2, new TextComponentTranslation("core.guild.rank2").getFormattedText());
 	        	break;
 	        }
 	        case 3: {
-	        	rankFormat = perms.getOrDefault(3, "Member");
+	        	rankFormat = perms.getOrDefault(3, new TextComponentTranslation("core.guild.rank3").getFormattedText());
 	        	break;
 	        }
 	        case -1: {
-	        	rankFormat = TextFormatting.DARK_RED + "Invited";
+	        	rankFormat = TextFormatting.DARK_RED + new TextComponentTranslation("core.guild.ranki").getFormattedText();
 	        	break;
 	        }
 	        default:
@@ -1143,7 +1146,7 @@ public class GuiAdmin extends GuiScreen{
 	    private final GuiAdmin guildManager;
 	    public Map<String, Integer> perms;
 	    public Map<Integer, String> permRanks;
-	    public final String permIndex[] = new String[11];
+	    public final String permIndex[];
 	    private final List<GuiListAdminPermsEntry> entries = Lists.<GuiListAdminPermsEntry>newArrayList();
 	    /** Index to the currently selected world */
 	    private int selectedIdx = -1;
@@ -1153,17 +1156,9 @@ public class GuiAdmin extends GuiScreen{
 			this.guildManager = guiGM;
 			this.perms = guildManager.guiGuild.permissions;
 			this.permRanks = guildManager.guiGuild.permLevels;
-			permIndex[0] = "setname";
-			permIndex[1] = "setopen";
-			permIndex[2] = "settax";
-			permIndex[3] = "setperms";
-			permIndex[4] = "setinvite";
-			permIndex[5] = "setkick";
-			permIndex[6] = "setclaim";
-			permIndex[7] = "setsell";
-			permIndex[8] = "setwithdraw";
-			permIndex[9] = "setpromotedemote";
-			permIndex[10] = "managesublet";
+			permIndex = new String[guiGuild.permissions.size()];
+			int i = 0;
+			for (Map.Entry<String, Integer> entry : guiGuild.permissions.entrySet()) {permIndex[i] = entry.getKey(); i++;}
 			this.refreshList();
 		}
 		
@@ -1172,17 +1167,10 @@ public class GuiAdmin extends GuiScreen{
 	    	this.perms = guildManager.guiGuild.permissions;
 			this.permRanks = guildManager.guiGuild.permLevels;
 	    	this.entries.clear();
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[0], TextFormatting.YELLOW+"Change Guild Name  ", colorize(perms.get(permIndex[0]))+permRanks.get(perms.get(permIndex[0]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[1], TextFormatting.YELLOW+"Change Open-To-Join", colorize(perms.get(permIndex[1]))+permRanks.get(perms.get(permIndex[1]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[2], TextFormatting.YELLOW+"Change Guild Tax   ", colorize(perms.get(permIndex[2]))+permRanks.get(perms.get(permIndex[2]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[3], TextFormatting.YELLOW+"Change Permissions ", colorize(perms.get(permIndex[3]))+permRanks.get(perms.get(permIndex[3]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[4], TextFormatting.YELLOW+"Change Invite Level", colorize(perms.get(permIndex[4]))+permRanks.get(perms.get(permIndex[4]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[5], TextFormatting.YELLOW+"Change Kick Level  ", colorize(perms.get(permIndex[5]))+permRanks.get(perms.get(permIndex[5]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[6], TextFormatting.YELLOW+"Change Claim Level ", colorize(perms.get(permIndex[6]))+permRanks.get(perms.get(permIndex[6]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[7], TextFormatting.YELLOW+"Change Sell Level  ", colorize(perms.get(permIndex[7]))+permRanks.get(perms.get(permIndex[7]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[8], TextFormatting.YELLOW+"Change Withdraw Lvl", colorize(perms.get(permIndex[8]))+permRanks.get(perms.get(permIndex[8]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[9], TextFormatting.YELLOW+"Change Member Ranks", colorize(perms.get(permIndex[9]))+permRanks.get(perms.get(permIndex[9]))));
-	        this.entries.add(new GuiListAdminPermsEntry(this, permIndex[10],TextFormatting.YELLOW+"Manage Subletting  ", colorize(perms.get(permIndex[10]))+permRanks.get(perms.get(permIndex[10]))));
+	    	for (int i = 0; i < permIndex.length; i++) {
+	    		String permDescr = new TextComponentTranslation("gui.perms."+permIndex[i]).getFormattedText();
+	    		this.entries.add(new GuiListAdminPermsEntry(this, permIndex[i], TextFormatting.YELLOW+permDescr, colorize(perms.get(permIndex[i]))+permRanks.get(perms.get(permIndex[i]))));
+	    	}
 	    }
 	    
 	    private String colorize(int rank) {
@@ -1232,7 +1220,7 @@ public class GuiAdmin extends GuiScreen{
 
 		public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
 	        this.client.fontRenderer.drawString(permString, x+3, y , 16777215);
-	        this.client.fontRenderer.drawString(rankString, x+120, y, 16777215);
+	        this.client.fontRenderer.drawString(rankString, x+140, y, 16777215);
 		}
 
 		public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
