@@ -329,6 +329,8 @@ public class GuiChunkManager extends GuiScreen{
 				button2.setState((isMember && acctPlayer >= (chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size())), eButton2.RENT_EXTEND);
 				addMember.visible = isMember;
 				removeMember.visible = isMember;
+				addMember.enabled = true;
+				removeMember.enabled = true;
 				memberAdd.setVisible(isMember);
 				
 			}
@@ -337,6 +339,8 @@ public class GuiChunkManager extends GuiScreen{
 				sellprice.setEnabled(false);
 				addMember.visible = true;
 				removeMember.visible = true;
+				addMember.enabled = true;
+				removeMember.enabled = true;
 			}
 			if (chunkList.get(selectedIdx).permittedPlayers.size() == 0) {
 				String a1 = chunkList.get(selectedIdx).leasePrice >= 0 ? new TextComponentTranslation("gui.chunk.topstring.forrent1", df.format(chunkList.get(selectedIdx).leasePrice)).setStyle(new Style().setColor(TextFormatting.GREEN)).getFormattedText() : "";
@@ -512,11 +516,10 @@ public class GuiChunkManager extends GuiScreen{
     		TextComponentTranslation wlObj = new TextComponentTranslation("gui.chunk.render.wlobject");
     		wlObj.getStyle().setColor(TextFormatting.GOLD);
     		TextComponentTranslation wlBrk = new TextComponentTranslation("gui.chunk.render.wlbreak");
-    		wlObj.getStyle().setColor(TextFormatting.RED);
+    		wlBrk.getStyle().setColor(TextFormatting.RED);
     		TextComponentTranslation wlInt = new TextComponentTranslation("gui.chunk.render.wlinteract");
-    		wlObj.getStyle().setColor(TextFormatting.BLUE);
+    		wlInt.getStyle().setColor(TextFormatting.BLUE);
     		TextComponentTranslation wltext = new TextComponentTranslation("gui.chunk.render.whitelist", wlObj.appendSibling(wlBrk.appendSibling(wlInt)));
-    		wlObj.getStyle().setColor(TextFormatting.BLUE);
     		this.drawString(this.fontRenderer, wltext.getFormattedText(), wlList.x, wlList.y-10, 16777215);
     		memberAdd.drawTextBox();
     		wlList.drawScreen(mouseX, mouseY, partialTicks);

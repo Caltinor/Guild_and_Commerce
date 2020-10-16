@@ -111,18 +111,36 @@ public class MessageChunkToServer implements IMessage{
 			case ADDMEMBER: {	
 				UUID pid = ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name) != null ? 
 						ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name).getId() : Reference.NIL;
-				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
-				if (!pid.equals(Reference.NIL)) cap.includePlayer(pid);
-				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				if (!pid.equals(Reference.NIL)) {
+					UUID sid = ctx.getServerHandler().player.getUniqueID();
+					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
+					if (cap.getOwner().equals(sid))	cap.includePlayer(pid);
+					else if (!cap.getOwner().equals(Reference.NIL)){
+						UUID gid = Reference.NIL;
+						List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
+						for (int i = 0; i < glist.size(); i++) {
+							if (glist.get(i).members.getOrDefault(sid, -2) >= 0) {
+								gid = glist.get(i).guildID;
+								break;
+							} 
+						}
+						boolean pidIsMember = glist.get(GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(gid)).members.getOrDefault(pid, -2) >= 0;
+						if (cap.getOwner().equals(gid) && pidIsMember) cap.includePlayer(pid);
+					}
+					ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
+				}				
 				break;
 			}
 			case REMOVEMEMBER: {
 				UUID pid = ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name) != null ? 
 						ctx.getServerHandler().player.getServer().getPlayerProfileCache().getGameProfileForUsername(message.name).getId() : Reference.NIL;	
+				if (pid.equals(Reference.NIL)) break;
+				UUID sid = ctx.getServerHandler().player.getUniqueID();
 				ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).getCapability(ChunkProvider.CHUNK_CAP, null);
-				Guild guild = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(cap.getOwner()));
-				if (cap.getOwner().equals(ctx.getServerHandler().player.getUniqueID()) || guild.members.getOrDefault(pid, -1) >= 0) {					
-					if (!pid.equals(Reference.NIL)) cap.removePlayer(pid);
+				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(cap.getOwner());
+				Guild guild = gindex >= 0 ? GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gindex) : new Guild(Reference.NIL);
+				if (cap.getOwner().equals(sid) || guild.members.getOrDefault(sid, -1) >= 0) {					
+					cap.removePlayer(pid);
 				}
 				ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(message.cX, message.cZ).markDirty();
 				break;
