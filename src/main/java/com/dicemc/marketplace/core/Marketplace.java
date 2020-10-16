@@ -23,12 +23,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.oredict.OreDictionary;
+import scala.actors.threadpool.Arrays;
 
 
 public class Marketplace {
@@ -147,16 +149,14 @@ public class Marketplace {
 			}
 			else if (!vendList.get(index).vendorGiveItem) {
 				//sweep player inventory for the item at the amount
-				ItemStack vend = vendList.get(index).item;
+				if (acctPlayers.getBalance(buyer) < fee) return new TextComponentTranslation("market.buy.failfunds").getFormattedText();
 				boolean hasItemStock = false;
-				int stockCount = vend.getCount();
+				int stockCount = vendList.get(index).item.getCount();
+				ItemStack invStack = ItemStack.EMPTY;
+				ItemStack refStack = vendList.get(index).item.copy();
 				for (int i = 0; i < player.inventoryContainer.inventorySlots.size(); i++) {
-					ItemStack comp = player.inventoryContainer.getSlot(i).getStack();
-					boolean itemsMatch = false;
-					int[] ids = OreDictionary.getOreIDs(vend);
-					if (ids.length > 0) itemsMatch = OreDictionary.containsMatch(true, OreDictionary.getOres(OreDictionary.getOreName(ids[0])), comp);
-					else itemsMatch = vend.getItem().equals(comp.getItem());
-					if (itemsMatch && vend.getMetadata() == comp.getMetadata() && vend.getItemDamage() == comp.getItemDamage()) {
+					invStack = player.inventoryContainer.getSlot(i).getStack().copy();
+					if (invStack.getItem().equals(refStack.getItem())&& ((!refStack.getHasSubtypes() && !invStack.getHasSubtypes()) || refStack.getMetadata() == invStack.getMetadata()) && ItemStack.areItemStackTagsEqual(refStack, invStack)) {
 						stockCount -= player.inventoryContainer.getSlot(i).getStack().getCount();
 					}
 					if (stockCount <= 0) {hasItemStock = true; break;}
@@ -164,34 +164,27 @@ public class Marketplace {
 				if (hasItemStock) {
 					stockCount = vendList.get(index).item.getCount();
 					for (int i = 0; i < player.inventoryContainer.inventorySlots.size(); i++) {
-						ItemStack comp = player.inventoryContainer.getSlot(i).getStack();
-						boolean itemsMatch = false;
-						int[] ids = OreDictionary.getOreIDs(vend);
-						if (ids.length > 0) itemsMatch = OreDictionary.containsMatch(true, OreDictionary.getOres(OreDictionary.getOreName(ids[0])), comp);
-						else itemsMatch = vend.getItem().equals(comp.getItem());
-						if (itemsMatch && vend.getMetadata() == comp.getMetadata() && vend.getItemDamage() == comp.getItemDamage()) {
+						invStack = player.inventoryContainer.getSlot(i).getStack().copy();
+						if (invStack.getItem().equals(refStack.getItem())&& ((!refStack.getHasSubtypes() && !invStack.getHasSubtypes()) || refStack.getMetadata() == invStack.getMetadata()) && ItemStack.areItemStackTagsEqual(refStack, invStack)) {
 							int initCount = player.inventoryContainer.getSlot(i).getStack().getCount();
-							if (initCount >= stockCount) {
+							if (initCount > stockCount) {
 								player.inventoryContainer.getSlot(i).getStack().setCount(initCount - stockCount);
 								break;
 							}
-							else if (player.inventoryContainer.getSlot(i).getStack().getCount() < stockCount) {
+							else if (player.inventoryContainer.getSlot(i).getStack().getCount() <= stockCount) {
 								stockCount -= player.inventoryContainer.getSlot(i).getStack().getCount();
 								player.inventoryContainer.getSlot(i).putStack(ItemStack.EMPTY);
 							}
 						}
 					}
-					if (acctPlayers.getBalance(buyer) >= fee) {
-						acctPlayers.addBalance(buyer, -1 * fee);;
-						acctPlayers.addBalance(buyer, vendList.get(index).price);
-						addToQueue(vendList.get(index).vendor, vendList.get(index).item);
-						double price = vendList.get(index).price;
-						if (!vendList.get(index).infinite) vendList.get(index).vendStock -= 1;
-						if (vendList.get(index).vendStock <= 0) vendList.remove(index);
-						manager.markDirty();
-						return new TextComponentTranslation("market.buy.success.receivefund", String.valueOf(price - fee), String.valueOf(Math.abs(fee))).getFormattedText();
-					}
-					else return new TextComponentTranslation("market.buy.failfunds").getFormattedText();
+					acctPlayers.addBalance(buyer, -1 * fee);;
+					acctPlayers.addBalance(buyer, vendList.get(index).price);
+					addToQueue(vendList.get(index).vendor, vendList.get(index).item);
+					double price = vendList.get(index).price;
+					if (!vendList.get(index).infinite) vendList.get(index).vendStock -= 1;
+					if (vendList.get(index).vendStock <= 0) vendList.remove(index);
+					manager.markDirty();
+					return new TextComponentTranslation("market.buy.success.receivefund", String.valueOf(price - fee), String.valueOf(Math.abs(fee))).getFormattedText();
 				}
 				else if (!hasItemStock) return new TextComponentTranslation("market.buy.failstock").getFormattedText();
 			}
