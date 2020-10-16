@@ -31,6 +31,16 @@ public class TempClaimCommands extends CommandBase{
 
 	@Override
 	public String getName() {return "tempclaim";}
+	
+	@Override
+	public List<String> getAliases() {
+		List<String> al = new ArrayList<String>();
+		al.add("tempclaim");
+		al.add("temp");
+		al.add("tc");
+		return al;
+	}
+	
 	@Override
 	public String getUsage(ICommandSender sender) {return tctGetUsage.getFormattedText();	}
 	

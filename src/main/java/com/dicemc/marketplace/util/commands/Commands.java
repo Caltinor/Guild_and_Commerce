@@ -57,6 +57,14 @@ public class Commands extends CommandBase{
 
 	@Override
 	public String getName() { return "gncadmin"; }
+	
+	@Override
+	public List<String> getAliases() {
+		List<String> al = new ArrayList<String>();
+		al.add("gncadmin");
+		al.add("admin");
+		return al;
+	}
 
 	@Override
 	public String getUsage(ICommandSender sender) { return tctGetUsage.getFormattedText(); }

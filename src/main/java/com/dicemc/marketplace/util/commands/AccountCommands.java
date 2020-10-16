@@ -1,5 +1,6 @@
 package com.dicemc.marketplace.util.commands;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,15 @@ public class AccountCommands extends CommandBase {
 	
 	@Override
 	public String getName() { return "account"; }
+	
+	@Override
+	public List<String> getAliases() {
+		List<String> al = new ArrayList<String>();
+		al.add("accout");
+		al.add("acct");
+		al.add("a");
+		return al;
+	}
 
 	@Override
 	public String getUsage(ICommandSender sender) {	return tctGetusage.getFormattedText(); }
@@ -63,7 +73,7 @@ public class AccountCommands extends CommandBase {
 		}
 		switch(args[0]) {
 		//base arguments <deposit/withdraw/guild/help>
-		case "deposit": {
+		case "deposit": case "dep": {
 			EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID());
 			double value = 0;
 			for (int i = 0; i < player.inventoryContainer.inventorySlots.size(); i++) {
@@ -79,7 +89,7 @@ public class AccountCommands extends CommandBase {
 			message(msg, sender);
 			break;
 		}
-		case "withdraw": {
+		case "withdraw": case "wit":{
 			double balP = AccountSaver.get(sender.getEntityWorld()).getPlayers().getBalance(sender.getCommandSenderEntity().getUniqueID());
 			if (balP >= Math.abs(Double.valueOf(args[1]))) {
 				AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), -1 * Math.abs(Double.valueOf(args[1])));
