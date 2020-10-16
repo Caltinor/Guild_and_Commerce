@@ -21,6 +21,7 @@ import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 
+import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -342,7 +343,6 @@ public class ChunkEventHandler {
 			cap = event.getWorld().getChunkFromBlockCoords(event.getAffectedEntities().get(i).getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
 			if (!cap.getOwner().equals(Reference.NIL) && !cap.getExplosionsOn()) event.getAffectedEntities().remove(i);
 		}		
-		
 	}
 
 }
