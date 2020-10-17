@@ -56,7 +56,14 @@ public class ProtectionChecker {
 				}
 				default:}
 			}
-			else if (cap.getWhitelist().size() > 0 && cap.getPlayers().size() == 0){
+			else if (cap.getWhitelist().size() > 0 && cap.getPlayers().size() == 0 && cap.getLeasePrice() >= 0){
+				switch (pt) {
+				case ULNM:{return matchType.DENIED;}
+				case LRM: {return matchType.WHITELIST;}
+				case HRM: {return matchType.FULL;}
+				default:}
+			}
+			else if (cap.getWhitelist().size() > 0 && cap.getPlayers().size() == 0 && cap.getLeasePrice() == -1){
 				switch (pt) {
 				case ULNM: case LRM: {return matchType.WHITELIST;}
 				case HRM: {return matchType.FULL;}
