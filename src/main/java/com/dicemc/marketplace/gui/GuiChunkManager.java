@@ -91,7 +91,7 @@ public class GuiChunkManager extends GuiScreen{
 		TEMP_CLAIM(new TextComponentTranslation("gui.chunk.tempclaim").getFormattedText()),
 		EXTEND_TIME(new TextComponentTranslation("gui.chunk.extendtime").getFormattedText()),
 		SET_BREAK(new TextComponentTranslation("gui.chunk.setbreak").getFormattedText()),
-		RENT_CHUNK(new TextComponentTranslation("gui.chunk.rent").getFormattedText());		
+		RENT_CHUNK(new TextComponentTranslation("gui.chunk.rentchunk").getFormattedText());		
 		public final String displayString;		
 		eButton1(String displayString) {this.displayString = displayString;}
 	}	
