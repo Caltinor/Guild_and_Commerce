@@ -14,9 +14,9 @@ import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -80,8 +80,10 @@ public class MessageCreateInfoToServer implements IMessage{
 				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 				Map<UUID, String> list = new HashMap<UUID, String>();
 				for (int i = 0; i < glist.size(); i++) {
-					if (glist.get(i).members.getOrDefault(ctx.getServerHandler().player.getUniqueID(), 4) == -1) list.put(glist.get(i).guildID, TextFormatting.RED+"INVITE: "+glist.get(i).guildName);
-					else if (glist.get(i).openToJoin) list.put(glist.get(i).guildID, TextFormatting.BLUE+"OPEN:   "+glist.get(i).guildName);
+					if (glist.get(i).members.getOrDefault(ctx.getServerHandler().player.getUniqueID(), 4) == -1) list.put(glist.get(i).guildID, TextFormatting.RED+
+							new TextComponentTranslation("gui.members.INVITE").getFormattedText()+glist.get(i).guildName);
+					else if (glist.get(i).openToJoin) list.put(glist.get(i).guildID, TextFormatting.BLUE+
+							new TextComponentTranslation("gui.members.OPEN").getFormattedText()+glist.get(i).guildName);
 				}
 				double balance = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageCreateInfoToGui(list, balance, Main.ModConfig.GUILD_CREATE_COST), ctx.getServerHandler().player);
