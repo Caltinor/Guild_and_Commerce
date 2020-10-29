@@ -2,8 +2,6 @@ package com.dicemc.marketplace.network;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,35 +9,27 @@ import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
-import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.core.Marketplace;
-import com.dicemc.marketplace.gui.ContainerSell;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
-import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IInteractionObject;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class MessageMarketsToServer implements IMessage{
 	public MktPktType action;
@@ -131,7 +121,7 @@ public class MessageMarketsToServer implements IMessage{
 						if (!market.vendList.get(message.index).locality.equals(locality)) {
 							int gIdx = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(market.vendList.get(message.index).locality);
 							Guild guild = (gIdx >= 0) ? GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.get(gIdx) : null;
-							String loc = guild == null ? "Unowned" : guild.guildName;
+							String loc = guild == null ? new TextComponentTranslation("market.net.unowned").getFormattedText() : guild.guildName;
 							if (gIdx >= 0) {
 								ChunkPos nearest = guild.coreLand.get(0);
 								ChunkPos myLoc = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getPos();
@@ -150,16 +140,14 @@ public class MessageMarketsToServer implements IMessage{
 								}
 								loc += "("+String.valueOf(nearest.x)+","+String.valueOf(nearest.z)+")";
 							}
-							resp = "Must Be in "+loc+" territory to purchase";
-							break;
+							resp = new TextComponentTranslation("market.net.outofloc", loc).getUnformattedComponentText();
 						}
 						else {
 							resp = market.buyItem(message.index, ctx.getServerHandler().player.getUniqueID(), ctx.getServerHandler().player.getServer());
 						}
 					}
 					else {
-						resp = "Item No Longer Listed";
-						break;
+						resp = new TextComponentTranslation("market.net.nomoreitem").getFormattedText();
 					}
 					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 0, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
@@ -170,7 +158,7 @@ public class MessageMarketsToServer implements IMessage{
 					if (market.vendList.get(message.index) != null) {
 						resp = market.buyItem(message.index, ctx.getServerHandler().player.getUniqueID(), ctx.getServerHandler().player.getServer());
 					}
-					else resp = "Item No Longer Listed";
+					else resp = new TextComponentTranslation("market.net.nomoreitem").getFormattedText();
 					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 1, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
@@ -180,7 +168,7 @@ public class MessageMarketsToServer implements IMessage{
 					if (market.vendList.get(message.index) != null) {
 						resp = market.placeBid(message.index, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					}
-					else resp = "This bid has closed";
+					else resp = new TextComponentTranslation("market.net.bidclosed").getFormattedText();;
 					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 2, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
@@ -190,7 +178,7 @@ public class MessageMarketsToServer implements IMessage{
 					if (market.vendList.get(message.index) != null) {
 						resp = market.buyItem(message.index, ctx.getServerHandler().player.getUniqueID(), ctx.getServerHandler().player.getServer());
 					}
-					else resp = "Item No Longer Listed";
+					else resp = new TextComponentTranslation("market.net.nomoreitem").getFormattedText();
 					double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 					Main.NET.sendTo(new MessageMarketsToGui(true, 4, market.vendList, locality, market.feeBuy, market.feeSell, balP, resp), ctx.getServerHandler().player);
 					break;
@@ -207,17 +195,16 @@ public class MessageMarketsToServer implements IMessage{
 				break;
 			}
 			case SELL: {
-				String response = "";
 				switch (message.market) {
 				case 0: {
 					if (message.index.equals(Reference.NIL)) {MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().addToList(message.giveItem, message.item, Reference.NIL, message.price, false); break;}
 					ChunkCapability cap = ctx.getServerHandler().player.getEntityWorld().getChunkFromChunkCoords(ctx.getServerHandler().player.chunkCoordX, ctx.getServerHandler().player.chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
-					if (cap.getOwner().equals(Reference.NIL)) {response = "Local sales only permitted in guild territory"; break;}
+					if (cap.getOwner().equals(Reference.NIL)) {break;}
 					else {
 						List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
 						for (int i = 0; i < glist.size(); i++) {
 							if (cap.getOwner().equals(glist.get(i).guildID)) {
-								response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+								MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getLocal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 								break;
 							}
 						}
@@ -226,17 +213,17 @@ public class MessageMarketsToServer implements IMessage{
 				}
 				case 1: {
 					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().addToList(message.giveItem, message.item, Reference.NIL, message.price, false);
-					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					else MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGlobal().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					break;
 				}
 				case 2: {
 					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().addToList(message.giveItem, message.item, Reference.NIL, message.price, false);
-					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					else MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getAuction().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					break;
 				}
 				case 3: {
 					if (message.index.equals(Reference.NIL)) MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer().addToList(message.giveItem, message.item, Reference.NIL, message.price, true);
-					else response = MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
+					else MarketSaver.get(ctx.getServerHandler().player.getEntityWorld()).getServer().sellItem(message.giveItem, message.item, ctx.getServerHandler().player.getUniqueID(), message.price, ctx.getServerHandler().player.getServer());
 					break;
 				}
 				default:
