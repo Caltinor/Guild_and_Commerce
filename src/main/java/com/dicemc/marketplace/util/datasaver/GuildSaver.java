@@ -2,24 +2,18 @@ package com.dicemc.marketplace.util.datasaver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.util.Reference;
 
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagLong;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.MapStorage;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.Constants.NBT;
 
 public class GuildSaver extends WorldSavedData {
 	private static final String DATA_NAME = Reference.MOD_ID + "_GuildsData";

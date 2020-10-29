@@ -8,19 +8,15 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
-import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.dicemc.marketplace.network.PacketHandler;
 import com.dicemc.marketplace.util.Reference;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 

@@ -16,8 +16,6 @@ import com.dicemc.marketplace.gui.GuiGuildPerms;
 import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
-import com.dicemc.marketplace.network.PacketHandler;
-import com.dicemc.marketplace.util.AdminGuiType;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import net.minecraft.client.Minecraft;

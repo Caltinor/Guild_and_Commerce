@@ -10,10 +10,8 @@ import net.minecraft.client.gui.GuiButtonImage;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
 import net.minecraftforge.fml.relauncher.Side;
 
 @EventBusSubscriber(Side.CLIENT)
@@ -37,7 +35,6 @@ public class GuiEventHandler {
 			event.getButtonList().add(playersButton);
 			event.getButtonList().add(marketsButton);
 			event.getButtonList().add(permsButton);
-			
 		}
 	}
 	

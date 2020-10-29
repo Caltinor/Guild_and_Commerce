@@ -1,7 +1,6 @@
 package com.dicemc.marketplace.gui;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -9,9 +8,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.network.MessageCreateInfoToServer;
 import com.dicemc.marketplace.util.Reference;
 import com.google.common.collect.Lists;
@@ -59,6 +55,7 @@ public class GuiGuildCreate extends GuiScreen {
         inviteList.handleMouseInput();
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 10 && guildName.getText().length() > 0) {//create guild
 			Main.NET.sendToServer(new MessageCreateInfoToServer(0, Reference.NIL, guildName.getText()));
@@ -115,7 +112,7 @@ public class GuiGuildCreate extends GuiScreen {
     }
 	
 	
-	public class GuiListGuildInvite extends GuiNewListExtended{
+	public class GuiListGuildInvite extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiGuildCreate guiManager;
 	    public Map<UUID, String> invitedGuilds;
 	    private final List<GuiListGuildInviteEntry> entries = Lists.<GuiListGuildInviteEntry>newArrayList();

@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import javax.annotation.Nullable;
 
 import org.lwjgl.input.Keyboard;
@@ -21,18 +18,12 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.WhitelistItem;
-import com.dicemc.marketplace.events.GuiEventHandler;
-import com.dicemc.marketplace.events.PlayerEventHandler;
-import com.dicemc.marketplace.network.MessageAccountInfoToServer;
 import com.dicemc.marketplace.network.MessageChunkToServer;
-import com.dicemc.marketplace.network.MessageGuildInfoToServer;
 import com.dicemc.marketplace.util.CkPktType;
 import com.dicemc.marketplace.util.Reference;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -46,14 +37,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.client.GuiScrollingList;
 import net.minecraftforge.fml.client.config.GuiUtils;
 
 
@@ -183,16 +171,17 @@ public class GuiChunkManager extends GuiScreen{
 		setOverlayColors();
 	}
 	
+	@SuppressWarnings("static-access")
 	public void initGui() {
-		button1 = new IDButton(11, 3, 20, 75, 20, "");
+		button1 = new IDButton<eButton1>(11, 3, 20, 75, 20, "");
 		button1.state = eButton1.TEMP_CLAIM;
-		button2 = new IDButton(12, button1.x, button1.y+ 23, 75, 20, "");
+		button2 = new IDButton<eButton2>(12, button1.x, button1.y+ 23, 75, 20, "");
 		button2.state = eButton2.GUILD_CLAIM;
-		button3 = new IDButton(13, button1.x, button1.y+ 46, 75, 20, "");
+		button3 = new IDButton<eButton3>(13, button1.x, button1.y+ 46, 75, 20, "");
 		button3.state = eButton3.NEW_OUTPOST;
-		overlayToggle = new IDButton(15, 3, this.height - 30, 100, 20, "");
+		overlayToggle = new IDButton<eOverlayToggle>(15, 3, this.height - 30, 100, 20, "");
 		overlayToggle.state = eOverlayToggle.OVERLAY_OFF;
-		button4 = new IDButton(14, button1.x, button1.y+ 69, 75, 20, "");
+		button4 = new IDButton<eButton4>(14, button1.x, button1.y+ 69, 75, 20, "");
 		button4.state = chunkList.get(12).isPublic ? eButton4.PUBLIC_YES : eButton4.PUBLIC_NO;
 		chunkMbrList = new GuiListChunkMembers(this, selectedIdx, mc.getMinecraft(), button1.x+button1.width+175, 30, this.width/3, (this.height-60)/2, 10);
 		sellprice = new GuiTextField(1, this.fontRenderer, button1.x, button4.y+button4.height+12, 75, 20);
@@ -388,7 +377,7 @@ public class GuiChunkManager extends GuiScreen{
 				wlList.refreshList(selectedIdx);
 			}
 			if (keyCode == Keyboard.KEY_T) {
-				if (((IDButton)overlayToggle).state != eOverlayToggle.DISABLE_SUBLET) {
+				if (((IDButton<?>)overlayToggle).state != eOverlayToggle.DISABLE_SUBLET) {
 					overlayOwners = overlayOwners ? false : true;
 					overlayToggle.state = overlayOwners? eOverlayToggle.OVERLAY_ON : eOverlayToggle.OVERLAY_OFF;
 					updateVisibility();
@@ -397,6 +386,7 @@ public class GuiChunkManager extends GuiScreen{
 		}
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 10) { //Exit Button
 			if (!isSubletMenu) {
@@ -406,44 +396,44 @@ public class GuiChunkManager extends GuiScreen{
 			if (isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CLEAR, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 		}
 		if (button == button1) { //Temp Claim Button
-			if (((IDButton)button).state == eButton1.TEMP_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (((IDButton)button).state == eButton1.EXTEND_TIME)	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (((IDButton)button).state == eButton1.SET_BREAK && wlList.selectedIdx >= 0) {
+			if (((IDButton<?>)button).state == eButton1.TEMP_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton<?>)button).state == eButton1.EXTEND_TIME)	Main.NET.sendToServer(new MessageChunkToServer(CkPktType.EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton<?>)button).state == eButton1.SET_BREAK && wlList.selectedIdx >= 0) {
 				WhitelistItem wlItem = wlList.getSelectedMember().wlItem;
 				wlItem.setCanBreak(wlItem.getCanBreak() ? false : true);
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CHANGE, fromIndex().x, fromIndex().z, "", wlItem));
 			}
-			else if (((IDButton)button).state == eButton1.RENT_CHUNK) {
+			else if (((IDButton<?>)button).state == eButton1.RENT_CHUNK) {
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.RENT_START, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			}
 		}
 		if (button == button2) { //Guild Claim Button
-			if (((IDButton)button).state == eButton2.GUILD_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (((IDButton)button).state == eButton2.UPDATE_PRICE || ((IDButton)button).state == eButton2.SELL_CLAIM){
+			if (((IDButton<?>)button).state == eButton2.GUILD_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.CLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton<?>)button).state == eButton2.UPDATE_PRICE || ((IDButton<?>)button).state == eButton2.SELL_CLAIM){
 				double sellP = -1D;
 				try {sellP = Math.abs(Double.valueOf(sellprice.getText()));} catch (NumberFormatException e) {}
 				if (sellP != -1) Main.NET.sendToServer( new MessageChunkToServer(CkPktType.SELL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));				
 			}
-			else if (((IDButton)button).state == eButton2.SET_INTERACT && wlList.selectedIdx >= 0) {
+			else if (((IDButton<?>)button).state == eButton2.SET_INTERACT && wlList.selectedIdx >= 0) {
 				WhitelistItem wlItem = wlList.getSelectedMember().wlItem;
 				wlItem.setCanInteract(wlItem.getCanInteract() ? false: true);
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CHANGE, fromIndex().x, fromIndex().z, "", wlItem));
 			}
-			else if (((IDButton)button).state == eButton2.RENT_EXTEND) {
+			else if (((IDButton<?>)button).state == eButton2.RENT_EXTEND) {
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.RENT_EXTEND, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			}			
 		}
 		if (button == button3) { //Outpost Claim Button
-			if (((IDButton)button).state == eButton3.NEW_OUTPOST) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (((IDButton)button).state == eButton3.ABANDON_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
-			else if (((IDButton)button).state == eButton3.SET_INTERVAL) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_INTERVAL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
+			if (((IDButton<?>)button).state == eButton3.NEW_OUTPOST) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.OUTPOST, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton<?>)button).state == eButton3.ABANDON_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.ABANDON, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+			else if (((IDButton<?>)button).state == eButton3.SET_INTERVAL) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_INTERVAL, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
 		}
 		if (button == button4) { //Public Toggle Button
 			if (!isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.PUBLIC, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
 			if (isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_PRICE, fromIndex().x, fromIndex().z, sellprice.getText(), new WhitelistItem("")));
 		}
 		if (button == overlayToggle) { //Overlay toggle
-			if (((IDButton)button).state == eOverlayToggle.DISABLE_SUBLET)
+			if (((IDButton<?>)button).state == eOverlayToggle.DISABLE_SUBLET)
 				Main.NET.sendToServer(new MessageChunkToServer(CkPktType.SUBLET_PRICE, fromIndex().x, fromIndex().z, "-1", new WhitelistItem("")));
 			else {
 				overlayOwners = overlayOwners ? false : true;
@@ -782,7 +772,7 @@ public class GuiChunkManager extends GuiScreen{
 		}
 	}
 
-	public class GuiListChunkMembers extends GuiNewListExtended{
+	public class GuiListChunkMembers extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiChunkManager chunkManager;
 	    public List<String> mbrNames;
 	    private final List<GuiListChunkMembersEntry> entries = Lists.<GuiListChunkMembersEntry>newArrayList();
@@ -853,7 +843,7 @@ public class GuiChunkManager extends GuiScreen{
 
 	}
 
-	public class GuiListWhitelist extends GuiNewListExtended{
+	public class GuiListWhitelist extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiChunkManager chunkManager;
 	    public List<WhitelistItem> whitelist;
 	    private final List<GuiListWhitelistEntry> entries = Lists.<GuiListWhitelistEntry>newArrayList();

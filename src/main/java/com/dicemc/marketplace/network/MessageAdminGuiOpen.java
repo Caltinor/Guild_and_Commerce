@@ -1,13 +1,7 @@
 package com.dicemc.marketplace.network;
 
-import java.util.UUID;
-
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.core.Account;
-import com.dicemc.marketplace.gui.GuiGuildManager;
-
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;

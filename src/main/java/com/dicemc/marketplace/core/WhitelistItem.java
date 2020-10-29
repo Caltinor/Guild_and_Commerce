@@ -1,10 +1,7 @@
 package com.dicemc.marketplace.core;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 
 public class WhitelistItem {
 	private boolean canBreak = false;

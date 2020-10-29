@@ -15,15 +15,7 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.core.MarketItem;
-import com.dicemc.marketplace.gui.GuiGuildManager.GuiListGuildChunks;
-import com.dicemc.marketplace.gui.GuiGuildManager.GuiListGuildChunksEntry;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
-import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarket;
-import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarketEntry;
 import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
-import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.network.MessageAdminToServer;
 import com.dicemc.marketplace.network.MessageMemberInfoToServer;
 import com.dicemc.marketplace.util.AdminGuiType;
@@ -36,12 +28,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
@@ -233,8 +220,8 @@ public class GuiAdmin extends GuiScreen{
 		saveGuild.visible = false;
 		listGuildPerms.visible = false;
 		//guild Land menu specific objects
-		guicoreChunkList = new GuiListAdminGuildChunks(this, pos, chunkValues, true, mc, 83, 15, 130, (this.height-50)/2, 10);
-		guioutpostChunkList = new GuiListAdminGuildChunks(this, pos, chunkValues, false, mc, 83, guicoreChunkList.y+guicoreChunkList.height+30, 130, guicoreChunkList.height, 10);
+		guicoreChunkList = new GuiListAdminGuildChunks(pos, chunkValues, true, mc, 83, 15, 130, (this.height-50)/2, 10);
+		guioutpostChunkList = new GuiListAdminGuildChunks(pos, chunkValues, false, mc, 83, guicoreChunkList.y+guicoreChunkList.height+30, 130, guicoreChunkList.height, 10);
 		landValue = new GuiTextField(40, this.fontRenderer, guicoreChunkList.x+guicoreChunkList.width + 30, this.height/4, 100, 20);
 		landPublic = new GuiButton(41, landValue.x, landValue.y+landValue.height+5, 100, 20, "");
 		landForSale = new GuiButton(42, landValue.x, landPublic.y+landPublic.height+5, 100, 20, "");
@@ -781,7 +768,7 @@ public class GuiAdmin extends GuiScreen{
     	super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
-    public class GuiListAccount extends GuiNewListExtended{
+    public class GuiListAccount extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiAdmin parentGui;
 	    public Map<Account, String> accountList;
 	    private final List<GuiListAccountEntry> entries = Lists.<GuiListAccountEntry>newArrayList();
@@ -858,7 +845,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListNameList extends GuiNewListExtended{
+	public class GuiListNameList extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiAdmin parentGui;
 	    public Map<UUID, String> nameList;
 	    private final List<GuiListNameListEntry> entries = Lists.<GuiListNameListEntry>newArrayList();
@@ -932,7 +919,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListAdminMarket extends GuiNewListExtended{
+	public class GuiListAdminMarket extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiAdmin parentGui;
 	    public List<MarketListItem> vendList;
 	    public UUID locality;
@@ -1031,10 +1018,9 @@ public class GuiAdmin extends GuiScreen{
 		}
 	}
 
-	public class GuiListAdminGuildMembers extends GuiNewListExtended{
+	public class GuiListAdminGuildMembers extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiAdmin guildManager;
 	    public Guild guild;
-	    public Map<UUID, String> mbrNames;
 	    private final List<GuiListAdminGuildMembersEntry> entries = Lists.<GuiListAdminGuildMembersEntry>newArrayList();
 	    /** Index to the currently selected world */
 	    private int selectedIdx = -1;
@@ -1043,19 +1029,17 @@ public class GuiAdmin extends GuiScreen{
 			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
 			this.guildManager = guiGM;
 			this.guild = guildManager.guiGuild;
-			this.mbrNames = guildManager.mbrNames;
 			this.refreshList();
 		}
 		
 	    public void refreshList()
 	    {
 	    	this.guild = guildManager.guiGuild;
-	    	this.mbrNames = guildManager.mbrNames;
 	    	entries.clear();
 	        Map<UUID, Integer> members = guild.members;
 
 	        for (Map.Entry<UUID, Integer> entry : members.entrySet()){
-	            this.entries.add(new GuiListAdminGuildMembersEntry(this, entry.getKey(), entry.getValue(), guild.permLevels, mbrNames));
+	            this.entries.add(new GuiListAdminGuildMembersEntry(this, entry.getKey(), entry.getValue(), guild.permLevels));
 	        }
 	    }
 	    
@@ -1086,13 +1070,11 @@ public class GuiAdmin extends GuiScreen{
 		private final String name; 
 		public int permLvl;
 		private Map<Integer, String> perms;
-		private  Map<UUID, String> mbrNames;
 		private Minecraft client = Minecraft.getMinecraft();
 	    private final GuiListAdminGuildMembers containingListSel;
 		
-		public GuiListAdminGuildMembersEntry (GuiListAdminGuildMembers listSelectionIn, UUID player, int permLvl, Map<Integer, String> permLvls, Map<UUID, String> mbrNames) {
+		public GuiListAdminGuildMembersEntry (GuiListAdminGuildMembers listSelectionIn, UUID player, int permLvl, Map<Integer, String> permLvls) {
 			containingListSel = listSelectionIn;
-			this.mbrNames = mbrNames;
 			this.player = player;
 			this.permLvl = permLvl;
 			this.perms = permLvls;		
@@ -1142,7 +1124,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListAdminPerms extends GuiNewListExtended{
+	public class GuiListAdminPerms extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiAdmin guildManager;
 	    public Map<String, Integer> perms;
 	    public Map<Integer, String> permRanks;
@@ -1234,8 +1216,7 @@ public class GuiAdmin extends GuiScreen{
 
 	}
 
-	public class GuiListAdminGuildChunks extends GuiNewListExtended{
-    	private final GuiAdmin guildManager;
+	public class GuiListAdminGuildChunks extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
     	private boolean coreChunk;
     	private List<ChunkPos> pos;
     	private Map<ChunkPos, Double> chunkValues;
@@ -1243,9 +1224,8 @@ public class GuiAdmin extends GuiScreen{
         /** Index to the currently selected world */
         private int selectedIdx = -1;
         
-        public GuiListAdminGuildChunks(GuiAdmin gm, List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
+        public GuiListAdminGuildChunks(List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
     		super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
-    		this.guildManager = gm;
     		this.pos = pos;
     		this.coreChunk = coreChunk;
     		this.chunkValues = chunkValues;

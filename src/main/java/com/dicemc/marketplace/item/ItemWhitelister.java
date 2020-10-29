@@ -9,7 +9,6 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.util.IHasModel;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;

@@ -1,8 +1,6 @@
 package com.dicemc.marketplace.gui;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,10 +8,7 @@ import javax.annotation.Nullable;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
-import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.events.GuiEventHandler;
-import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarket;
-import com.dicemc.marketplace.gui.GuiMarketManager.GuiListMarketEntry;
 import com.dicemc.marketplace.network.MessageGuiRequest;
 import com.dicemc.marketplace.network.MessageMarketsToServer;
 import com.dicemc.marketplace.util.MktPktType;
@@ -23,31 +18,22 @@ import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiButtonImage;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.ContainerWorkbench;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiMarketSell extends GuiContainer{
-	private int xOffset = this.width/4;
 	private final List<ItemStack> itemList;
 	public GuiButton mktLocal, mktGlobal, mktAuction, requestToggle, postButton, exitButton, mktServer;
 	public GuiButton stockAdd, stockSub, stock32, stock64;
@@ -56,13 +42,11 @@ public class GuiMarketSell extends GuiContainer{
 	private boolean isRequest;
 	private boolean widthTooNarrow;
 	private boolean isItemFromList = false;
-	private EntityPlayer player;
 	private final boolean adminMode;
 
 	public GuiMarketSell(EntityPlayer player, List<ItemStack> itemList, boolean adminMode) {
 		super(new ContainerSell(player));
 		this.itemList = itemList;
-		this.player = player;
 		this.adminMode = adminMode;
 	}
 	
@@ -276,8 +260,7 @@ public class GuiMarketSell extends GuiContainer{
         super.onGuiClosed();
     }
 	
-	public class GuiListItem extends GuiNewListExtended{
-	    private final GuiMarketSell guiManager;
+	public class GuiListItem extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    public List<ItemStack> itemList;
 	    private final List<GuiListItemEntry> entries = Lists.<GuiListItemEntry>newArrayList();
 	    /** Index to the currently selected world */
@@ -286,7 +269,6 @@ public class GuiMarketSell extends GuiContainer{
 		
 		public GuiListItem(GuiMarketSell guiGM, List<ItemStack> itemList, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
 			super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
-			this.guiManager = guiGM;
 			this.itemList = itemList;
 			this.refreshList();
 		}
@@ -325,7 +307,6 @@ public class GuiMarketSell extends GuiContainer{
 	    private final GuiListItem containingListSel;
 	    private Minecraft client = Minecraft.getMinecraft();
 	    private ItemStack item;
-	    private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 		
 		public GuiListItemEntry (GuiListItem listIn, ItemStack item) {
 			this.containingListSel = listIn;

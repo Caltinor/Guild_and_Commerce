@@ -19,10 +19,6 @@ import com.dicemc.marketplace.network.MessageCreateInfoToGui.PacketCreateInfoToG
 import com.dicemc.marketplace.network.MessageCreateInfoToServer.PacketCreateInfoToServer;
 import com.dicemc.marketplace.network.MessageGuiRequest.PacketGuiRequest;
 import com.dicemc.marketplace.network.MessageGuildInfoToServer.PacketGuildInfoToServer;
-import com.dicemc.marketplace.util.Reference;
-
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketHandler {

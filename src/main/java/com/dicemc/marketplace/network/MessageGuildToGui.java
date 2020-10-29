@@ -8,23 +8,14 @@ import java.util.UUID;
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.events.GuiEventHandler;
-import com.dicemc.marketplace.gui.GuiGuildManager;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager;
-import com.dicemc.marketplace.gui.GuiGuildPerms;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -75,6 +66,7 @@ public class MessageGuildToGui implements IMessage {
 		return map;
 	}
 	
+	@SuppressWarnings("static-access")
 	public NBTTagCompound chunkMapToNBT(Map<ChunkPos, Double> chunkValues) {
 		NBTTagCompound compound = new NBTTagCompound();
 		NBTTagList list = new NBTTagList();

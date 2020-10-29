@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 
@@ -17,7 +16,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.Constants;
 
 public class Guild {
@@ -162,6 +160,7 @@ public class Guild {
 		return list;
 	}
 	
+	@SuppressWarnings("static-access")
 	public NBTTagCompound toNBT() {
 			NBTTagCompound nbt = new NBTTagCompound();
 			nbt.setUniqueId("guildID", guildID);

@@ -11,10 +11,7 @@ import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.Marketplace;
-import com.dicemc.marketplace.events.GuiEventHandler;
-import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
-import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
@@ -25,19 +22,12 @@ import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -80,7 +70,6 @@ public class MessageGuiRequest implements IMessage{
 		private void handle(MessageGuiRequest message, MessageContext ctx) {
 			List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
 			AccountGroup acctG = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds();
-			AccountGroup acctP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers();
 			int gindex = -1;
 			for (int i = 0; i < glist.size(); i++) {
 				for (Map.Entry<UUID, Integer> entries : glist.get(i).members.entrySet()) {

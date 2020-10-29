@@ -1,9 +1,6 @@
 package com.dicemc.marketplace.gui;
 
-import com.dicemc.marketplace.gui.GuiChunkManager.GuiListChunkMembersEntry;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiListExtended;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 

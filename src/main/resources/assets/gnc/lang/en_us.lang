@@ -112,6 +112,10 @@ market.sell.failfunds=Insufficient Funds to post this sale.  Amount required = $
 market.restock.success=Restocked
 market.restock.failfunds=You do not have enough funds.
 market.restock.failstock=You do not have enough of this item to add stock.
+market.net.unowned=Unowned
+market.net.outofloc=Must Be in %s territory to purchase
+market.net.nomoreitem=Item No Longer Listed
+market.net.bidclosed=This bid has closed
 
 gui.admin.accounts=Accounts
 gui.admin.guilds=Guilds
@@ -214,6 +218,8 @@ gui.members.promote=Promote
 gui.members.demote=Demote
 gui.members.kick=Kick
 gui.members.invite=Invite
+gui.members.INVITE=INVITE: %s
+gui.members.OPEN=OPEN:  %s
 gui.chunk.tempclaim=Temp Claim
 gui.chunk.guildclaim=Guild Claim
 gui.chunk.newoutpost=New Outpost

@@ -2,10 +2,7 @@ package com.dicemc.marketplace.core;
 
 import java.util.UUID;
 
-import com.dicemc.marketplace.util.Reference;
-
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class MarketItem{
 	public ItemStack item;

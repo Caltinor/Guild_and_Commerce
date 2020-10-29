@@ -9,12 +9,9 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.network.MessageGuildInfoToServer;
 import com.dicemc.marketplace.network.MessageMemberInfoToServer;
-import com.dicemc.marketplace.util.Reference;
-import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
@@ -22,7 +19,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
@@ -31,7 +27,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 	private Map<UUID, String> mbrNames;
 	private GuiListGuildMembers memberList, inviteList;
 	private GuiTextField inviteText;
-	private GuiButton guiProm, guiDemo, guiKick, guiInvite;
+	private GuiButton guiProm, guiDemo, guiKick;
 	private boolean permProDemo, permKick;
 	private boolean inviteListClicked;
 	private Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
@@ -86,6 +82,7 @@ public class GuiGuildMemberManager extends GuiScreen{
         inviteList.handleMouseInput();
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 10) { //Cancel Button
 			Main.NET.sendToServer(new MessageGuildInfoToServer(guild, discriminators));
@@ -160,7 +157,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}   
 	
-	public class GuiListGuildMembers extends GuiNewListExtended{
+	public class GuiListGuildMembers extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiGuildMemberManager guildManager;
 	    public Guild guild;
 	    public Map<UUID, String> mbrNames;
@@ -216,13 +213,11 @@ public class GuiGuildMemberManager extends GuiScreen{
 		private final String name; 
 		public int permLvl;
 		private Map<Integer, String> perms;
-		private  Map<UUID, String> mbrNames;
 		private Minecraft client = Minecraft.getMinecraft();
 	    private final GuiListGuildMembers containingListSel;
 		
 		public GuiListGuildMembersEntry (GuiListGuildMembers listSelectionIn, UUID player, int permLvl, Map<Integer, String> permLvls, Map<UUID, String> mbrNames) {
 			containingListSel = listSelectionIn;
-			this.mbrNames = mbrNames;
 			this.player = player;
 			this.permLvl = permLvl;
 			this.perms = permLvls;		

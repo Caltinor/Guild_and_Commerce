@@ -1,13 +1,10 @@
 package com.dicemc.marketplace.util.commands;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
@@ -17,14 +14,12 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.chunk.Chunk;
 
 public class GuildCommands extends CommandBase{
 	TextComponentTranslation tctGetUsage = new TextComponentTranslation("cmd.guild.getusage");

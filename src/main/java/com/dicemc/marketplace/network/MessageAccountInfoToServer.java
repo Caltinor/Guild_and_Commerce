@@ -1,16 +1,11 @@
 package com.dicemc.marketplace.network;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.AccountGroup;
-import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
-import com.dicemc.marketplace.util.datasaver.GuildSaver;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -77,7 +72,6 @@ public class MessageAccountInfoToServer implements IMessage{
 				}
 			}
 			AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
-			int acctIndex = -1;
 			AccountGroup acctGlist = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds();		
 			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 			Main.NET.sendTo(new MessageAccountToGui(new Account(message.acctG.owner, acctGlist.getBalance(message.acctG.owner)), balP), ctx.getServerHandler().player);

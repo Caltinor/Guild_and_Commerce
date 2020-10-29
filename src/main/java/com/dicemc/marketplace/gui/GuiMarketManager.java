@@ -6,7 +6,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,38 +16,24 @@ import org.lwjgl.input.Keyboard;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
-import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
-import com.dicemc.marketplace.core.Marketplace;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.network.MessageMarketsToServer;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
-import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class GuiMarketManager extends GuiScreen{
 	private GuiButton localToggle, globalToggle, auctionToggle, serverToggle, buyItem, newSale, playerContent, restockSale;
@@ -56,10 +41,8 @@ public class GuiMarketManager extends GuiScreen{
 	private GuiTextField bidBox;
 	private GuiListMarket marketList;
 	private Map<UUID, MarketItem> vendList;
-	private double feeBuy, feeSell;
 	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 	private UUID locality;
-	private double balP;
 	private int slotIdx = -1;
 	private String response = "";
 	private String header = "";
@@ -73,10 +56,7 @@ public class GuiMarketManager extends GuiScreen{
 
 	public void syncMarket(int listType, Map<UUID, MarketItem> vendList, double feeBuy, double feeSell, double balP, String response) {
 		this.vendList = vendList;
-		this.feeBuy = feeBuy;
-		this.feeSell = feeSell;
 		this.listType = listType;
-		this.balP = balP;
 		this.response = listType != 3 ? response: "";
 		this.marketList.vendList = sortedMarketList(listType, vendList, this.locality, 0, this.sortMySalesOff.enabled);
 		this.marketList.listType = listType;
@@ -267,9 +247,6 @@ public class GuiMarketManager extends GuiScreen{
 		this.listType = listType;
 		this.vendList = vendList;
 		this.locality = locality;
-		this.feeBuy = feeBuy;
-		this.feeSell = feeSell;
-		this.balP = balP;
 		TextComponentTranslation tctAcct = new TextComponentTranslation("gui.market.headeraccount", df.format(balP));
 		tctAcct.setStyle(new Style().setColor(TextFormatting.GREEN));
 		header = new TextComponentTranslation("gui.market.header1", df.format(feeSell*100), df.format(feeBuy*100), tctAcct).getFormattedText();
@@ -426,6 +403,7 @@ public class GuiMarketManager extends GuiScreen{
 		}
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 15) {
 			mc.player.closeScreen();
@@ -602,7 +580,7 @@ public class GuiMarketManager extends GuiScreen{
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 	
-	public class GuiListMarket extends GuiNewListExtended{
+	public class GuiListMarket extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiMarketManager guildManager;
 	    public List<MarketListItem> vendList;
 	    public UUID locality;

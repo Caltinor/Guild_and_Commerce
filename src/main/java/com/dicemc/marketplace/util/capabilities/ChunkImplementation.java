@@ -3,18 +3,12 @@ package com.dicemc.marketplace.util.capabilities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.WhitelistItem;
 import com.dicemc.marketplace.util.Reference;
 
-import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.Constants;
 
 public class ChunkImplementation implements ChunkCapability{

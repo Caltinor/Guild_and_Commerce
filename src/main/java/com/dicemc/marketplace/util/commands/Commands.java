@@ -2,44 +2,31 @@ package com.dicemc.marketplace.util.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.AccountGroup;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.core.WhitelistItem;
-import com.dicemc.marketplace.gui.GuiChunkManager;
-import com.dicemc.marketplace.gui.GuiChunkManager.ChunkSummary;
 import com.dicemc.marketplace.item.ModItems;
-import com.dicemc.marketplace.gui.GuiMarketSell;
 import com.dicemc.marketplace.network.MessageAdminGuiOpen;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
-import com.dicemc.marketplace.util.datasaver.MarketSaver;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.chunk.Chunk;
 
 public class Commands extends CommandBase{
 	TextComponentTranslation tctGetUsage = new TextComponentTranslation("cmd.admin.getusage");
@@ -93,7 +80,6 @@ public class Commands extends CommandBase{
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		ItemStack item;
-		EntityPlayerMP plyr;
 		if (args.length == 0) {
 			message(tctHelp1, sender);
 			message(tctHelp2, sender);
@@ -202,7 +188,6 @@ public class Commands extends CommandBase{
 			break;
 		}
 		case "guild": {
-			List<Guild> glist = GuildSaver.get(sender.getEntityWorld()).GUILDS;
 			switch(args[1]) {
 			//base arguments <create/set/list/claim>
 			case "create": {

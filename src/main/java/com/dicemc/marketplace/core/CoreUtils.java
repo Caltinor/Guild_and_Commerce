@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.lwjgl.input.Keyboard;
-
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
@@ -18,18 +15,13 @@ import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 
 public class CoreUtils {
@@ -198,7 +190,6 @@ public class CoreUtils {
 	public static String sellClaim(UUID owner,int chunkX, int chunkZ, String price) {
 		List<Guild> glist = GuildSaver.get(world).GUILDS;
 		int gindex = -1;
-		boolean restricted = false;
 		for (int i = 0; i < glist.size(); i++) {
 			if (glist.get(i).members.containsKey(owner)) {
 				if (glist.get(i).members.get(owner) >= 0) gindex = i;
@@ -206,7 +197,8 @@ public class CoreUtils {
 			}
 		}
 		if (gindex >= 0 ) {
-			if (AccountSaver.get(world).getGuilds().getBalance(glist.get(gindex).guildID) < 0) restricted = true;
+			if (AccountSaver.get(world).getGuilds().getBalance(glist.get(gindex).guildID) < 0) {
+			}
 		}
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		cap.setForSale(true);
@@ -218,7 +210,6 @@ public class CoreUtils {
 	public static String abandonClaim(UUID owner,int chunkX, int chunkZ) {
 		List<Guild> glist = GuildSaver.get(world).GUILDS;
 		int gindex = -1;
-		boolean restricted = false;
 		for (int i = 0; i < glist.size(); i++) {
 			if (glist.get(i).members.containsKey(owner)) {
 				if (glist.get(i).members.get(owner) >= 0) gindex = i;

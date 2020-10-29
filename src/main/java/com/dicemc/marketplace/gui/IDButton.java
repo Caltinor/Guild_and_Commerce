@@ -2,6 +2,7 @@ package com.dicemc.marketplace.gui;
 
 import net.minecraft.client.gui.GuiButton;
 
+@SuppressWarnings("rawtypes")
 public class IDButton<T extends Enum> extends GuiButton{
 	public T state;
 

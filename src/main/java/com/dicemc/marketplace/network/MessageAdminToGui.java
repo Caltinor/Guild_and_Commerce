@@ -10,7 +10,6 @@ import java.util.UUID;
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.MarketItem;
-import com.dicemc.marketplace.gui.GuiAdmin;
 import com.dicemc.marketplace.gui.GuiMarketManager;
 import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;

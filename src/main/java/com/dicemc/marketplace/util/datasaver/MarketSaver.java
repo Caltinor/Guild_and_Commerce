@@ -1,17 +1,13 @@
 package com.dicemc.marketplace.util.datasaver;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.MarketItem;
 import com.dicemc.marketplace.core.Marketplace;
 import com.dicemc.marketplace.util.ObjectType;
 import com.dicemc.marketplace.util.Reference;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;

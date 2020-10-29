@@ -2,17 +2,10 @@ package com.dicemc.marketplace.events;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.Map.Entry;
-
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.ProtectionChecker;
-import com.dicemc.marketplace.core.ProtectionChecker.matchType;
-import com.dicemc.marketplace.core.WhitelistItem;
-import com.dicemc.marketplace.gui.ContainerSell;
 import com.dicemc.marketplace.item.ItemWhitelister;
 import com.dicemc.marketplace.item.ModItems;
 import com.dicemc.marketplace.util.Reference;
@@ -21,12 +14,8 @@ import com.dicemc.marketplace.util.capabilities.ChunkProvider;
 import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 
-import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ContainerPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
@@ -38,13 +27,11 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityEvent.EnteringChunk;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock;
@@ -53,12 +40,10 @@ import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.PlaceEvent;
 import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.Side;
 
+@SuppressWarnings("deprecation")
 @EventBusSubscriber
 public class ChunkEventHandler {
 	public static final ResourceLocation CHUNK_LOC = new ResourceLocation(Reference.MOD_ID, "_ChunkData");
@@ -292,7 +277,6 @@ public class ChunkEventHandler {
 		if (event.getEntityPlayer().isCreative()) return;
 		if (!(event.getTarget() instanceof EntityMob))	{
 			ChunkCapability cap = event.getEntity().world.getChunkFromBlockCoords(event.getEntity().getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
-			List<Guild> glist = GuildSaver.get(event.getEntity().world).GUILDS;
 			if (cap.getOwner().equals(Reference.NIL)) return;
 			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);
@@ -317,7 +301,6 @@ public class ChunkEventHandler {
 				return;
 			}
 			ChunkCapability cap = event.getEntityLiving().world.getChunkFromChunkCoords(event.getEntityLiving().chunkCoordX, event.getEntityLiving().chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
-			List<Guild> glist = GuildSaver.get(event.getEntity().world).GUILDS;
 			if (cap.getOwner().equals(Reference.NIL)) return;
 			if (ProtectionChecker.ownerMatch(event.getSource().getTrueSource().getUniqueID(), cap, GuildSaver.get(event.getSource().getTrueSource().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
 				event.setCanceled(true);

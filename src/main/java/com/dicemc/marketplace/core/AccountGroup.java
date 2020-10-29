@@ -8,7 +8,6 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 

@@ -3,16 +3,11 @@ package com.dicemc.marketplace.gui;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembers;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.network.MessagePermsToServer;
-import com.dicemc.marketplace.util.Reference;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
@@ -87,6 +82,7 @@ public class GuiGuildPerms extends GuiScreen {
         permList.mouseReleased(mouseX, mouseY, state);
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 16) {
 			mc.player.closeScreen();
@@ -106,7 +102,7 @@ public class GuiGuildPerms extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
-	public class GuiListPerms extends GuiNewListExtended{
+	public class GuiListPerms extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
 	    private final GuiGuildPerms permsManager;
 	    public Guild guild;
 	    private final List<GuiListPermsEntry> entries = Lists.<GuiListPermsEntry>newArrayList();

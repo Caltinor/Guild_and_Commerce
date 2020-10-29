@@ -1,13 +1,10 @@
 package com.dicemc.marketplace.network;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
@@ -19,14 +16,10 @@ import com.dicemc.marketplace.util.MktPktType;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
-import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
-import com.mojang.authlib.GameProfile;
-
 import io.netty.buffer.ByteBuf;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
@@ -489,7 +482,6 @@ public class MessageAdminToServer implements IMessage {
 				break;
 			}
 			case 17: {
-				List<Guild> glist = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS;
 				int gindex = GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).guildIndexFromUUID(message.id1);
 				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).GUILDS.remove(gindex);
 				GuildSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();

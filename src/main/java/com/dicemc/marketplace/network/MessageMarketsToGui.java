@@ -1,19 +1,13 @@
 package com.dicemc.marketplace.network;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.MarketItem;
-import com.dicemc.marketplace.core.Marketplace;
-import com.dicemc.marketplace.gui.GuiMarketManager;
-
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;

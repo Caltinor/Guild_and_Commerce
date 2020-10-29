@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildPerms;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;

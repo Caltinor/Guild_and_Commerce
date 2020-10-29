@@ -1,6 +1,5 @@
 package com.dicemc.marketplace.network;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +7,6 @@ import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager;
 import com.dicemc.marketplace.util.commands.Commands;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 

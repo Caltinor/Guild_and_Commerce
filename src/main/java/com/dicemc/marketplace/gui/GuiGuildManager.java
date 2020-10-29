@@ -12,26 +12,15 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildMemberManager.GuiListGuildMembersEntry;
 import com.dicemc.marketplace.network.MessageAccountInfoToServer;
 import com.dicemc.marketplace.network.MessageGuildInfoToServer;
-import com.dicemc.marketplace.util.Reference;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiKeyBindingList;
-import net.minecraft.client.gui.GuiListWorldSelectionEntry;
-import net.minecraft.client.gui.GuiOptionButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.InventoryEffectRenderer;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.GameSettings;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.inventory.Container;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
@@ -50,7 +39,6 @@ public class GuiGuildManager extends GuiScreen{
     private GuiTextField guildNameTextField, guildFundExchangeTextField, guildTaxTextField;
     private GuiTextField perm0TF, perm1TF, perm2TF, perm3TF;
     private GuiListGuildChunks guicoreChunkList, guioutpostChunkList;
-    private long time;
     private Map<String, Boolean> discriminators = new HashMap<String, Boolean>();
     
     public void syncAccounts(Account acctG, double balancePlayer) {acctGuild = acctG; balP = balancePlayer;}
@@ -121,6 +109,7 @@ public class GuiGuildManager extends GuiScreen{
         this.guioutpostChunkList.handleMouseInput();
     }
 	
+	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button.id == 10) { //Cancel Button
 			newDescrims();
@@ -241,8 +230,7 @@ public class GuiGuildManager extends GuiScreen{
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
-    public class GuiListGuildChunks extends GuiNewListExtended{
-    	private final GuiGuildManager guildManager;
+    public class GuiListGuildChunks extends GuiNewListExtended<GuiNewListExtended.IGuiNewListEntry>{
     	private boolean coreChunk;
     	private List<ChunkPos> pos;
     	private Map<ChunkPos, Double> chunkValues;
@@ -252,7 +240,6 @@ public class GuiGuildManager extends GuiScreen{
         
         public GuiListGuildChunks(GuiGuildManager gm, List<ChunkPos> pos, Map<ChunkPos, Double> chunkValues, boolean coreChunk, Minecraft mcIn, int widthIn, int heightIn, int topIn, int bottomIn, int slotHeightIn) {
     		super(mcIn, widthIn, heightIn, topIn, bottomIn, slotHeightIn);
-    		this.guildManager = gm;
     		this.pos = pos;
     		this.coreChunk = coreChunk;
     		this.chunkValues = chunkValues;

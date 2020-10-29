@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.Guild;
-import com.dicemc.marketplace.gui.GuiGuildPerms;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 
 import io.netty.buffer.ByteBuf;

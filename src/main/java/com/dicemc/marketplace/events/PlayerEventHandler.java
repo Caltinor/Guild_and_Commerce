@@ -1,11 +1,8 @@
 package com.dicemc.marketplace.events;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.swing.text.JTextComponent.KeyBinding;
 
 import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.core.CoreUtils;
@@ -16,28 +13,16 @@ import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButtonImage;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.common.config.Config.Type;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
 @EventBusSubscriber
@@ -59,6 +44,7 @@ public class PlayerEventHandler {
         }
     }
 	
+	@SuppressWarnings("static-access")
 	@SubscribeEvent
 	public static void onServerTick (ServerTickEvent event) {
 		if (event.phase == Phase.END) {
@@ -126,10 +112,5 @@ public class PlayerEventHandler {
 				taxCounter = 0;
 			}
 		}
-	}
-	
-	@SubscribeEvent
-	public static void onPlayerLogout (PlayerLoggedOutEvent event) {
-		
 	}
 }

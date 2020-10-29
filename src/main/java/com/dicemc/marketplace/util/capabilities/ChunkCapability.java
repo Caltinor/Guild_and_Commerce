@@ -7,7 +7,6 @@ import com.dicemc.marketplace.core.WhitelistItem;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.chunk.Chunk;
 
 public interface ChunkCapability {
 	public void setTempTime(long millis);

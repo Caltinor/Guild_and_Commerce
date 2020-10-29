@@ -6,10 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
-import com.dicemc.marketplace.gui.GuiGuildCreate;
-
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.PacketBuffer;
