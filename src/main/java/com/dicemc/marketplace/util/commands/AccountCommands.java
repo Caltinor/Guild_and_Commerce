@@ -22,15 +22,6 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 
 public class AccountCommands extends CommandBase {
-	TextComponentTranslation tctGetusage = new TextComponentTranslation("cmd.account.getusage");
-	TextComponentTranslation tctBalNoGuild = new TextComponentTranslation("cmd.account.balancenoguild");
-	TextComponentTranslation tctBalHasGuild = new TextComponentTranslation("cmd.account.balancehasguild");
-	TextComponentTranslation tctDepSuc = new TextComponentTranslation("cmd.account.depositsuccess");
-	TextComponentTranslation tctWithSuc = new TextComponentTranslation("cmd.account.withdrawsuccess");
-	TextComponentTranslation tctHelp1 = new TextComponentTranslation("cmd.account.help1");
-	TextComponentTranslation tctHelp2 = new TextComponentTranslation("cmd.account.help2");
-	TextComponentTranslation tctHelp3 = new TextComponentTranslation("cmd.account.help3");
-	TextComponentTranslation tctGenArgNR = new TextComponentTranslation("cmd.general.argnotrecognized");
 	
 	@Override
 	public String getName() { return "account"; }
@@ -45,7 +36,7 @@ public class AccountCommands extends CommandBase {
 	}
 
 	@Override
-	public String getUsage(ICommandSender sender) {	return tctGetusage.getFormattedText(); }
+	public String getUsage(ICommandSender sender) {	return new TextComponentTranslation("cmd.account.getusage").getFormattedText(); }
 	
 	private void message(ITextComponent str, ICommandSender sender) {sender.sendMessage(str);}
 
@@ -67,7 +58,7 @@ public class AccountCommands extends CommandBase {
 			}
 			double acctG = AccountSaver.get(sender.getEntityWorld()).getGuilds().getBalance(g);
 			TextComponentString msg = new TextComponentString("$"+String.valueOf(acctP));
-			msg.appendSibling(g.equals(Reference.NIL) ? tctBalNoGuild : tctBalHasGuild.appendText(String.valueOf(acctG)+"]"));
+			msg.appendSibling(g.equals(Reference.NIL) ? new TextComponentTranslation("cmd.account.balancenoguild") : new TextComponentTranslation("cmd.account.balancehasguild").appendText(String.valueOf(acctG)+"]"));
 			message(msg, sender);
 			return;
 		}
@@ -85,7 +76,7 @@ public class AccountCommands extends CommandBase {
 			AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), value);
 			AccountSaver.get(sender.getEntityWorld()).markDirty();
 			TextComponentString msg = new TextComponentString("$"+String.valueOf(value));
-			msg.appendSibling(tctDepSuc);
+			msg.appendSibling(new TextComponentTranslation("cmd.account.depositsuccess"));
 			message(msg, sender);
 			break;
 		}
@@ -98,17 +89,17 @@ public class AccountCommands extends CommandBase {
 				server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);
 			}
 			TextComponentString msg = new TextComponentString("$"+args[1]);
-			msg.appendSibling(tctWithSuc);
+			msg.appendSibling(new TextComponentTranslation("cmd.account.withdrawsuccess"));
 			message(msg, sender);
 			break;
 		}
 		case "help": {
-			message(tctHelp1, sender);
-			message(tctHelp2, sender);
-			message(tctHelp3, sender);
+			message(new TextComponentTranslation("cmd.account.help1"), sender);
+			message(new TextComponentTranslation("cmd.account.help2"), sender);
+			message(new TextComponentTranslation("cmd.account.help3"), sender);
 			break;
 		}
-		default: message(tctGenArgNR, sender);
+		default: message(new TextComponentTranslation("cmd.general.argnotrecognized"), sender);
 		break;
 		}
 	}
