@@ -200,6 +200,7 @@ public class Commands extends CommandBase{
 				break;
 			}
 			case "claim": {
+				//TODO fix this so it behaves like normal claiming but retains account exceptions
 				UUID owningGuild = GuildSaver.get(sender.getEntityWorld()).guildUUIDfromName(args[2]);
 				int cX = sender.getCommandSenderEntity().chunkCoordX;
 				int cZ = sender.getCommandSenderEntity().chunkCoordZ;
