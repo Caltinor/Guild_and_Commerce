@@ -214,7 +214,7 @@ public class ProtectionEventHandler {
 			return;
 		}
 		if (event.getEntityPlayer().isCreative()) return;
-		if (!(event.getTarget() instanceof EntityMob))	{
+		if (!(event.getTarget() instanceof EntityMob) && !(event.getTarget() instanceof EntityPlayer))	{
 			ChunkCapability cap = event.getEntity().world.getChunkFromBlockCoords(event.getEntity().getPosition()).getCapability(ChunkProvider.CHUNK_CAP, null);
 			if (cap.getOwner().equals(Reference.NIL)) return;
 			if (ProtectionChecker.ownerMatch(event.getEntityPlayer().getUniqueID(), cap, GuildSaver.get(event.getEntityPlayer().getEntityWorld()).GUILDS) == ProtectionChecker.matchType.DENIED) {
