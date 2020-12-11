@@ -61,7 +61,7 @@ public class GuiChunkManager extends GuiScreen{
 	private GuiListChunkMembers chunkMbrList;
 	private GuiListWhitelist wlList;
 	private int selectedIdx = 60;
-	private boolean overlayOwners = false;
+	private boolean overlayOwners = true;
 	private boolean canGuildClaim;
 	private boolean canGuildSell;
 	private boolean canGuildSublet;
