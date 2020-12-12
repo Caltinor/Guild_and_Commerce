@@ -118,6 +118,27 @@ market.net.outofloc=Must Be in %s territory to purchase
 market.net.nomoreitem=Item No Longer Listed
 market.net.bidclosed=This bid has closed
 
+gui.inventory.tooltip.title.chunk=Chunk Menu
+gui.inventory.tooltip.title.market=Market Menu
+gui.inventory.tooltip.title.guild=Guild Menu
+gui.inventory.tooltip.title.members=Member Menu
+gui.inventory.tooltip.title.perms=Permissions Menu
+gui.inventory.tooltip.chunk1=View a map of chunks,
+gui.inventory.tooltip.chunk2=rent and buy land, and
+gui.inventory.tooltip.chunk3=manage your rentals.
+gui.inventory.tooltip.market1=Buy, Sell, and request
+gui.inventory.tooltip.market2=items in 3 different
+gui.inventory.tooltip.market3=market types.
+gui.inventory.tooltip.guild1=Make new guild, join one,
+gui.inventory.tooltip.guild2=or manage your current 
+gui.inventory.tooltip.guild3=guild's settings.
+gui.inventory.tooltip.members1=View guild members and ranks
+gui.inventory.tooltip.members2=promote and demote members,
+gui.inventory.tooltip.members3=and send guild invites
+gui.inventory.tooltip.perms1=View and manage which guild
+gui.inventory.tooltip.perms2=ranks are able to perform
+gui.inventory.tooltip.perms3=which actions in your guild
+
 gui.admin.accounts=Accounts
 gui.admin.guilds=Guilds
 gui.admin.markets=Markets
