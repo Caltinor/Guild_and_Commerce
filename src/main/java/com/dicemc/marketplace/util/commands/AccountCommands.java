@@ -82,15 +82,19 @@ public class AccountCommands extends CommandBase {
 		}
 		case "withdraw": case "wit":{
 			double balP = AccountSaver.get(sender.getEntityWorld()).getPlayers().getBalance(sender.getCommandSenderEntity().getUniqueID());
-			if (balP >= Math.abs(Double.valueOf(args[1]))) {
-				AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), -1 * Math.abs(Double.valueOf(args[1])));
+			double bagSize = Math.abs(Double.valueOf(args[1]));
+			int bagCount = args.length == 2 ? 1 : Math.abs(Integer.valueOf(args[2]));
+			if (balP >= (bagSize * (double)bagCount)) {
+				AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), -(bagSize*(double)bagCount));
 				ItemStack item = new ItemStack(ModItems.MONEYBAG);
 				item.setTagInfo("value", new NBTTagDouble(Math.abs(Double.valueOf(args[1]))));
+				item.setCount(bagCount);
 				server.getPlayerList().getPlayerByUUID(sender.getCommandSenderEntity().getUniqueID()).addItemStackToInventory(item);
+				TextComponentString msg = new TextComponentString(String.valueOf(bagCount)+"x $"+args[1]);
+				msg.appendSibling(new TextComponentTranslation("cmd.account.withdrawsuccess"));
+				message(msg, sender);
 			}
-			TextComponentString msg = new TextComponentString("$"+args[1]);
-			msg.appendSibling(new TextComponentTranslation("cmd.account.withdrawsuccess"));
-			message(msg, sender);
+			else message(new TextComponentTranslation("cmd.account.withdrawfail", bagCount, bagSize), sender);
 			break;
 		}
 		case "help": {
