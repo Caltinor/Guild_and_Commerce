@@ -116,4 +116,5 @@ public class ProtectionChecker {
 		}
 		return false;
 	}
+
 }

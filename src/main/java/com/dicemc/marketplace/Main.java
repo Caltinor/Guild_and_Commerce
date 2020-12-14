@@ -157,5 +157,8 @@ public class Main {
 		@RequiresWorldRestart
 		@Comment({"Determines how long an auction should stay up", "default: 259200000", "one day = 86400000"})
 		public static int AUCTION_OPEN_DURATION = 259200000;
+		@Name("AUTO_TEMP_CLAIM")
+		@Comment({"When Enabled causes denied actions in unowned territory", "to first claim the land before denying access"})
+		public static boolean AUTO_TEMP_CLAIM = true;
 	}
 }

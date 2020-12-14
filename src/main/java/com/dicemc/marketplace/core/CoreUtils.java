@@ -1,6 +1,7 @@
 package com.dicemc.marketplace.core;
 
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,11 @@ import net.minecraft.world.chunk.Chunk;
 
 public class CoreUtils {
 	public static World world = null;
+	private static DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
 	
 	public static void setWorld(World world) {CoreUtils.world = world;}
 
-	public static String tempClaim(UUID owner, int chunkX, int chunkZ) {
+	public static String tempClaim(UUID owner, int chunkX, int chunkZ, boolean isAutoClaim) {
 		ChunkCapability cap = world.getChunkFromChunkCoords(chunkX, chunkZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL)) {
 			if (AccountSaver.get(world).getPlayers().getBalance(owner) >= (cap.getPrice()*Main.ModConfig.TEMPCLAIM_RATE)) {
@@ -38,8 +40,9 @@ public class CoreUtils {
 				cap.includePlayer(owner);
 				cap.setOwner(owner);
 				cap.setExplosionsOn(false);
+				cap.setPublic(isAutoClaim);
 				AccountSaver.get(world).markDirty();
-				return new TextComponentTranslation("core.utils.tempclaim.success").getFormattedText();
+				return new TextComponentTranslation("core.utils.tempclaim.success", df.format(Main.ModConfig.TEMPCLAIM_RATE*cap.getPrice())).getFormattedText();
 			}
 			else return new TextComponentTranslation("core.utils.tempclaim.failfunds").getFormattedText();
 		}

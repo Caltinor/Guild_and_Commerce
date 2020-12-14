@@ -13,8 +13,10 @@ import com.dicemc.marketplace.network.MessageAccountToGui.PacketAccountToGui;
 import com.dicemc.marketplace.network.MessageAdminGuiOpen.PacketAdminGuiOpen;
 import com.dicemc.marketplace.network.MessageAdminToGui.PacketAdminToGui;
 import com.dicemc.marketplace.network.MessageAdminToServer.PacketAdminToServer;
+import com.dicemc.marketplace.network.MessageAutoTempClaim.PacketAutoTempClaim;
 import com.dicemc.marketplace.network.MessageChunkToGui.PacketChunkToGui;
 import com.dicemc.marketplace.network.MessageChunkToServer.PacketChunkToServer;
+import com.dicemc.marketplace.network.MessageClientConfigRequest.PacketClientConfigRequest;
 import com.dicemc.marketplace.network.MessageCreateInfoToGui.PacketCreateInfoToGui;
 import com.dicemc.marketplace.network.MessageCreateInfoToServer.PacketCreateInfoToServer;
 import com.dicemc.marketplace.network.MessageGuiRequest.PacketGuiRequest;
@@ -35,6 +37,7 @@ public class PacketHandler {
 		Main.NET.registerMessage(PacketPermsToServer.class, MessagePermsToServer.class, nextID(), Side.SERVER);		
 		Main.NET.registerMessage(PacketMarketsToServer.class, MessageMarketsToServer.class, nextID(), Side.SERVER);
 		Main.NET.registerMessage(PacketAdminToServer.class, MessageAdminToServer.class, nextID(), Side.SERVER);
+		Main.NET.registerMessage(PacketAutoTempClaim.class, MessageAutoTempClaim.class, nextID(), Side.SERVER);
 		//Client Packets		
 		Main.NET.registerMessage(PacketAccountToGui.class, MessageAccountToGui.class, nextID(), Side.CLIENT);
 		Main.NET.registerMessage(PacketMemberInfoToGui.class, MessageMemberInfoToGui.class, nextID(), Side.CLIENT);		
@@ -45,5 +48,6 @@ public class PacketHandler {
 		Main.NET.registerMessage(PacketGuildToGui.class, MessageGuildToGui.class, nextID(), Side.CLIENT);
 		Main.NET.registerMessage(PacketAdminToGui.class, MessageAdminToGui.class, nextID(), Side.CLIENT);
 		Main.NET.registerMessage(PacketAdminGuiOpen.class, MessageAdminGuiOpen.class, nextID(), Side.CLIENT);
+		Main.NET.registerMessage(PacketClientConfigRequest.class, MessageClientConfigRequest.class, nextID(), Side.CLIENT);
 	}
 }

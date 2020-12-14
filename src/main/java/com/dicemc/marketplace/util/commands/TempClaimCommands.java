@@ -76,7 +76,7 @@ public class TempClaimCommands extends CommandBase{
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		ChunkCapability cap = sender.getEntityWorld().getChunkFromChunkCoords(sender.getCommandSenderEntity().chunkCoordX, sender.getCommandSenderEntity().chunkCoordZ).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (args.length == 0) {
-			message(new TextComponentString(CoreUtils.tempClaim(sender.getCommandSenderEntity().getUniqueID(), sender.getCommandSenderEntity().chunkCoordX, sender.getCommandSenderEntity().chunkCoordZ)), sender);		
+			message(new TextComponentString(CoreUtils.tempClaim(sender.getCommandSenderEntity().getUniqueID(), sender.getCommandSenderEntity().chunkCoordX, sender.getCommandSenderEntity().chunkCoordZ, false)), sender);		
 			return;
 		}
 		switch(args[0]) {

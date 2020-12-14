@@ -77,7 +77,7 @@ public class MessageChunkToServer implements IMessage{
 			String response = "";
 			switch(message.type) {
 			case TEMPCLAIM: {
-				response = CoreUtils.tempClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ);
+				response = CoreUtils.tempClaim(ctx.getServerHandler().player.getUniqueID(), message.cX, message.cZ, false);
 				break;
 			}
 			case EXTEND: {

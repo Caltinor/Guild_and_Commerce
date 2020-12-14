@@ -8,7 +8,7 @@ import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.ProtectionChecker;
 import com.dicemc.marketplace.item.ItemWhitelister;
 import com.dicemc.marketplace.item.ModItems;
-import com.dicemc.marketplace.network.MessageBlockActivate;
+import com.dicemc.marketplace.network.MessageClientConfigRequest;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkProvider;
@@ -17,11 +17,9 @@ import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
@@ -36,16 +34,22 @@ import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent;
 import net.minecraftforge.event.world.BlockEvent.FarmlandTrampleEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @EventBusSubscriber
 public class ProtectionEventHandler {
+	
 	@SubscribeEvent
 	public static void onBlockBreak(BreakEvent event) {
 		if (event.getPlayer().isCreative()) return;
 		if (event.getPlayer().dimension != 0) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
+		if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
+			ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getPos()).getPos();
+			Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getPlayer());
+		}
 		switch (ProtectionChecker.ownerMatch(event.getPlayer().getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 		case DENIED: {
 			event.setCanceled(true);
@@ -114,7 +118,7 @@ public class ProtectionEventHandler {
 			}		
 			EntityPlayer player = event.getEntityPlayer();
 			//Ignore if in creative, not in overworld, or land is unowned
-			if (event.getEntityPlayer().isCreative() || event.getEntityPlayer().dimension != 0 || cap.getOwner().equals(Reference.NIL)) {return;}			
+			if (event.getEntityPlayer().isCreative() || event.getEntityPlayer().dimension != 0 || cap.getOwner().equals(Reference.NIL)) {return;}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
 				event.setCanceled(true);
@@ -136,13 +140,15 @@ public class ProtectionEventHandler {
 	
 	@SubscribeEvent
 	public static void onBlockPlace(EntityPlaceEvent event) {
-		System.out.println("PlaceEvent");
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) return;
 		if (event.getEntity() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)event.getEntity();
-			if (player.isCreative()) return;
-			if (player.dimension != 0) return;			
+			if (player.isCreative() || player.dimension != 0) return;
+			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
+				ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getPos()).getPos();
+				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) player);
+			}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
 				event.setCanceled(true);
@@ -187,7 +193,7 @@ public class ProtectionEventHandler {
 	
 	@SubscribeEvent
 	public static void onEntityInteract(EntityInteractSpecific event) {
-		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote && event.getResult().equals(EnumActionResult.SUCCESS)) {
+		if (event.getEntityPlayer().getHeldItem(event.getHand()).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote && event.getResult().equals(Result.ALLOW)) {
 			ItemWhitelister.addToWhitelister(event.getEntityPlayer().getHeldItemMainhand(), event.getTarget(), false, true);
 			event.setCanceled(true);
 			return;
@@ -206,6 +212,7 @@ public class ProtectionEventHandler {
 			}
 		}
 	}
+	
 	@SubscribeEvent
 	public static void onEntityAttack(AttackEntityEvent event) {
 		if (event.getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND).getItem().equals(ModItems.WHITELISTER) && !event.getEntityPlayer().isSneaking() && !event.getEntity().world.isRemote) {
@@ -274,7 +281,11 @@ public class ProtectionEventHandler {
 		if (event.getEntity() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)event.getEntity();
 			if (player.isCreative()) return;
-			if (player.dimension != 0) return;			
+			if (player.dimension != 0) return;
+			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
+				ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getPos()).getPos();
+				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getEntity());
+			}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
 				event.setCanceled(true);

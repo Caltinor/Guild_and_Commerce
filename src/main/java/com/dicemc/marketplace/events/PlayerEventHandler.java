@@ -110,7 +110,7 @@ public class PlayerEventHandler {
 				}
 				for (EntityPlayer player : world.playerEntities) {player.sendMessage(new TextComponentTranslation("event.taxes.notice"));}
 				taxCounter = 0;
-			}
+			}	
 		}
 	}
 }
