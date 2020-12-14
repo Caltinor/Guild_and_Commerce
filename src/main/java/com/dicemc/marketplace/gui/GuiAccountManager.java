@@ -29,10 +29,10 @@ public class GuiAccountManager extends GuiScreen{
 	}
 	
 	public void initGui() {
-		guiW = 146;
+		guiW = 180;
 		guiX = this.width/2-(guiW/2);
 		guiY = this.height/2-41;		
-		int d = (guiW-6)/6;
+		int d = (guiW-11)/6;
 		//initialize buttons
 		int id = 0;
 		plus1 = new GuiButton(id++, guiX+3, guiY+15, d, 20, "+1");
@@ -137,8 +137,8 @@ public class GuiAccountManager extends GuiScreen{
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
 		this.mc.getTextureManager().bindTexture(BG_SRC);
-		this.drawTexturedModalRect(guiX, guiY, 0, 0, 146, 82);
-		this.drawString(fontRenderer, TextFormatting.DARK_GREEN+"$"+df.format(balP), guiX+3, guiY+4, 16777215);
+		this.drawTexturedModalRect(guiX, guiY, 0, 0, guiW, 82);
+		this.fontRenderer.drawString(TextFormatting.DARK_GREEN+"$"+df.format(balP), guiX+3, guiY+4, 16777215);
 		valueBox.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 	}

@@ -12,6 +12,8 @@ import com.dicemc.marketplace.util.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButtonImage;
 import net.minecraft.client.gui.inventory.GuiInventory;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -63,6 +65,7 @@ public class GuiEventHandler {
 	}
 	
 	private static void drawTooltips(GuiInventory gui, int mx, int my, int guiX, int guiY, int mouseX, int mouseY) {
+		RenderHelper.enableGUIStandardItemLighting();
 		if (mx > chunkButton.x && mx < chunkButton.x + chunkButton.width && my > chunkButton.y && my < chunkButton.y + chunkButton.height) {
 			List<String> lines = new ArrayList<String>();
 			lines.add(new TextComponentTranslation("gui.inventory.tooltip.title.chunk").setStyle(new Style().setBold(true)).getFormattedText());
@@ -119,6 +122,7 @@ public class GuiEventHandler {
 			lines.add(new TextComponentTranslation("gui.inventory.tooltip.withdraw3").getFormattedText());
 			gui.drawHoveringText(lines, mouseX, mouseY);
 		}
+		RenderHelper.disableStandardItemLighting();
 	}
 	
 	@SubscribeEvent
