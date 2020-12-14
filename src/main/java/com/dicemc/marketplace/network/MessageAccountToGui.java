@@ -11,12 +11,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageAccountToGui implements IMessage{
+	public int type;
 	public Account acctG;
 	public double balP;
 
 	public MessageAccountToGui() {	}
 	
-	public MessageAccountToGui(Account acctG, double balP) {
+	public MessageAccountToGui(int type, Account acctG, double balP) {
+		this.type = type;
 		this.acctG = acctG;
 		this.balP = balP;
 	}
@@ -24,6 +26,7 @@ public class MessageAccountToGui implements IMessage{
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
+		type = pbuf.readInt();
 		UUID owner = pbuf.readUniqueId();
 		double balance = pbuf.readDouble();
 		acctG = new Account(owner, balance);
@@ -33,6 +36,7 @@ public class MessageAccountToGui implements IMessage{
 	@Override
 	public void toBytes(ByteBuf buf) {
 		PacketBuffer pbuf = new PacketBuffer(buf);
+		pbuf.writeInt(type);
 		pbuf.writeUniqueId(acctG.owner);
 		pbuf.writeDouble(acctG.balance);
 		pbuf.writeDouble(balP);
@@ -46,7 +50,8 @@ public class MessageAccountToGui implements IMessage{
 		}  
 		
 		private void handle(MessageAccountToGui message, MessageContext ctx) {
-			Main.proxy.updateGuildGuiAccounts(message.acctG, message.balP);
-		}
+			if (message.type == 0) Main.proxy.updateGuildGuiAccounts(message.acctG, message.balP);
+			if (message.type == 1) Main.proxy.openAccountGui(message.balP);
+ 		}
 	}
 }

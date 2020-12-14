@@ -63,6 +63,8 @@ public class CommonProxy {
 	
 	public void updateAdminSyncMarketDetail(String vendorName, String locName, String bidderName) {}
 	
+	public void openAccountGui(double balP) {}
+	
 	public void registerNetworkPackets() {
 		Main.NET = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MOD_ID);
 		PacketHandler.initHandler(); 

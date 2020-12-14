@@ -74,7 +74,7 @@ public class MessageAccountInfoToServer implements IMessage{
 			AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).markDirty();
 			AccountGroup acctGlist = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getGuilds();		
 			double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
-			Main.NET.sendTo(new MessageAccountToGui(new Account(message.acctG.owner, acctGlist.getBalance(message.acctG.owner)), balP), ctx.getServerHandler().player);
+			Main.NET.sendTo(new MessageAccountToGui(0, new Account(message.acctG.owner, acctGlist.getBalance(message.acctG.owner)), balP), ctx.getServerHandler().player);
 		}
 	}
 }

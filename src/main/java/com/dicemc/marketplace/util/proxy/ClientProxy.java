@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.dicemc.marketplace.core.Account;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
+import com.dicemc.marketplace.gui.GuiAccountManager;
 import com.dicemc.marketplace.gui.GuiAdmin;
 import com.dicemc.marketplace.gui.GuiChunkManager;
 import com.dicemc.marketplace.gui.GuiGuildCreate;
@@ -19,6 +20,8 @@ import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -122,6 +125,10 @@ public class ClientProxy extends CommonProxy {
 		GuiAdmin screen = (GuiAdmin) Minecraft.getMinecraft().currentScreen;
 		screen.syncMarketDetail(vendorName, locName, bidderName);
 	}	
+	
+	public void openAccountGui(double balP) {
+		Minecraft.getMinecraft().displayGuiScreen(new GuiAccountManager(balP));
+	}
 	
 	public void registerNetworkPackets() {super.registerNetworkPackets();}
 	

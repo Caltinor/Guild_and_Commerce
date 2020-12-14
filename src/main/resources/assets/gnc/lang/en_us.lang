@@ -7,7 +7,8 @@ cmd.account.getusage=/account <action>
 cmd.account.balancenoguild= [No Guild]
 cmd.account.balancehasguild= [Guild $
 cmd.account.depositsuccess= deposited to account from Moneybags.
-cmd.account.withdrawsuccess= Moneybag placed in inventory.
+cmd.account.withdrawsuccess= Moneybag(s) placed in inventory.
+cmd.account.withdrawfail=Insufficient Funds to withdraw %s bags of $%s.
 cmd.account.help1=/account  (shows yours and your guild's balances)
 cmd.account.help2=/account deposit (deposits all moneybags in your inventory to your account
 cmd.account.help3=/account withdraw <amount> (puts money from your account into your inventory in a moneybag)
@@ -138,6 +139,16 @@ gui.inventory.tooltip.members3=and send guild invites
 gui.inventory.tooltip.perms1=View and manage which guild
 gui.inventory.tooltip.perms2=ranks are able to perform
 gui.inventory.tooltip.perms3=which actions in your guild
+gui.inventory.tooltip.title.deposit=Deposit Funds
+gui.inventory.tooltip.title.withdraw=Withdraw Funds
+gui.inventory.tooltip.deposit1=deposit all moneybags in 
+gui.inventory.tooltip.deposit2=your inventory to your account
+gui.inventory.tooltip.deposit3=alternate to "/a dep"
+gui.inventory.tooltip.withdraw1=Opens the withdraw menu
+gui.inventory.tooltip.withdraw2=for obtaining moneybags
+gui.inventory.tooltip.withdraw3=alternate to "/a wit ###"
+
+gui.account.withdraw=Withdraw
 
 gui.admin.accounts=Accounts
 gui.admin.guilds=Guilds

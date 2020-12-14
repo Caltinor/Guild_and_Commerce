@@ -40,6 +40,8 @@ public class MessageGuiRequest implements IMessage{
 	 *2 = Guild Members
 	 *3 = Guild Permissions
 	 *4 = Market
+	 *5 = AdminGui
+	 *6 = Withdraw moneybags
 	 */
 
 	//this constructor is required otherwise you'll get errors (used somewhere in fml through reflection)
@@ -181,6 +183,10 @@ public class MessageGuiRequest implements IMessage{
 			}
 			case 5: {
 				Main.NET.sendTo(new MessageAdminGuiOpen(), ctx.getServerHandler().player);
+			}
+			case 6: {
+				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
+				Main.NET.sendTo(new MessageAccountToGui(1, new Account(Reference.NIL, 0), balP), ctx.getServerHandler().player);
 			}
 			default:
 			}
