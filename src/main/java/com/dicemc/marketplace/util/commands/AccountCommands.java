@@ -71,6 +71,7 @@ public class AccountCommands extends CommandBase {
 				if (player.inventoryContainer.getSlot(i).getStack().getItem().equals(ModItems.MONEYBAG)) {
 					value += (player.inventoryContainer.getSlot(i).getStack().getTagCompound().getDouble("value") * player.inventoryContainer.getSlot(i).getStack().getCount());
 					player.inventoryContainer.getSlot(i).putStack(ItemStack.EMPTY);
+					player.inventoryContainer.detectAndSendChanges();
 				}
 			}
 			AccountSaver.get(sender.getEntityWorld()).getPlayers().addBalance(sender.getCommandSenderEntity().getUniqueID(), value);
