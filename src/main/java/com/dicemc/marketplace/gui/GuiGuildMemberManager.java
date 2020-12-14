@@ -60,7 +60,7 @@ public class GuiGuildMemberManager extends GuiScreen{
 		memberList = new GuiListGuildMembers(this, mc, false, 3, 30, this.width/3, this.height-60, 10);
 		inviteList = new GuiListGuildMembers(this, mc, true, this.width-(this.width/3)-3, 30, this.width/3, this.height-60, 10);
 		inviteText = new GuiTextField(1, this.fontRenderer, (this.width / 2)-this.width/8, this.height-85, this.width/4, 20);
-		this.buttonList.add(new GuiButton(10, (this.width / 2)-38, this.height - 28, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		this.buttonList.add(new GuiButton(10, this.width - 22, 2, 20, 20, "X"));
 		guiProm = new GuiButton(50, inviteText.x, 30, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.promote").getFormattedText());
 		guiDemo = new GuiButton(51, inviteText.x, 55, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.demote").getFormattedText());
 		guiKick = new GuiButton(52, inviteText.x, 80, inviteText.width, inviteText.height, new TextComponentTranslation("gui.members.kick").getFormattedText());

@@ -183,10 +183,12 @@ public class MessageGuiRequest implements IMessage{
 			}
 			case 5: {
 				Main.NET.sendTo(new MessageAdminGuiOpen(), ctx.getServerHandler().player);
+				break;
 			}
 			case 6: {
 				double balP = AccountSaver.get(ctx.getServerHandler().player.getEntityWorld()).getPlayers().getBalance(ctx.getServerHandler().player.getUniqueID());
 				Main.NET.sendTo(new MessageAccountToGui(1, new Account(Reference.NIL, 0), balP), ctx.getServerHandler().player);
+				break;
 			}
 			default:
 			}

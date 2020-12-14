@@ -91,8 +91,8 @@ public class GuiGuildManager extends GuiScreen{
 		this.perm1TF.setText(guild.permLevels.get(1));
 		this.perm2TF.setText(guild.permLevels.get(2));
 		this.perm3TF.setText(guild.permLevels.get(3));
-		this.buttonList.add(new GuiButton(10, (this.width / 2)+3, this.height - 28, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
-		this.buttonList.add(new GuiButton(11, (this.width / 2)- 78, this.height - 28, 75, 20, new TextComponentTranslation("gui.guild.save").getFormattedText()));
+		this.buttonList.add(new GuiButton(10, this.width-22, 2, 20, 20, "X"));
+		this.buttonList.add(new GuiButton(11, (this.width / 2)- 36, this.height - 28, 75, 20, new TextComponentTranslation("gui.guild.save").getFormattedText()));
 		this.buttonList.add(new GuiButton(12, 8, this.guildNameTextField.y + this.guildNameTextField.height + 3, (this.width / 4), 20, new TextComponentTranslation("gui.guild.open", String.valueOf(guild.openToJoin)).getFormattedText()));
 		this.buttonList.add(new GuiButton(13, (this.width / 3)+ guildFundExchangeTextField.width+ 3, guildFundExchangeTextField.y, 20, 20, "+"));
 		this.buttonList.add(new GuiButton(14, (this.width / 3)+ guildFundExchangeTextField.width+ 23, guildFundExchangeTextField.y, 20, 20, "-"));

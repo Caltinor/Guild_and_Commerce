@@ -270,7 +270,7 @@ public class GuiMarketManager extends GuiScreen{
 		this.buttonList.add(buyItem);
 		this.buttonList.add(playerContent);
 		this.buttonList.add(restockSale);
-		this.buttonList.add(new GuiButton(15, 3, this.height - 23, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		this.buttonList.add(new GuiButton(15, this.width-22, 2, 20, 20, "X"));
 		marketList = new GuiListMarket(this, sortedMarketList(0, vendList, locality, 0, true), locality, listType, mc, 81, 26, this.width-114, this.height-39, 25);
 		sortPriceAsc = new GuiButton(50, this.width-25, marketList.y, 20, 20, "$>");
 		sortPriceDes = new GuiButton(51, this.width-25, marketList.y+ 25, 20, 20, "$<");

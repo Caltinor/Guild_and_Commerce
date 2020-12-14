@@ -54,7 +54,7 @@ public class GuiChunkManager extends GuiScreen{
 	private IDButton<eButton3> button3;
 	private IDButton<eButton4> button4;
 	private IDButton<eOverlayToggle> overlayToggle;
-	private GuiButton subletMenu, addMember, removeMember, backButton, wl0, wl1, wl2, wl3;
+	private GuiButton subletMenu, addMember, removeMember, clearWLButton, wl0, wl1, wl2, wl3, exitButton;
 	private GuiTextField sellprice, memberAdd;
 	private double acctPlayer, acctGuild, tempClaimRate;
 	private DecimalFormat df = new DecimalFormat("###,###,###,##0.00");
@@ -193,12 +193,13 @@ public class GuiChunkManager extends GuiScreen{
 		mapY = 16;
 		mapD = 167;
 		wlList = new GuiListWhitelist(this, mc.getMinecraft(), mapX, chunkMbrList.y, chunkMbrList.x-mapX-5, this.height-60, 11);
-		backButton = new GuiButton(10, this.width/2 - 38, this.height- 30, 75, 20, new TextComponentTranslation("gui.back").getFormattedText());
+		clearWLButton = new GuiButton(10, this.width/2 - 38, this.height- 30, 75, 20, new TextComponentTranslation("gui.chunk.sublet.clearlist").getFormattedText());
 		wl0 = new GuiButton(20, chunkMbrList.x, removeMember.y+removeMember.height+5, 20, 20, "0");
 		wl1 = new GuiButton(21, wl0.x+wl0.width, wl0.y, 20, 20, "1");
 		wl2 = new GuiButton(22, wl1.x+wl1.width, wl0.y, 20, 20, "2");
 		wl3 = new GuiButton(23, wl2.x+wl2.width, wl0.y, 20, 20, "3");
-		this.buttonList.add(backButton);
+		exitButton = new GuiButton(24, this.width-22, 2, 20, 20, "X");
+		this.buttonList.add(clearWLButton);
 		this.buttonList.add(button1);
 		this.buttonList.add(button2);
 		this.buttonList.add(button3);
@@ -211,6 +212,7 @@ public class GuiChunkManager extends GuiScreen{
 		this.buttonList.add(wl1);
 		this.buttonList.add(wl2);
 		this.buttonList.add(wl3);
+		this.buttonList.add(exitButton);
 		//permission updates on init
 		updateVisibility();
 	}
@@ -230,7 +232,8 @@ public class GuiChunkManager extends GuiScreen{
 	}
 	
 	private void updateVisibility () {		
-		backButton.enabled = !isSubletMenu || canGuildSublet;
+		clearWLButton.enabled = canGuildSublet;
+		clearWLButton.visible = isSubletMenu;
 		wl0.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
 		wl1.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
 		wl2.visible = isSubletMenu && chunkList.get(selectedIdx).ownerID.equals(myGuild.guildID);
@@ -341,7 +344,6 @@ public class GuiChunkManager extends GuiScreen{
 						chunkList.get(selectedIdx).leasePrice >= 0 ? new TextComponentTranslation("gui.chunk.topstring.rented1", df.format(chunkList.get(selectedIdx).leasePrice*chunkList.get(selectedIdx).permittedPlayers.size()), String.valueOf(chunkList.get(selectedIdx).leaseDuration)).getFormattedText(): "").getFormattedText();
 			}
 		}
-		backButton.displayString = isSubletMenu ? new TextComponentTranslation("gui.chunk.sublet.clearlist").getFormattedText() : new TextComponentTranslation("gui.back").getFormattedText();
 		button1.displayString = button1.state.displayString;
 		button2.displayString = button2.state.displayString;
 		button3.displayString = button3.state.displayString;
@@ -388,12 +390,12 @@ public class GuiChunkManager extends GuiScreen{
 	
 	@SuppressWarnings("static-access")
 	protected void actionPerformed(GuiButton button) throws IOException {
-		if (button.id == 10) { //Exit Button
-			if (!isSubletMenu) {
-				mc.player.closeScreen();
-				mc.getMinecraft().displayGuiScreen(new GuiInventory(mc.player));
-			}
-			if (isSubletMenu) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CLEAR, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+		if (button.equals(clearWLButton)) { //Exit Button
+			Main.NET.sendToServer(new MessageChunkToServer(CkPktType.WL_CLEAR, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));
+		}
+		if (button.equals(exitButton)) {
+			mc.player.closeScreen();
+			mc.getMinecraft().displayGuiScreen(new GuiInventory(mc.player));
 		}
 		if (button == button1) { //Temp Claim Button
 			if (((IDButton<?>)button).state == eButton1.TEMP_CLAIM) Main.NET.sendToServer(new MessageChunkToServer(CkPktType.TEMPCLAIM, fromIndex().x, fromIndex().z, "", new WhitelistItem("")));

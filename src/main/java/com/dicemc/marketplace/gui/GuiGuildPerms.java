@@ -49,7 +49,7 @@ public class GuiGuildPerms extends GuiScreen {
 		set1 = new GuiButton(11, permList.x+permList.width+3, this.height/2 - 22, 100, 20, guild.permLevels.get(1));
 		set2 = new GuiButton(12, permList.x+permList.width+3, this.height/2 + 2, 100, 20, guild.permLevels.get(2));
 		set3 = new GuiButton(13, permList.x+permList.width+3, this.height/2 + 24, 100, 20, guild.permLevels.get(3));
-		this.buttonList.add(new GuiButton(16, this.width - 78, 3, 75, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		this.buttonList.add(new GuiButton(16, this.width - 22, 2, 20, 20, "X"));
 		this.buttonList.add(set0);
 		this.buttonList.add(set1);
 		this.buttonList.add(set2);

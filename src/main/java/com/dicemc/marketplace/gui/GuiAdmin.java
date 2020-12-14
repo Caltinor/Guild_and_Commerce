@@ -144,14 +144,14 @@ public class GuiAdmin extends GuiScreen{
 		toggleAccount = new GuiButton(1, 3, 3, 75, 20, new TextComponentTranslation("gui.admin.accounts").getFormattedText());
 		toggleGuild = new GuiButton(2, 3, toggleAccount.y + 23, 75, 20, new TextComponentTranslation("gui.admin.guilds").getFormattedText());
 		toggleMarket = new GuiButton(3, 3, toggleGuild.y + 23, 75, 20, new TextComponentTranslation("gui.admin.markets").getFormattedText());
-		exitButton = new GuiButton(4, 3, this.height - 30, 75, 20, new TextComponentTranslation("gui.exit").getFormattedText());
+		exitButton = new GuiButton(4, this.width-22, 2, 20, 20, "X");
 		this.buttonList.add(toggleAccount);
 		this.buttonList.add(toggleGuild);
 		this.buttonList.add(toggleMarket);
 		this.buttonList.add(exitButton);
 		//account menu specific objects
 		guiListAccounts = new GuiListAccount(this, mc, accountList, 83, 30, (this.width - 86)/2, this.height - 33, 10);
-		toggleAccountPlayer = new GuiButton(10, guiListAccounts.x + guiListAccounts.width + 3, 3, guiListAccounts.width/2 - 2, 20, new TextComponentTranslation("gui.admin.players").getFormattedText());
+		toggleAccountPlayer = new GuiButton(10, guiListAccounts.x + guiListAccounts.width - 19, 3, guiListAccounts.width/2 - 2, 20, new TextComponentTranslation("gui.admin.players").getFormattedText());
 		toggleAccountGuild = new GuiButton(11, toggleAccountPlayer.x + toggleAccountPlayer.width + 3, 3, guiListAccounts.width/2 - 2, 20, new TextComponentTranslation("gui.admin.guilds").getFormattedText());
 		balanceBox = new GuiTextField(12, this.fontRenderer, guiListAccounts.x + guiListAccounts.width + 3, this.height/2, guiListAccounts.width - 6, 20);
 		accountSet = new GuiButton(13, balanceBox.x, balanceBox.y+balanceBox.height+3, toggleAccountGuild.width, 20, new TextComponentTranslation("gui.admin.set").getFormattedText());
@@ -186,7 +186,7 @@ public class GuiAdmin extends GuiScreen{
 		set1 = new GuiButton(32, setOpen.x+20, set0.y, 20, 20, "1");
 		set2 = new GuiButton(33, setOpen.x+40, set0.y, 20, 20, "2");
 		set3 = new GuiButton(34, setOpen.x+60, set0.y, 20, 20, "3");
-		openLand = new GuiButton(35, this.width - 80, 5, 75, 20, new TextComponentTranslation("gui.admin.landmenu").getFormattedText());
+		openLand = new GuiButton(35, this.width - 102, 5, 75, 20, new TextComponentTranslation("gui.admin.landmenu").getFormattedText());
 		openMembers = new GuiButton(36,openLand.x, 30, 75, 20, new TextComponentTranslation("gui.admin.membermenu").getFormattedText());
 		adminToggle = new GuiButton(39,openLand.x, set0.y, 75, 20, new TextComponentTranslation("gui.admin.adminsetting", new TextComponentTranslation("gui.no")).getFormattedText());
 		this.buttonList.add(setOpen);

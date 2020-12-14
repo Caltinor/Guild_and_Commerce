@@ -60,7 +60,7 @@ public class GuiMarketSell extends GuiContainer{
         mktLocal = new GuiButton(10, mktGlobal.x - 43, this.guiTop -25, 40, 20, new TextComponentTranslation("gui.market.local").getFormattedText());
         mktAuction = new GuiButton(12, mktGlobal.x + mktGlobal.width + 3, this.guiTop -25, 40, 20, new TextComponentTranslation("gui.market.auction").getFormattedText());
         mktServer = new GuiButton(21, mktAuction.x+mktAuction.width+3, this.guiTop - 25, 40, 20, new TextComponentTranslation("gui.market.server").getFormattedText());
-        exitButton = new GuiButton(20, this.width/2 - 30, this.height - 30, 60, 20, new TextComponentTranslation("gui.back").getFormattedText());
+        exitButton = new GuiButton(20, this.width - 22, 2, 20, 20, "X");
         //other objects
         stockAdd = new GuiButton(14, this.guiLeft+ 21 - 100, this.guiTop+ 50, 15, 20, "+");
         stockSub = new GuiButton(15, stockAdd.x+16, stockAdd.y, 15, 20, "-");

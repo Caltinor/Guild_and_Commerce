@@ -42,7 +42,7 @@ public class GuiGuildCreate extends GuiScreen {
 		createButton = new GuiButton(10, guildName.x +((this.width/4 - this.width/5)/2), guildName.y + 25, this.width/5, 20, "Create Guild");
 		joinButton = new GuiButton(11, inviteList.x, inviteList.y+inviteList.height+5, inviteList.width/2-1, 20, "Join");
 		rejectButton = new GuiButton(12, joinButton.x+joinButton.width+2, joinButton.y, joinButton.width, 20, "Reject");
-		this.buttonList.add(new GuiButton(13, guildName.x, joinButton.y, this.width/4, 20, new TextComponentTranslation("gui.back").getFormattedText()));
+		this.buttonList.add(new GuiButton(13, this.width-22, 2, 20, 20, "X"));
 		this.buttonList.add(createButton);
 		this.buttonList.add(joinButton);
 		this.buttonList.add(rejectButton);

@@ -144,7 +144,7 @@ public class GuiEventHandler {
 			if (event.getButton().equals(permsButton)) Main.NET.sendToServer(new MessageGuiRequest(3));
 			if (event.getButton().equals(marketsButton)) Main.NET.sendToServer(new MessageGuiRequest(4));
 			if (event.getButton().equals(depositButton)) event.getGui().mc.player.sendChatMessage("/account deposit");
-			if (event.getButton().equals(withdrawButton)) Main.NET.sendToServer(new MessageGuiRequest(5));
+			if (event.getButton().equals(withdrawButton)) Main.NET.sendToServer(new MessageGuiRequest(6));
 		}
 	}
 	
