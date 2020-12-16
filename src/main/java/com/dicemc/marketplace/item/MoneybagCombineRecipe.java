@@ -17,7 +17,7 @@ public class MoneybagCombineRecipe extends IForgeRegistryEntry.Impl<IRecipe> imp
 			ItemStack current = inv.getStackInSlot(i);
 	        if (current.getCount() <= 0) { continue;}
 	        Item item = current.getItem();
-			if (item instanceof ItemBase) {bagcount++; continue;}	
+			if (item instanceof ItemMoneybag) {bagcount++; continue;}	
 			else {return false;}
 		}
 		return bagcount > 0;
@@ -27,7 +27,7 @@ public class MoneybagCombineRecipe extends IForgeRegistryEntry.Impl<IRecipe> imp
 	public ItemStack getCraftingResult(InventoryCrafting inv) {
 		double valueSum = 0;
 		for (int i = 0; i < inv.getSizeInventory(); i++) {
-			if (inv.getStackInSlot(i).getItem() instanceof ItemBase) valueSum += inv.getStackInSlot(i).getTagCompound().getDouble("value");
+			if (inv.getStackInSlot(i).getItem() instanceof ItemMoneybag) valueSum += inv.getStackInSlot(i).getTagCompound().getDouble("value");
 		}
 		ItemStack result = new ItemStack(ModItems.MONEYBAG);
 		result.setTagInfo("value", new NBTTagDouble(valueSum));

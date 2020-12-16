@@ -9,10 +9,8 @@ import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.network.MessageGuiRequest;
 import com.dicemc.marketplace.util.Reference;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButtonImage;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.Style;

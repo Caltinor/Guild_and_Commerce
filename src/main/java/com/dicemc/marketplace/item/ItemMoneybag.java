@@ -14,9 +14,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
-public class ItemBase extends Item implements IHasModel{	
+public class ItemMoneybag extends Item implements IHasModel{	
 	
-	public ItemBase(String name) {
+	public ItemMoneybag(String name) {
 		setUnlocalizedName(name);
 		setRegistryName(name);
 		setCreativeTab(CreativeTabs.MATERIALS);

@@ -20,8 +20,6 @@ import com.dicemc.marketplace.gui.GuiMarketManager.MarketListItem;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;

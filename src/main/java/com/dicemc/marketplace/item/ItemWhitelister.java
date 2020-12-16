@@ -45,9 +45,7 @@ public class ItemWhitelister extends Item implements IHasModel{
     }
 	
 	@Override
-	public void registerModels() {
-		Main.proxy.registerItemRenderer(this, 0, "inventory");		
-	}
+	public void registerModels() { Main.proxy.registerItemRenderer(this, 0, "inventory"); }
 	
 	public static List<WhitelistItem> getWhitelist(ItemStack stack) {
 		List<WhitelistItem> whitelist = new ArrayList<WhitelistItem>();
