@@ -1,5 +1,7 @@
 item.moneybag.name=Moneybag
 item.whitelister.name=Whitelister
+item.wl_stick_green.name=Green Whitelist Stick
+item.wl_stick_red.name=Red Whitelist Stick
 
 cmd.general.argnotrecognized=Argument not recognized.
 
@@ -74,6 +76,8 @@ event.chunk.whitelist.block.breakdeny=Block Interaction Denied.
 event.chunk.whitelist.block.placedeny=Block Placement Denied.
 event.chunk.whitelist.entity.breakdeny=Entity Invulnerable.
 event.chunk.whitelist.entity.interactdeny=Entity Interaction Denied.
+event.chunk.whitelist.stick.newsetting=%s is now set to Break:%s Interact:%s
+event.chunk.whitelist.stick.deny=You are not permitted to use the Whitelist Sticks here.
 
 core.guild.rank0=Leader
 core.guild.rank1=Dignitary

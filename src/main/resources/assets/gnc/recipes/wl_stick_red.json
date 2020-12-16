@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "gnc:whitelister"
+        },
+        {
+            "item": "minecraft:stick"
+        },
+        {
+            "item": "minecraft:dye",
+            "data": 1
+        }
+    ],
+    "result":
+    {
+        "item": "gnc:wl_stick_red"
+    }
+}
