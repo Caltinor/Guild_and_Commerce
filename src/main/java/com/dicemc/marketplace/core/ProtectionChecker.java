@@ -28,6 +28,7 @@ public class ProtectionChecker {
 		for (int i = 0; i < glist.size(); i++) { if (glist.get(i).guildID.equals(cap.getOwner())) {isGuildOwned = true; gindex = i; break;}}
 		if (!isGuildOwned) for (UUID plyr : cap.getPlayers()) {if (plyr.equals(player)) {return matchType.FULL;}}
 		if (isGuildOwned && !cap.getForSale()) {
+			//Idenitfy the proper playerType for the player's relation to the chunk
 			playerType pt = playerType.UNSET;
 			if (glist.get(gindex).members.getOrDefault(player, -1) == -1) {
 				for (UUID plyrs : cap.getPlayers()) {if (plyrs.equals(player)) {pt = playerType.LNM; break;}}
@@ -38,6 +39,7 @@ public class ProtectionChecker {
 				if (pt == playerType.UNSET && glist.get(gindex).members.getOrDefault(player, 4) <= cap.getPermMin()) pt = playerType.HRM;
 				else if (pt == playerType.UNSET) pt = playerType.LRM;
 			}
+			//Use playerType to identify which whitelist setup results in which result matchType
 			if (cap.getWhitelist().size() == 0 && cap.getPlayers().size() == 0) {
 				switch (pt) {
 				case ULNM: {return matchType.DENIED;}
@@ -86,6 +88,7 @@ public class ProtectionChecker {
 	}
 	
 	public static boolean whitelistBreakCheck(String block, ChunkCapability cap) {
+		System.out.println("breaking: "+block);
 		if (cap.getWhitelist().size() == 0) return true;
 		for (WhitelistItem wlItem : cap.getWhitelist()) {
 			if (wlItem.getBlock().equalsIgnoreCase(block) && wlItem.getCanBreak()) return true;
