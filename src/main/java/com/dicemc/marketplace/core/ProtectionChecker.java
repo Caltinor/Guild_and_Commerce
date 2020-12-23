@@ -1,14 +1,36 @@
 package com.dicemc.marketplace.core;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.dicemc.marketplace.Main;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import net.minecraft.entity.Entity;
 
 public class ProtectionChecker {
+	private static List<String> unownedWL = new ArrayList<String>();
+	
+	public static void setUnownedWL(String src) {
+		try {JsonParser parser = new JsonParser();
+		JsonArray list = (JsonArray) parser.parse(src);
+		list.forEach(x -> {
+			unownedWL.add(x.getAsString());
+		});} catch (JsonParseException e) {Main.LOG.debug(e.getMessage());}
+	}
+	
+	public static boolean unownedWLBreakCheck(String block, ChunkCapability cap) {
+		if (unownedWL.size() == 0) return false;
+		for (int i = 0; i < unownedWL.size(); i++) {
+			if (block.equalsIgnoreCase(unownedWL.get(i))) return true;
+		}
+		return false;
+	}
 
 	public static enum matchType {FULL, DENIED, WHITELIST}
 	enum playerType {UNSET, ULNM, LNM, LM, HRM, LRM}
@@ -88,7 +110,6 @@ public class ProtectionChecker {
 	}
 	
 	public static boolean whitelistBreakCheck(String block, ChunkCapability cap) {
-		System.out.println("breaking: "+block);
 		if (cap.getWhitelist().size() == 0) return true;
 		for (WhitelistItem wlItem : cap.getWhitelist()) {
 			if (wlItem.getBlock().equalsIgnoreCase(block) && wlItem.getCanBreak()) return true;

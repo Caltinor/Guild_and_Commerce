@@ -53,6 +53,8 @@ public class ProtectionEventHandler {
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (event.getPlayer().isCreative() || event.getPlayer().dimension != 0) return;
 		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
+		if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.UNOWNED_PROTECTED 
+			&& ProtectionChecker.unownedWLBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) return;
 		if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
 			ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getPos()).getPos();
 			Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getPlayer());

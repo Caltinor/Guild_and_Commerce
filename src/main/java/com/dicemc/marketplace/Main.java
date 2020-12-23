@@ -2,8 +2,12 @@ package com.dicemc.marketplace;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
+import com.dicemc.marketplace.core.ProtectionChecker;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkImplementation;
@@ -45,6 +49,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 @Mod(modid=Reference.MOD_ID, name=Reference.NAME, version=Reference.VERSION)
 public class Main {
+	public static final Logger LOG = LogManager.getLogger(Reference.MOD_ID);
 	public static SimpleNetworkWrapper NET;
 	public static boolean useGrandEconomy = false;
 	public static GrandEconomyInterop interop;
@@ -88,6 +93,7 @@ public class Main {
 		for (int i = 0; i < glist.size(); i++) AccountSaver.get(event.getServer().getEntityWorld()).getGuilds().addAccount(glist.get(i).guildID, Main.ModConfig.GUILD_STARTING_FUNDS);
 		AccountSaver.get(event.getServer().getEntityWorld()).markDirty();
 		CoreUtils.setWorld(event.getServer().getEntityWorld());
+		ProtectionChecker.setUnownedWL(ModConfig.UNOWNED_BREAK_WHITELIST);
 	}
 	
 	@Config(modid = Reference.MOD_ID, name = Reference.MOD_ID + "_Config", type = Type.INSTANCE, category = "general")
@@ -160,5 +166,8 @@ public class Main {
 		@Name("AUTO_TEMP_CLAIM")
 		@Comment({"When Enabled causes denied actions in unowned territory", "to first claim the land before denying access"})
 		public static boolean AUTO_TEMP_CLAIM = true;
+		@Name("UNOWNED_BREAK_WHITELIST")
+		@Comment({"A JSON Array of blocks permitted to be broken", "when unowned protections are turned on."})
+		public static String UNOWNED_BREAK_WHITELIST = "[]";
 	}
 }
