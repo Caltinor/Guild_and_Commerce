@@ -32,6 +32,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock;
@@ -98,7 +99,6 @@ public class ProtectionEventHandler {
 			boolean status = isWhiteListAction(cap, heldItem, event.getEntityPlayer(), null,  block.getRegistryName().toString(), true, glist, false);
 			if (status) {
 				event.setCanceled(true);
-				System.out.println("update sent WLA");
 				Chunk chunk = event.getWorld().getChunkFromBlockCoords(event.getPos());
 				event.getWorld().markAndNotifyBlock(event.getPos(), chunk, state, state, Constants.BlockFlags.NOTIFY_NEIGHBORS | Constants.BlockFlags.SEND_TO_CLIENTS);
 				return;
@@ -110,7 +110,6 @@ public class ProtectionEventHandler {
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
 				event.setCanceled(true);
-				System.out.println("update sent deny");
 				Chunk chunk = event.getWorld().getChunkFromBlockCoords(event.getPos());
 				event.getWorld().markAndNotifyBlock(event.getPos(), chunk, state, state, Constants.BlockFlags.NOTIFY_NEIGHBORS | Constants.BlockFlags.SEND_TO_CLIENTS);
 				event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.breakdeny"), true);
@@ -119,7 +118,6 @@ public class ProtectionEventHandler {
 			case WHITELIST: {
 				if (!ProtectionChecker.whitelistInteractCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
 					event.setCanceled(true);
-					System.out.println("update sent wlpro");
 					Chunk chunk = event.getWorld().getChunkFromBlockCoords(event.getPos());
 					event.getWorld().markAndNotifyBlock(event.getPos(), chunk, state, state, Constants.BlockFlags.NOTIFY_NEIGHBORS | Constants.BlockFlags.SEND_TO_CLIENTS);
 					event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.breakdeny"), true);
@@ -127,7 +125,6 @@ public class ProtectionEventHandler {
 				return;
 			}
 			default: {
-				System.out.println("update sent normal action");
 				Chunk chunk = event.getWorld().getChunkFromBlockCoords(event.getPos());
 				event.getWorld().markAndNotifyBlock(event.getPos(), chunk, state, state, Constants.BlockFlags.NOTIFY_NEIGHBORS | Constants.BlockFlags.SEND_TO_CLIENTS);
 			}
@@ -260,10 +257,8 @@ public class ProtectionEventHandler {
 				}
 				cap.changeWhitelist(wli);
 			}
-			System.out.println("returned WLA true");
 			return true;
 		}			
-		System.out.println("returend WLA false");
 		return false;
 	}
 	
@@ -423,8 +418,7 @@ public class ProtectionEventHandler {
 		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) return;
 		if (event.getEntity() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)event.getEntity();
-			if (player.isCreative()) return;
-			if (player.dimension != 0) return;
+			if (player.isCreative() || player.dimension != 0) return;
 			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
 				ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getPos()).getPos();
 				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getEntity());
@@ -437,6 +431,36 @@ public class ProtectionEventHandler {
 			}
 			case WHITELIST: {
 				if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getPos()).getBlock().getRegistryName().toString(), cap)) {
+					event.setCanceled(true);
+					player.sendStatusMessage(new TextComponentTranslation("event.chunk.trampledeny"), true);
+				}
+				break;
+			}
+			default:
+			}
+		}
+		else event.setCanceled(true);
+	}
+	
+	@SubscribeEvent
+	public static void onBucketUse(FillBucketEvent event) {
+		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getTarget().getBlockPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
+		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) return;
+		if (event.getEntity() instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer)event.getEntity();
+			if (player.isCreative() || player.dimension != 0) return;
+			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
+				ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getTarget().getBlockPos()).getPos();
+				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getEntity());
+			}
+			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
+			case DENIED: {
+				event.setCanceled(true);
+				player.sendStatusMessage(new TextComponentTranslation("event.chunk.trampledeny"), true);
+				break;
+			}
+			case WHITELIST: {
+				if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getTarget().getBlockPos()).getBlock().getRegistryName().toString(), cap)) {
 					event.setCanceled(true);
 					player.sendStatusMessage(new TextComponentTranslation("event.chunk.trampledeny"), true);
 				}
