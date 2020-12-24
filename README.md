@@ -2,8 +2,8 @@
 A server protection and economy mod for MC 1.12 (Forge)
 
 ## Features in progress (in order)
-- Whitelisting.  Permits interaction of blocks and entities to non-members of a protected chunk based on user-defined settings
-    - Leasing of land.  Guilds permitting non-members pay-for access to specific guild land based on whitelist permissions
+- fire and fluid spread protections
+- Move Core Logic to MC-Version-agnostic API for use in expediting forward ports.
 - Real Estate Manager.  a more intuitive and powerful interface for the purchase, selling, and management of land
 - GUI redesign.  Creating more fluid, aesthetically pleasing, and user-friendly GUIs.
 
