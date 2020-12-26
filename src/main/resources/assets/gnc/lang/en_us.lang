@@ -70,6 +70,7 @@ event.chunk.enter=Now Entering %s territory.
 event.chunk.forsale=Land for sale at $%s
 event.chunk.breakdeny=You are not permitted to break blocks here.
 event.chunk.trampledeny=You cannot trample farmland here.
+event.chunk.bucketdeny=You cannot use buckets here.
 event.chunk.wlapply=Whitelist applied to chunk.
 event.chunk.wlapply.deny=you cannot apply the whitelist here.
 event.chunk.whitelist.block.breakdeny=Block Interaction Denied.

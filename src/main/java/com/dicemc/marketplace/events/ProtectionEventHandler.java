@@ -50,7 +50,6 @@ public class ProtectionEventHandler {
 	@SubscribeEvent
 	public static void onBlockBreak(BreakEvent event) {
 		//TODO this isn't triggering when it should
-		System.out.println("block break triggered");
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (event.getPlayer().isCreative() || event.getPlayer().dimension != 0) return;
 		if (cap.getOwner().equals(Reference.NIL) && !Main.ModConfig.UNOWNED_PROTECTED) return;
@@ -456,13 +455,13 @@ public class ProtectionEventHandler {
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
 				event.setCanceled(true);
-				player.sendStatusMessage(new TextComponentTranslation("event.chunk.trampledeny"), true);
+				player.sendStatusMessage(new TextComponentTranslation("event.chunk.bucketdeny"), true);
 				break;
 			}
 			case WHITELIST: {
 				if (!ProtectionChecker.whitelistBreakCheck(event.getWorld().getBlockState(event.getTarget().getBlockPos()).getBlock().getRegistryName().toString(), cap)) {
 					event.setCanceled(true);
-					player.sendStatusMessage(new TextComponentTranslation("event.chunk.trampledeny"), true);
+					player.sendStatusMessage(new TextComponentTranslation("event.chunk.bucketdeny"), true);
 				}
 				break;
 			}
