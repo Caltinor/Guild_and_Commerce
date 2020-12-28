@@ -443,14 +443,15 @@ public class ProtectionEventHandler {
 	
 	@SubscribeEvent
 	public static void onBucketUse(FillBucketEvent event) {
+		if (event.getTarget()==null) return;
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getTarget().getBlockPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
 		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) return;
 		if (event.getEntity() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer)event.getEntity();
 			if (player.isCreative() || player.dimension != 0) return;
-			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
+			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM && !event.getWorld().isRemote) {
 				ChunkPos pos = event.getWorld().getChunkFromBlockCoords(event.getTarget().getBlockPos()).getPos();
-				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) event.getEntity());
+				Main.NET.sendTo(new MessageClientConfigRequest(0, pos.x, pos.z), (EntityPlayerMP) player);
 			}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
