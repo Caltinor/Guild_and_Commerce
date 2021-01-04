@@ -105,6 +105,7 @@ public class ProtectionEventHandler {
 			//normal protection checks
 			EntityPlayer player = event.getEntityPlayer();
 			//Ignore if in creative, not in overworld, or land is unowned
+			if (cap.getPublic()) {return;}
 			if (event.getEntityPlayer().isCreative() || event.getEntityPlayer().dimension != 0 || cap.getOwner().equals(Reference.NIL)) {return;}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
@@ -270,8 +271,9 @@ public class ProtectionEventHandler {
 	@SubscribeEvent
 	public static void onBlockPlace(EntityPlaceEvent event) {
 		ChunkCapability cap = event.getWorld().getChunkFromBlockCoords(event.getPos()).getCapability(ChunkProvider.CHUNK_CAP, null);
-		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) return;
+		if (!ModConfig.UNOWNED_PROTECTED && cap.getOwner().equals(Reference.NIL)) {return;}
 		if (event.getEntity() instanceof EntityPlayer) {
+			if (cap.getPublic()) {return;}
 			EntityPlayer player = (EntityPlayer)event.getEntity();
 			if (player.isCreative() || player.dimension != 0) return;
 			if (cap.getOwner().equals(Reference.NIL) && Main.ModConfig.AUTO_TEMP_CLAIM) {
@@ -280,7 +282,6 @@ public class ProtectionEventHandler {
 			}
 			switch (ProtectionChecker.ownerMatch(player.getUniqueID(), cap, GuildSaver.get(event.getWorld()).GUILDS)) {
 			case DENIED: {
-				//TODO send packet to sync the inventory
 				event.setCanceled(true);
 				player.sendStatusMessage(new TextComponentTranslation("event.chunk.whitelist.block.placedeny"), true);
 				return;
@@ -295,8 +296,10 @@ public class ProtectionEventHandler {
 			default:
 			}
 		}
-		//TODO logic for non-player placing like special blocks.
-		else event.setCanceled(true);
+		else if (event.getEntity() instanceof EntityMob) {
+			event.setCanceled(true);
+		}
+		else {return;}
 	}
 	
 	@SubscribeEvent
