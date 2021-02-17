@@ -1,10 +1,12 @@
 package com.dicemc.marketplace.events;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.dicemc.marketplace.Main;
+import com.dicemc.marketplace.Main.ModConfig;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.MarketItem;
@@ -12,11 +14,15 @@ import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.datasaver.AccountSaver;
 import com.dicemc.marketplace.util.datasaver.GuildSaver;
 import com.dicemc.marketplace.util.datasaver.MarketSaver;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.common.config.Config.Type;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -29,6 +35,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 public class PlayerEventHandler {
 	public static int tickCounter = 0;
 	public static int taxCounter = 0;
+	public static Map<String, Double> killRewards = new HashMap<String, Double>();
 	
 	@SubscribeEvent
 	public static void onPlayerLogin (PlayerLoggedInEvent event) {
@@ -112,5 +119,22 @@ public class PlayerEventHandler {
 				taxCounter = 0;
 			}	
 		}
+	}
+	
+	@SubscribeEvent
+	public static void onKill(LivingDeathEvent event) {
+		if (ModConfig.USE_KILL_REWARDS && event.getSource().getTrueSource() instanceof EntityPlayer) {
+			UUID pid = event.getSource().getTrueSource().getUniqueID();
+			String victim = event.getEntityLiving().getClass().getSimpleName();
+			double modifier = killRewards.containsKey(victim) ? killRewards.get(victim) : 1d;
+			double reward = ModConfig.KILL_REWARD_BASE * modifier;
+			AccountSaver.get(event.getEntity().world).getPlayers().addBalance(pid, reward);
+			event.getSource().getTrueSource().sendMessage(new TextComponentTranslation("core.account.receive", String.valueOf(reward), "kill."));
+		}		
+	}
+	
+	public static void setKillRewardModifiers(String src) throws JsonSyntaxException{
+		killRewards = new Gson().fromJson(src, new TypeToken<HashMap<String, Double>>(){}.getType());
+		killRewards.computeIfAbsent("default", (a) -> {return 1d;});
 	}
 }

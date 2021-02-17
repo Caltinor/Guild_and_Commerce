@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.dicemc.marketplace.core.CoreUtils;
 import com.dicemc.marketplace.core.Guild;
 import com.dicemc.marketplace.core.ProtectionChecker;
+import com.dicemc.marketplace.events.PlayerEventHandler;
 import com.dicemc.marketplace.util.Reference;
 import com.dicemc.marketplace.util.capabilities.ChunkCapability;
 import com.dicemc.marketplace.util.capabilities.ChunkImplementation;
@@ -94,6 +95,7 @@ public class Main {
 		AccountSaver.get(event.getServer().getEntityWorld()).markDirty();
 		CoreUtils.setWorld(event.getServer().getEntityWorld());
 		ProtectionChecker.setUnownedWL(ModConfig.UNOWNED_BREAK_WHITELIST);
+		if (ModConfig.USE_KILL_REWARDS) PlayerEventHandler.setKillRewardModifiers(ModConfig.MOD_KILL_MODIFIERS);
 	}
 	
 	@Config(modid = Reference.MOD_ID, name = Reference.MOD_ID + "_Config", type = Type.INSTANCE, category = "general")
@@ -169,5 +171,14 @@ public class Main {
 		@Name("UNOWNED_BREAK_WHITELIST")
 		@Comment({"A JSON Array of blocks permitted to be broken", "when unowned protections are turned on."})
 		public static String UNOWNED_BREAK_WHITELIST = "[]";
+		@Name("MOD_KILL_MODIFIERS")
+		@Comment({"A JSON String of mob ratios for kill rewards"})
+		public static String MOD_KILL_MODIFIERS = "{\"default\": 1}";
+		@Name("USE_KILL_REWARDS")
+		@Comment({"A JSON Array of blocks permitted to be broken", "when unowned protections are turned on."})
+		public static boolean USE_KILL_REWARDS = true;
+		@Name("KILL_REWARD_BASE")
+		@Comment({"The default value of kill rewards.  Use modifiers to alter per mob"})
+		public static double KILL_REWARD_BASE = 20.0;
 	}
 }

@@ -104,6 +104,7 @@ core.utils.create.success=Created new guild: %s
 core.utils.create.fail=A Guild bythat name already exists.
 core.utils.join.notify=%s has joined the guild.
 core.utils.join.success=You have joined %s!
+core.account.receive=$%s obtained from %s 
 
 market.auction.bid.success=You are now the highest bidder on this item.
 market.auction.bid.faillowbid=You must offer more than the previous bid
