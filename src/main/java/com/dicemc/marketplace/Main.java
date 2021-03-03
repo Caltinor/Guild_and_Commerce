@@ -15,6 +15,7 @@ import com.dicemc.marketplace.util.capabilities.ChunkImplementation;
 import com.dicemc.marketplace.util.capabilities.ChunkStorage;
 import com.dicemc.marketplace.util.commands.AccountCommands;
 import com.dicemc.marketplace.util.commands.Commands;
+import com.dicemc.marketplace.util.commands.GuildChatCommands;
 import com.dicemc.marketplace.util.commands.GuildCommands;
 import com.dicemc.marketplace.util.commands.TempClaimCommands;
 import com.dicemc.marketplace.util.compat.GrandEconomyCompat;
@@ -88,6 +89,7 @@ public class Main {
 		event.registerServerCommand(new GuildCommands());
 		event.registerServerCommand(new AccountCommands());
 		event.registerServerCommand(new TempClaimCommands());
+		event.registerServerCommand(new GuildChatCommands());
 		MarketSaver.get(event.getServer().getEntityWorld());
 		AccountSaver.get(event.getServer().getEntityWorld());
 		List<Guild> glist = GuildSaver.get(event.getServer().getEntityWorld()).GUILDS;

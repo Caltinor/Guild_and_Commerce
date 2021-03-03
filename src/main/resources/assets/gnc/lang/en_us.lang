@@ -48,6 +48,7 @@ cmd.guild.info.line4=Tax: %s%%, Open-To-Join:%s
 cmd.guild.info.line5=Balance: $
 cmd.guild.info.line6=Member Count: [%s]
 cmd.guild.info.error=Unable to find guild information.
+cmd.guild.pm=[GUILD] %s %s
 
 cmd.temp.getusage=/tempclaim <renew/set/add>
 cmd.temp.error.playernotfound=Unable to find player.
